@@ -1,0 +1,110 @@
+
+Declare @COMPANY_CODE varchar(5) = 'BHSIC' --(For BHSI USE COMPANY_CODE BHHK)
+
+Declare @CURRENT_PERIOD VARCHAR(10) = '2024-03-31'
+
+Declare @PRIOR_PERIOD VARCHAR(10) = '2000-01-31'
+
+Declare @PRIOR_PERIOD2 VARCHAR(10) = '2024-01-31'
+
+Declare @BASIS1 varchar(5) = 'GAAPC' --(For BHSI USE BASIS1 GAAPA)
+
+Declare @BASIS2 varchar(5) = 'STATC' --(For BHSI USE BASIS1 STATA)
+ 
+Declare @sql as NVARCHAR(MAX)
+
+DECLARE @database as nvarchar(100)
+
+set @database = (
+
+select name 
+
+        from sys.databases
+
+where name like 'EAS_REPL' or name like 'REPL_EAS')
+
+
+set @sql = 
+
+'SELECT
+
+        BD.CAL_ACCTG_PERIOD,
+
+        BD.COMPANY_CODE,
+
+        BD.ACCOUNT_NUMBER,
+
+        AC.DESCRIPTION,
+
+        SUM(BD.CONVERTED_AMOUNT) AS BALANCE,
+
+        BH.STATUS_CODE,
+
+        A.ACCTG_BASIS_CODE
+
+    FROM 
+
+       ' + @database + '.[dbo].BSTRN_HEADER BH
+
+    INNER JOIN
+
+       ' + @database + '.[dbo].BSTRN_DETAIL BD ON BH.TRAN_ID = BD.TRAN_ID
+
+    INNER JOIN
+
+       ' + @database + '.[dbo].ACCT_BAS_ACCT_BAS A ON BD.ACCTG_BASIS_CODE = A.REL_ACCT_BAS_CODE
+
+    FULL OUTER JOIN
+
+       ' + @database + '.[dbo].ACCOUNT AC ON BD.ACCOUNT_NUMBER = AC.ACCT_NUMBER AND BD.COMPANY_CODE = AC.COMPANY_CODE
+
+	   where
+
+	   (
+
+	    (BD.CAL_ACCTG_PERIOD >=''' + @PRIOR_PERIOD + '''AND BD.CAL_ACCTG_PERIOD <=''' + @CURRENT_PERIOD + ''')
+
+	    AND A.ACCTG_BASIS_CODE in (''' + @BASIS1 + ''',''' + @BASIS2 + ''')
+
+		AND BD.COMPANY_CODE =''' + @COMPANY_CODE + '''  
+
+		AND AC.ACCT_CLASS_IND IN (''A'',''L'',''S'',''E'',''G'')
+
+	   )
+
+	   OR
+
+        (
+
+	    (BD.CAL_ACCTG_PERIOD >=''' + @PRIOR_PERIOD2 + '''AND BD.CAL_ACCTG_PERIOD <=''' + @CURRENT_PERIOD + ''')
+
+	    AND A.ACCTG_BASIS_CODE in (''' + @BASIS1 + ''',''' + @BASIS2 + ''')
+
+		AND BD.COMPANY_CODE =''' + @COMPANY_CODE + '''  
+
+		AND AC.ACCT_CLASS_IND IN (''I'',''X'',''F'')
+
+	   )
+
+	   GROUP BY
+
+        BD.CAL_ACCTG_PERIOD,
+
+        BD.COMPANY_CODE,
+
+        BD.ACCOUNT_NUMBER,
+
+        AC.DESCRIPTION,
+
+        BH.STATUS_CODE,
+
+        A.ACCTG_BASIS_CODE
+
+    ORDER BY
+
+        BD.ACCOUNT_NUMBER,
+
+        BD.CAL_ACCTG_PERIOD;'
+
+		 execute (@sql)
+ 
