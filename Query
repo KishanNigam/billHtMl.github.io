@@ -1,7 +1,4 @@
-The summary job failed on the UAT server because someone manually stopped the job from the Spotlight application, and we did not receive any error notification. To address this, we have added conditions for this type of issue in Visual Cron.
+Good question, Aarohi. I have added scenarios for multiple job runs and the behavior of logs generated during these runs to my unit testing.
 
-To verify the condition, we need to kill the session from the Spotlight application. The steps for validating the notification error are as follows:
-
-After the summary job was triggered in UAT, we raised a service ticket (REQ0083559) for the DBA team to kill the session.
-We raised a ticket and emailed the DBA team, and then reached out to Bill on Microsoft Teams to have the session killed.
-After the session was killed, the summary job failed successfully, and the VC failure condition was successfully validated. I have attached the email for further information
+Here is the latest update:
+@Pavan, during testing, the job is repeatedly failing. Upon debugging, I observed that the notification error log shows the server message 2-3 times with the 'error message.' As VC picks up the error message from the batch log and VB script log, I did not find anything in the batch log and script log during my debugging where the server is repeating. Due to other tasks, I have not been able to resolve this issue yet, but I will continue addressing this error tomorrow.
