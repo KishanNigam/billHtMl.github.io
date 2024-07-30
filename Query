@@ -1,11 +1,7 @@
-The summery job failed on the UAT server because someone manually stopped the job from spotlight application and we did not receive any error notification. 
-To fix this, we have added conditions for that type of issue in Visual Cron. 
+The summary job failed on the UAT server because someone manually stopped the job from the Spotlight application, and we did not receive any error notification. To address this, we have added conditions for this type of issue in Visual Cron.
 
-To verify the condition, we need to kill the session from the spotlight application,
+To verify the condition, we need to kill the session from the Spotlight application. The steps for validating the notification error are as follows:
 
-So, below are the steps of validation of notification error.
-
-1. After the summery job was triggered in UAT, we raised a service ticket - REQ0083559 for the DBA team to
- kill the session.
-2. Raised a ticket and emailed the DBA team, and then reached out to Bill on team to have the session killed.
-3. After the session is killed, the summery job fails successfully and VC failure condition is successfully validated. I have attached the email for further information.
+After the summary job was triggered in UAT, we raised a service ticket (REQ0083559) for the DBA team to kill the session.
+We raised a ticket and emailed the DBA team, and then reached out to Bill on Microsoft Teams to have the session killed.
+After the session was killed, the summary job failed successfully, and the VC failure condition was successfully validated. I have attached the email for further information
