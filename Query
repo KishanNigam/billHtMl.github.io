@@ -1,4 +1,1 @@
-Good question, Aarohi. I have added scenarios for multiple job runs and the behavior of logs generated during these runs to my unit testing.
-
-Here is the latest update:
-@Pavan, during testing, the job is repeatedly failing. Upon debugging, I observed that the notification error log shows the server message 2-3 times with the 'error message.' As VC picks up the error message from the batch log and VB script log, I did not find anything in the batch log and script log during my debugging where the server is repeating. Due to other tasks, I have not been able to resolve this issue yet, but I will continue addressing this error tomorrow.
+I have added all 6 BU_CODEs as filters and further optimized the query, and connected with Aarohi. We discussed that Desiree wants only the BU_CODEs entered by the user to be displayed in the SP; otherwise, the BU_CODE should not appear in the column, even if its value is NULL. Therefore, I am working on the SP based on the provided update and plan to complete it by EOD tomorrow.
