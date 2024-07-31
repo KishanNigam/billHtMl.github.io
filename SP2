@@ -1,6 +1,6 @@
-DECLARE @PRIOR_PERIOD DATE, 
-        @CURRENT_PERIOD DATE, 
-        @PRIOR_PERIOD2 DATE, 
+DECLARE @PRIOR_PERIOD Varchar(10), 
+        @CURRENT_PERIOD Varchar(10), 
+        @PRIOR_PERIOD2 Varchar(10), 
         @BASIS1 VARCHAR(50), 
         @BASIS2 VARCHAR(50), 
         @COMPANY_CODE VARCHAR(50), 
@@ -12,18 +12,18 @@ DECLARE @PRIOR_PERIOD DATE,
         @BU_CODE_EXPG VARCHAR(50);
 
 -- Assign values to the variables as needed
-SET @PRIOR_PERIOD = '2023-01-01';  -- Example date
-SET @CURRENT_PERIOD = '2023-12-31';  -- Example date
-SET @PRIOR_PERIOD2 = '2022-01-01';  -- Example date
-SET @BASIS1 = 'BASIS1';  -- Example basis code
-SET @BASIS2 = 'BASIS2';  -- Example basis code
-SET @COMPANY_CODE = 'COMP123';  -- Example company code
-SET @BU_CODE_SEG = 'SEG001';  -- Example BU_CODE for SEG
-SET @BU_CODE_AGENT = 'AGT001';  -- Example BU_CODE for AGENT
-SET @BU_CODE_CLASS = 'CLS001';  -- Example BU_CODE for CLASS
-SET @BU_CODE_REINS = 'RNS001';  -- Example BU_CODE for REINS
-SET @BU_CODE_AFFIL = 'AFF001';  -- Example BU_CODE for AFFIL
-SET @BU_CODE_EXPG = 'EXG001';  -- Example BU_CODE for EXPG
+SET @PRIOR_PERIOD = '2000-01-31';  -- Example date
+SET @CURRENT_PERIOD = '2024-06-30';  -- Example date
+SET @PRIOR_PERIOD2 = '2024-01-31';  -- Example date
+SET @BASIS1 = 'GAAPC';  -- Example basis code
+SET @BASIS2 = 'STATC';  -- Example basis code
+SET @COMPANY_CODE = 'BHSIC';  -- Example company code
+SET @BU_CODE_SEG = 'SEG';  -- Example BU_CODE for SEG
+SET @BU_CODE_AGENT = 'AGENT';  -- Example BU_CODE for AGENT
+SET @BU_CODE_CLASS = 'CLASS';  -- Example BU_CODE for CLASS
+SET @BU_CODE_REINS = 'REINS';  -- Example BU_CODE for REINS
+SET @BU_CODE_AFFIL = 'AFFIL';  -- Example BU_CODE for AFFIL
+SET @BU_CODE_EXPG = 'EXPG';  -- Example BU_CODE for EXPG
 
 WITH BU_SET_DETAILS AS (
     SELECT 
