@@ -1,9 +1,22 @@
-Summery of the SQL deployment through Octopus
+Summary of SQL Deployment through Azure Octopus Pipeline
 
-•	Clone the repository from the Azore and open in the Microsoft Visual Studio.
-•	Create the local branch from the main branch so it will no code impact in main branch.
-•	Add or modified the query and build the code for checking query have no issue.
-•	Add the changes comment and commit the code and merge with main branch.
-•	Push the code to the Azore.
-•	In the Pull request tab of Azore Devops , we need to create pull request for reviewer and Approval.
-•	After the code approved from Approval, code will be deployed successfully.
+Clone the Repository:
+Clone the repository from Azure DevOps and open it in Microsoft Visual Studio.
+
+Create a Local Branch:
+Create a local branch from the main branch to ensure no impact on the main branch code.
+
+Modify and Build Code:
+Add or modify the SQL query as needed. Build the code to ensure that there are no issues with the query.
+
+Commit and Merge Changes:
+Add comments describing the changes, commit the code, and merge the changes with the main branch.
+
+Push Code to Azure DevOps:
+Push the updated code to Azure DevOps.
+
+Create a Pull Request:
+In the Pull Requests tab of Azure DevOps, create a pull request for review and approval.
+
+Approval and Deployment:
+After the pull request is approved, the code will be successfully deployed.
