@@ -1,3 +1,7 @@
+Msg 102, Level 15, State 1, Line 3
+Incorrect syntax near ';'.
+Msg 137, Level 15, State 2, Line 11
+Must declare the scalar variable "@BU_CODE_EXPG".
 
 Create procedure Trailbalance_6bu_testV01
 	    @PRIOR_PERIOD Varchar(10), 
