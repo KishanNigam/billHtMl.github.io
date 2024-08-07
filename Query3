@@ -1,3 +1,8 @@
+Msg 102, Level 15, State 1, Line 7
+Incorrect syntax near 'SEG'.
+Msg 156, Level 15, State 1, Line 25
+Incorrect syntax near the keyword 'AS'.
+
 ALTER PROCEDURE Trailbalance_6bu_testV01
     @PRIOR_PERIOD VARCHAR(10),
     @CURRENT_PERIOD VARCHAR(10),
