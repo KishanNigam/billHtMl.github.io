@@ -65,7 +65,8 @@ BEGIN
         A.ACCTG_BASIS_CODE
     ORDER BY 
         BD.ACCOUNT_NUMBER,
-        BD.CAL_ACCTG_PERIOD;'
+        BD.CAL_ACCTG_PERIOD;
+        OPTION(RECOMPILE);'
 
     EXEC sp_executesql @sql, 
         N'@PRIOR_PERIOD VARCHAR(10), 
