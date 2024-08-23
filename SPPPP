@@ -1,0 +1,23 @@
+@echo off
+setlocal
+
+:: Define Variables
+set "logPath=\\BHHHS\LOGFOLDER"
+:: Extract Year and Month from current date
+set "year=%date:~10,4%"
+set "month=%date:~4,2%"
+set "day=%date:~7,2%"
+
+:: Define Folder and File Paths
+set "yearFolder=%logPath%\%year%"
+set "monthFolder=%yearFolder%\%month%"
+set "logFile=%monthFolder%\CLAIM_LOG_%year%%month%%day%.log"
+
+:: Create Folders if They Do Not Exist
+if not exist "%yearFolder%" mkdir "%yearFolder%"
+if not exist "%monthFolder%" mkdir "%monthFolder%"
+
+:: Create Log File
+echo Log file created on %date% > "%logFile%"
+
+endlocal
