@@ -1,23 +1,6 @@
+We received a Job fail today at 11:45 AM CST of APPAY HSBC Payment Export on the BHSIEAS10 server and in the EAS process monitor, I can see an entry at 11:45 for a transection processed by the user DYADAV1. 
 
-Please find below a summary of the SQL deployment process through the Azure Octopus pipeline:
+ 
 
-Clone the Repository:
-Clone the repository from Azure DevOps and open it in Microsoft Visual Studio.
 
-Create a Local Branch:
-Create a local branch from the main branch to avoid any impact on the main branch code.
-
-Modify and Build Code:
-Make the necessary modifications to the SQL query and build the code to ensure there are no issues.
-
-Commit and Merge Changes:
-Add descriptive comments regarding the changes, commit the code, and merge it with the main branch.
-
-Push Code to Azure DevOps:
-Push the updated code to Azure DevOps.
-
-Create a Pull Request:
-In the Pull Requests tab of Azure DevOps, create a pull request for review and approval.
-
-Approval and Deployment:
-Once the pull request is approved, the code will be deployed successfully.
+ Likely seems connection issue @DBATeam@nationalindemnity.com Kindly check if there was any extensive query was running or any connection blocked caused this failure around 11:30 AM -11:55 AM CST.
