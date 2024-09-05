@@ -1,30 +1,8 @@
 Traslate in english in office wording in formal way.
 
-we have received multiple failure in NICOEAS10. Due to folder access related issue.
+Aaj hame Do job fail receive hui NICOEAS10 ki phele job AP BHSIC CHECKS IMPORT and Dusri AP BHSIC EFTs Import. Jiske analysis karne par hame pata chala ki NICOEAS10 ke VC ke service account main folder access permission ka issue hai. Jishke liye hamne Paul ko reach out kiya or ushe dono incident pe kam karne ke lie assign kar diya.
 
+Sath hee main desiree ka hamare pass instruction aya ki ham Scott's team se file lekar ERIN ya fir Kathy ko file de or unhe EAS main manually load krne ke instruction bata de. So Maine or Aarohi ne Kelsey se connect kiya or ushe manually load karane ka try kiya but hame load karna main ek error aa rhi thi. Sath main hee Paul ne VC main account service configuration set hone ki confirmation de jiske baad. Aarohi ne Phele Kelsy se EFT file or Check file ko source location main rakhne ko bola but ushke away dikhne ke karan Aarohi ne Kethy se bhi source file ko source location main place karne ko bola. Same time pe dono ne hee file ko place kar diya jishke wajha se check ka data NICOEAS10 prod main do baar load ho gaya. 
 
-Error:
-Access to the path '\\nicoad\nico\Finance\FSD\Finance\AccountsPayable\APBHSIC\EFTS\APGEFT.TXT' is denied.
+Solution ke liye maine ERIN or Kelsy ko mail kiya hai ki wo duplicate data ko delete kare.
 
-
-Looks like there is permission change to this folder and other user are also facing to access this `AccountsPayable`. 
-
-We have to close this incident beacuse  Paul worked on this on same  issue on the incident INC0170231 . 
-
-
-Here's the formal translation in office wording:
-
----
-
-We have encountered multiple failures in NICOEAS10 due to folder access issues.
-
-Error:
-Access to the path '\\nicoad\nico\Finance\FSD\Finance\AccountsPayable\APBHSIC\EFTS\APGEFT.TXT' is denied.
-
-It appears there has been a change in the permissions for this folder, and other users are also experiencing difficulties accessing `AccountsPayable`. 
-
-We need to close this incident because Paul has already addressed the same issue under incident INC0170231.
-
----
-
-Let me know if there's anything else you'd like to modify!
