@@ -10,3 +10,21 @@ Access to the path '\\nicoad\nico\Finance\FSD\Finance\AccountsPayable\APBHSIC\EF
 Looks like there is permission change to this folder and other user are also facing to access this `AccountsPayable`. 
 
 We have to close this incident beacuse  Paul worked on this on same  issue on the incident INC0170231 . 
+
+
+Here's the formal translation in office wording:
+
+---
+
+We have encountered multiple failures in NICOEAS10 due to folder access issues.
+
+Error:
+Access to the path '\\nicoad\nico\Finance\FSD\Finance\AccountsPayable\APBHSIC\EFTS\APGEFT.TXT' is denied.
+
+It appears there has been a change in the permissions for this folder, and other users are also experiencing difficulties accessing `AccountsPayable`. 
+
+We need to close this incident because Paul has already addressed the same issue under incident INC0170231.
+
+---
+
+Let me know if there's anything else you'd like to modify!
