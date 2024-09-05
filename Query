@@ -1,18 +1,12 @@
 Traslate in english in office wording in formal way.
 
-Hamne BHSI check file ko NICOEAS10 main Kathy dwara source location main place kara ke EAS main load karaya tha or sath main hee hamne ushe file ko Kalsy ko bhi bheja tha place karne ke liye. So dono ne source file ko place kar diya jishke wajaha se Check (APG.txt file Data count 20) file do baar eas main load ho gai hai.
-
-Kya ham eshe delete kara sakte hai.
+we have received multiple failure in NICOEAS10. Due to folder access related issue.
 
 
-Here is a formal translation in office wording:
+Error:
+Access to the path '\\nicoad\nico\Finance\FSD\Finance\AccountsPayable\APBHSIC\EFTS\APGEFT.TXT' is denied.
 
----
 
-We had placed the BHSI check file in the source location in NICOEAS10 through Kathy and subsequently loaded it into EAS. At the same time, we also sent this file to Kalsy for placement. Consequently, both Kathy and Kalsy placed the source file, which resulted in the Check (APG.txt file Data count 20) file being loaded twice into EAS.
+Looks like there is permission change to this folder and other user are also facing to access this `AccountsPayable`. 
 
-Could we delete this duplicate entry?
-
----
-
-Feel free to let me know if you want any changes!
+We have to close this incident beacuse  Paul worked on this on same  issue on the incident INC0170231 . 
