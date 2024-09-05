@@ -5,3 +5,16 @@ This failure came up due to folder access issue. I connected to Paul in Platefro
 Additionally, I have tried to load check and EFT file through manually, but we faced some error.  
 At the end we loaded the data through VC jobs after the issue resolved by Paul.
 But BHSI Check file placed in source location two times so data eas main mistakly do baar load ho gya h.
+
+
+Here is the formal translation:
+
+---
+
+This failure occurred due to a folder access issue. I connected with Paul from the Platform team, and he configured the service account for NICOEAS10.
+
+Additionally, I attempted to manually load the check and EFT files, but we encountered some errors. Eventually, we were able to load the data through VC jobs after Paul resolved the issue. However, the BHSI Check file was placed in the source location twice, which resulted in the data being mistakenly loaded twice. 
+
+---
+
+Would you like any modifications to this translation?
