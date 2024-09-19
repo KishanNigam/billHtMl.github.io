@@ -1,3 +1,3 @@
-"I have verified the access for the BHSIEASTest service account, and we are now able to execute tasks in the BHSIEAS test environment through Stonebranch.
+"Due to changes in the stored procedure parameters, we encountered an error in the old Excel file for `TrialBalance_2basis`. Upon analysis, we found that in the updated stored procedure, the `@Company_Code` variable had been replaced with `@Company`. 
 
-I also attempted to connect the script to the database via the ODBC connection, but encountered an error: 'Permission Denied.' Uday is working on this issue, and I have added you, Pavan, to the chat as well. Uday has a few questions regarding this, so we are planning to schedule a meeting, either tomorrow or Monday."
+The error has been fixed, and the stored procedure has been successfully redeployed to production. Both the 2-basis Excel file and the 3-basis file for three companies have been tested, and everything is functioning correctly."
