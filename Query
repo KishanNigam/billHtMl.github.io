@@ -1,3 +1,3 @@
-"I have completed the technical analysis and will attach the document to DevOps tomorrow. Based on the requirements, I have created the batch file and performed local sanity checks. I have also created the Visual Cron job. 
+"I have verified the access for the BHSIEASTest service account, and we are now able to execute tasks in the BHSIEAS test environment through Stonebranch.
 
-Due to a production issue, I was unable to deploy today. I will deploy the batch file in the Test environment tomorrow and start working on unit testing."
+I also attempted to connect the script to the database via the ODBC connection, but encountered an error: 'Permission Denied.' Uday is working on this issue, and I have added you, Pavan, to the chat as well. Uday has a few questions regarding this, so we are planning to schedule a meeting, either tomorrow or Monday."
