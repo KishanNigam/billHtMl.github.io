@@ -3,3 +3,10 @@ I have compared the data from the `Account Details Reval Extract` with the Citri
 Additionally, after a discussion with Desiree, a few changes have been identified in the requirements:
 1. The account numbers need to be narrowed down to the following four accounts: 1, 2, 23, and 44.
 2. The company header name should be updated to "Company Name" only.
+
+
+I have compared the data from the `Account Details Expense Extract` with the Citrix application and found that the data is matching.
+
+Furthermore, after a discussion with Desiree, a few changes have been identified in the requirements:
+1. The values for Company Code, Source, Basis, and Account Number should be pre-selected by default, and there should also be an option to change each of these values.
+2. The company header name should be updated to "Company Name" only.
