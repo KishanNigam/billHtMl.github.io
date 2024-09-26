@@ -1,126 +1,95 @@
-Dim db, rs, db2, rs2
+Dim db, rs, objLOG, objLOGFile, objDATA, objDATAFile
+Dim sDate, RPTDATE, YYEAR, monthno, dayno, hrno, minno
+Dim LOGFilePath, DATAFilePath, sConnect, sQuery
+Dim NUMCKS, AMTCKS, TOTCKS, TOTAMT
 
-sDate = DatePart("yyyy", Now) 
-RPTDATE = sDate
-YYEAR= DatePart("yyyy", Now)  
-mmno = DatePart("m", Now)
-monthno = ZeroFill(mmno,2)
-sDate = sDate & monthno   
-RPTDATE = RPTDATE & "-" & monthno
-ddno = DatePart("d", Now)
-dayno = ZeroFill(ddno,2)
-sDate = sDate & dayno  
-RPTDATE = RPTDATE & "-" & dayno
-hrs = DatePart("h", Now)
-mns = DatePart("n", Now)
-hrno = ZeroFill(hrs,2)
-minno = ZeroFill(mns,2)
-sDate = sDate & hrno & minno
+' Initialize date-related variables
+sDate = Year(Now) 
+YYEAR = Year(Now)  
+monthno = ZeroFill(Month(Now), 2)
+dayno = ZeroFill(Day(Now), 2)
+hrno = ZeroFill(Hour(Now), 2)
+minno = ZeroFill(Minute(Now), 2)
+
+sDate = YYEAR & monthno & dayno & hrno & minno
+RPTDATE = YYEAR & "-" & monthno & "-" & dayno
+
 NUMCKS = 0
 AMTCKS = 0
 TOTCKS = 0
 TOTAMT = 0
 
+' Set up the log file
+LOGFilePath = "\\bhsieas11\server\custom\log\SB-TestV01\OFAC_VBS_" & sDate & ".LOG"
+Set objLOG = CreateObject("Scripting.FileSystemObject")
+Set objLOGFile = objLOG.CreateTextFile(LOGFilePath, True)
+objLOGFile.WriteLine("OFAC EXPORT REPORT      RUN DATE: " & Date & "  " & Time)
+objLOGFile.WriteLine("   ")
 
-   LOGFilePath = "\\bhsieas11\server\custom\log\SB-TestV01\OFAC_VBS_" & sDate & ".LOG"
-   set objLOG = createobject("Scripting.FileSystemObject")
-   set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
-   objLOGFile.WriteLine("OFAC EXPORT REPORT      RUN DATE: " & DATE & "  " & TIME)
-   objLOGFile.WriteLine("   ")
-   DATAFilePath = "\\bhsieas11\server\custom\log\SB-TestV01\BHSIEAS_Intl_" & sDate & ".TXT"
-
-      set objDATA = createobject("Scripting.FileSystemObject")
-      set objDATAFile = objDATA.CreateTextfile(DATAFilePath)
+' Set up the data file
+DATAFilePath = "\\bhsieas11\server\custom\log\SB-TestV01\BHSIEAS_Intl_" & sDate & ".TXT"
+Set objDATA = CreateObject("Scripting.FileSystemObject")
+Set objDATAFile = objDATA.CreateTextFile(DATAFilePath, True)
 objLOGFile.WriteLine("File Created")
-  
 
-
-   sConnect = "DRIVER={SQL Server};SERVER=NICOSQL108\BHSIEAS_TEST;UID=SYSTEM;Trusted_Connection=yes;DATABASE=EAS;"
- 
-
-  objLOGFile.WriteLine("Connected")
+' Establish the database connection
+sConnect = "DRIVER={SQL Server};SERVER=NICOSQL108\BHSIEAS_TEST;UID=SYSTEM;Trusted_Connection=yes;DATABASE=EAS;"
 Set db = CreateObject("ADODB.Connection")
 db.CommandTimeout = 0
 db.Open sConnect 
 
+objLOGFile.WriteLine("Connected")
 
-sQuery="SELECT DISTINCT " & _ 
-			  "C.TIN AS DATA_FIELD " & _
-         "FROM AP_BSTRN_HEADER C " & _
-        "WHERE C.TRAN_ID   IN ( 121092,121093) " 
-		  
-		  
+' Execute the query
+sQuery = "SELECT DISTINCT C.TIN AS DATA_FIELD FROM AP_BSTRN_HEADER C WHERE C.TRAN_ID IN (121092,121093)"
 
-            
- 
-  
-  'WScript.Echo sQuery
+Set rs = db.Execute(sQuery)
 
-Set rs=db.execute(sQuery)
+' Process the results
+If Not rs.EOF Then
+    Do Until rs.EOF 
+        objDATAFile.WriteLine(rs.Fields("DATA_FIELD").Value)
+        NUMCKS = NUMCKS + 1
+        rs.MoveNext
+    Loop
+End If
 
-FIRSTR = "Y"
-PREVBA = "Y"
-
-On Error Resume Next
-rs.MoveFirst
-Do Until rs.EOF 
-   objDATAFile.WriteLine(rs.Fields("DATA_FIELD"))
-   NUMCKS = NUMCKS + 1
-   rs.MoveNext
-Loop
-
+' Close recordset and database connection
 rs.Close
-db.Close
 Set rs = Nothing
+db.Close
 Set db = Nothing
 
+' Log the number of checks
+objLOGFile.WriteLine("NUMBER OF CHECKS = " & NUMCKS)
+objLOGFile.WriteLine("  ")
+objLOGFile.WriteLine("OFAC EXPORT ENDED SUCCESSFULLY")
 
-   objLOGFile.WriteLine("NUMBER OF CHECKS = " & NUMCKS)
-
-Set db = CreateObject("ADODB.Connection")
-db.CommandTimeout = 0
-db.Open sConnect 
-
-
-
-On Error Resume Next
-
-rs.Close
-db.Close
-Set rs = Nothing
-Set db = Nothing
-
-
-
-   objLOGFile.WriteLine("  ")
-   objLOGFile.WriteLine("OFAC EXPORT ENDED SUCCESSFULLY")
-
-
+' Close the files
 objDATAFile.Close
+Set objDATAFile = Nothing
 objLOGFile.Close
+Set objLOGFile = Nothing
+
+' Clean up objects
+Set objDATA = Nothing
+Set objLOG = Nothing
 
 WScript.Quit(0)
 
-
+' Function to read registry values
 Function ReadReg(RegPath)
-     Dim objRegistry, Key
-     Set objRegistry = CreateObject("Wscript.shell")
-     Key = objRegistry.RegRead(RegPath)
-     ReadReg = Key
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+    Set objRegistry = Nothing
 End Function
 
-Function ZeroFill (ByVal String, ByVal length )
-     ZeroFill = Trim(String)
-     Do While Len(ZeroFill) < length
-         ZeroFill = "0" & ZeroFill
-     Loop
+' Function to pad numbers with leading zeros
+Function ZeroFill(ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
 End Function
-
-Function BLANKFill (ByVal String, ByVal length )
-     BLANKFill = Trim(String)
-     Do While Len(BLANKFill) < length
-         BLANKFill = " " & BLANKFill
-     Loop
-End Function
-
-
