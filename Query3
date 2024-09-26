@@ -1,7 +1,3 @@
-Here is the translated and formalized version in English:
+Point 1: This is for the highlighted part. As per Desiree's request, the "Company Code" name should be changed to "Company Name" only.
 
-1. "The decryption batch and script have been deployed, and the process was successfully completed in the test environment."
-2. "In UAT, the RUN_Decrypting job was created, and the deployed package was successfully implemented in the UAT environment."
-3. "The same job was created in production, and the package was successfully deployed in the production environment."
-
-Let me know if this works for you!
+Point 2: The Company Code should retain the previous dropdown options, but all companies should be pre-selected by default.
