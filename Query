@@ -1,1 +1,1 @@
-The folder access is resolved by agent. I have completed the batch and configure the VC job and local sanity also done successfully. I have attached the bat file in DevOps we can deploy it.
+The folder access issue has been resolved by the agent. I have completed the batch configuration and set up the Visual Cron job. The local sanity check has also been successfully completed. The batch file has been attached to DevOps, and we can proceed with the deployment.
