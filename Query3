@@ -14,17 +14,24 @@ Set db = CreateObject("ADODB.Connection")
 db.CommandTimeout = 0
 db.Open sConnect 
 
-' Execute the query
-sQuery = "SELECT DISTINCT C.TIN AS DATA_FIELD FROM AP_BSTRN_HEADER C WHERE C.TRAN_ID IN (121092,121093)"
+' Open the symmetric key to allow decryption (replace 'YourSymmetricKeyName' with the actual key name)
+db.Execute "OPEN SYMMETRIC KEY YourSymmetricKeyName DECRYPTION BY CERTIFICATE YourCertificateName"
+
+' Execute the query with decryption
+sQuery = "SELECT DISTINCT CONVERT(VARCHAR(50), DECRYPTBYKEY(C.TIN)) AS DATA_FIELD " & _
+         "FROM AP_BSTRN_HEADER C WHERE C.TRAN_ID IN (121092,121093)"
 Set rs = db.Execute(sQuery)
 
-' Write the query results to the text file
+' Write the decrypted query results to the text file
 If Not rs.EOF Then
     Do Until rs.EOF 
         objFile.WriteLine(rs.Fields("DATA_FIELD").Value)
         rs.MoveNext
     Loop
 End If
+
+' Close the symmetric key
+db.Execute "CLOSE SYMMETRIC KEY YourSymmetricKeyName"
 
 ' Close all objects
 rs.Close
