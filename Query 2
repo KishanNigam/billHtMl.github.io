@@ -1,3 +1,11 @@
+Msg 156, Level 15, State 1, Line 53
+Incorrect syntax near the keyword 'UNION'.
+Msg 105, Level 15, State 1, Line 71
+Unclosed quotation mark after the character string ''.
+Msg 102, Level 15, State 1, Line 71
+Incorrect syntax near ''
+
+
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
     @ProgDefineMethod VARCHAR(8), 
     @RollupType VARCHAR(15), 
