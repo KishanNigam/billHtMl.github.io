@@ -1,11 +1,3 @@
-EXECUTE [PgmDeliv].[proc_RollupSEG] 
-   @ProgDefineMethod = Rollup
-  ,@RollupType = UWSEG
-  ,@CURRENT_PERIOD = '2024-06-30'
-  ,@ProgList = ARS
-
-
-
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
 @ProgDefineMethod varchar(8), 
 @RollupType varchar(15), 
@@ -56,7 +48,7 @@ EXECUTE [PgmDeliv].[proc_DefineProgram] @ProgDefineMethod, @RollupType, @ProgLis
 	 	EASSupportingPrograms.PgmDeliv.CompanyClosedByPeriod cb ON BD.COMPANY_CODE = cb.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS AND BD.ACCTG_BASIS_CODE = cb.ACCTG_BASIS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS		 
 	 WHERE BD.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD 
 	 AND BD.CAL_ACCTG_PERIOD > cb.DATAROLLEDUP_THRU_PERIOD COLLATE SQL_Latin1_General_CP1_CS_AS 
-	 AND A.ACCTG_BASIS_CODE = ''STATA''AND ((ACCOUNT_NUMBER NOT IN (''25000000'',''25000100'',''40000000'',''40100000'',''40200000'',''44010000'',''53900000'')) 
+	 AND A.ACCTG_BASIS_CODE = ''STATA'' AND ((ACCOUNT_NUMBER NOT IN (''25000000'',''25000100'',''40000000'',''40100000'',''40200000'',''44010000'',''53900000'')) 
 	 AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''20000000'' AND ''23021700'') 
 	 AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''25001000'' AND ''25001100'') 
 	 AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''25002000'' AND ''25002100'') 
@@ -113,16 +105,3 @@ EXEC sp_executesql @sql,
       @CURRENT_PERIOD varchar(10), 
       @ProgList nvarchar(800)',
 	  @ProgDefineMethod, 
-	  @RollupType, 
-	  @CURRENT_PERIOD, 
-      @ProgList
-End
-GO
-
-
-
-Msg 102, Level 15, State 1, Line 68
-Incorrect syntax near 'NOT'.
-
-
-
