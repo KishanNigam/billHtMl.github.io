@@ -1,7 +1,3 @@
-
-Msg 4145, Level 15, State 1, Line 81
-An expression of non-boolean type specified in a context where a condition is expected, near 'SQL_La'.
-
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
     @ProgDefineMethod varchar(8), 
     @RollupType varchar(15), 
@@ -86,21 +82,21 @@ BEGIN
     UNION ALL
 
     SELECT 
-        SS.CAL_ACCTG_PERIOD COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.ACCOUNT_NUMBER COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.ACCTG_BASIS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.BU_TYPE_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.ROLLUP_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS, 
+        SS.CAL_ACCTG_PERIOD, 
+        SS.COMPANY_CODE, 
+        SS.ACCOUNT_NUMBER, 
+        SS.ACCTG_BASIS_CODE, 
+        SS.BU_TYPE_CODE, 
+        SS.ROLLUP_CODE, 
+        SS.SEG, 
         SS.BALANCE, 
-        SS.STATUS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS
+        SS.STATUS_CODE
     FROM EASSupportingPrograms.PgmDeliv.RollUpSegSummary SS
     INNER JOIN #TempProgramSubset TPS 
-        ON TPS.BU_TYPE_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.BU_TYPE_CODE  
-        AND TPS.BU_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.ROLLUP_CODE  
-        AND TPS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS = SS.SEG 
-        AND TPS.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.COMPANY_CODE
+        ON TPS.BU_TYPE_CODE = SS.BU_TYPE_CODE  
+        AND TPS.BU_CODE = SS.ROLLUP_CODE  
+        AND TPS.SEG = SS.SEG 
+        AND TPS.COMPANY_CODE = SS.COMPANY_CODE
     WHERE 
         SS.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD
         AND SS.ACCTG_BASIS_CODE = ''STATA''
