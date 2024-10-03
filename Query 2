@@ -1,3 +1,7 @@
+
+
+
+
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
 @ProgDefineMethod varchar(8), 
 @RollupType varchar(15), 
@@ -105,3 +109,15 @@ EXEC sp_executesql @sql,
       @CURRENT_PERIOD varchar(10), 
       @ProgList nvarchar(800)',
 	  @ProgDefineMethod, 
+	  @RollupType, 
+	  @CURRENT_PERIOD, 
+      @ProgList
+End
+GO
+
+
+Msg 102, Level 15, State 1, Line 68
+Incorrect syntax near 'NOT'.
+
+
+
