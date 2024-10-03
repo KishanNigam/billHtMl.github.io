@@ -1,3 +1,8 @@
+
+(2 rows affected)
+Msg 208, Level 16, State 1, Line 16
+Invalid object name 'EASSupportingPrograms.PgmDeliv.RollUpSe'.
+
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
     @ProgDefineMethod varchar(8), 
     @RollupType varchar(15), 
