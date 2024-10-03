@@ -1,3 +1,7 @@
+Msg 4145, Level 15, State 1, Line 82
+An expression of non-boolean type specified in a context where a condition is expected, near 'BU_CODE'.
+
+
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
     @ProgDefineMethod varchar(8), 
     @RollupType varchar(15), 
