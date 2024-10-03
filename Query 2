@@ -1,3 +1,9 @@
+Msg 105, Level 15, State 1, Line 88
+Unclosed quotation mark after the character string '25'.
+Msg 102, Level 15, State 1, Line 88
+Incorrect syntax near '25'.
+
+
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
     @ProgDefineMethod varchar(8), 
     @RollupType varchar(15), 
