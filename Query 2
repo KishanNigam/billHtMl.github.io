@@ -1,7 +1,8 @@
+Error: Msg 102, Level 15, State 1, Line 79
+Incorrect syntax near '#'.
 
-(2 rows affected)
-Msg 208, Level 16, State 1, Line 16
-Invalid object name 'EASSupportingPrograms.PgmDeliv.RollUpSe'.
+
+Query: 
 
 ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
     @ProgDefineMethod varchar(8), 
@@ -92,7 +93,7 @@ BEGIN
            SS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS, 
            SS.BALANCE, 
            SS.STATUS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS		 
-    FROM EASSupportingPrograms.PgmDeliv.RollUpSegSummary SS		
+    FROM RollUpSegSummary SS		
     INNER JOIN #TempProgramSubset TPS ON TPS.BU_TYPE_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.BU_TYPE_CODE  
         AND TPS.BU_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.ROLLUP_CODE  
         AND TPS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS = SS.SEG 
