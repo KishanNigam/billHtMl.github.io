@@ -1,1 +1,2 @@
 I have configured the scenario for multiple files. To resolve the issue, I had to make changes to the batch file and the job. I’ve attached the batch file in DevOps, along with the Local Unit Testing document. Please review the job and batch file and give the go-ahead to QA for testing.
+During testing, the transactions in the source file are being rejected. Could you please provide me with the correct source file so that I can test the job properly?
