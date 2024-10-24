@@ -1,130 +1,92 @@
-ALTER PROCEDURE [PgmDeliv].[proc_RollupSEG]
- @ProgDefineMethod varchar(8), 
- @RollupType varchar(15), 
- @CURRENT_PERIOD varchar(10), 
- @ProgList nvarchar(800)
-AS
-BEGIN
-    DECLARE @sql NVARCHAR(MAX)
-    DECLARE @database NVARCHAR(100)
+echo Started RUN_ MultiCheckSS.bat 
+@ECHO OFF
 
-    SET @database = (
-        SELECT name 
-        FROM sys.databases
-        WHERE name LIKE 'EAS_REPL' OR name LIKE 'REPL_EAS'
-    )
+REM Assign Environment Variables
+SET environment=%1
+echo The environment is [%environment%].
+SET server=%2
+echo The server is [%server%].
+SET RRNGFMT=APSS
+SET sourcedir=%3
+echo The source directory is [%sourcedir%].
+SET sourcefile=%4
+echo The source file is [%sourcefile%].
+SET RRNGDIR=%5
+SET RRNGFILE=%6
 
-    SET @sql = '
-    CREATE TABLE #TempProgramSubset (
-        COMPANY_CODE varchar(5),
-        BU_TYPE_CODE varchar(15),
-        BU_CODE varchar(15),
-        SEG varchar(15),
-        UWSEG varchar(15)
-    );
+REM Date Variable Definition
+FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B
+FOR /F "TOKENS=2-4 DELIMS=/ " %%a IN ('DATE /T') DO (SET date=%%a%%b%%c)
 
-    INSERT INTO #TempProgramSubset
-    EXECUTE [PgmDeliv].[proc_DefineProgram] @ProgDefineMethod, @RollupType, @ProgList;
+SET year=%date:~4,4%
+SET month=%date:~0,2%
+SET day=%date:~2,2%
+SET hour=%time:~0,2%
+IF "%hour:~0,1%" == " " SET hour=0%hour:~1,1%
+SET minute=%time:~3,2%
+SET filetimestamp=%year%%month%%day%_%hour%%minute%
+echo filetimestamp=%filetimestamp%
 
-    SELECT 
-        BD.CAL_ACCTG_PERIOD,
-        BD.COMPANY_CODE,
-        BD.ACCOUNT_NUMBER,
-        A.ACCTG_BASIS_CODE,
-        TPS.BU_TYPE_CODE,
-        TPS.BU_CODE AS [ROLLUP CODE],
-        TPS.SEG,
-        SUM(BD.CONVERTED_AMOUNT) AS [BALANCE],
-        BH.STATUS_CODE
-    FROM ' + QUOTENAME(@database) + '.dbo.BSTRN_HEADER BH 
-    INNER JOIN ' + QUOTENAME(@database) + '.dbo.BSTRN_DETAIL BD ON BH.TRAN_ID = BD.TRAN_ID 
-    INNER JOIN ' + QUOTENAME(@database) + '.dbo.ACCT_BAS_ACCT_BAS A ON BD.ACCTG_BASIS_CODE = A.REL_ACCT_BAS_CODE 
-    INNER JOIN #TempProgramSubset TPS ON TPS.COMPANY_CODE = BD.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS
-    INNER JOIN ' + QUOTENAME(@database) + '.dbo.BU_SET_DETAILS SD ON BD.BU_SET_ID = SD.BU_SET_ID AND SD.BU_CODE = TPS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS 
-        AND SD.BU_TYPE = ''SEG'' 
-    INNER JOIN ' + QUOTENAME(@database) + '.dbo.ACCOUNT AC ON BD.ACCOUNT_NUMBER = AC.ACCT_NUMBER AND BD.COMPANY_CODE = AC.COMPANY_CODE 
-    INNER JOIN EASSupportingPrograms.PgmDeliv.CompanyClosedByPeriod cb 
-        ON BD.COMPANY_CODE = cb.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS 
-        AND BD.ACCTG_BASIS_CODE = cb.ACCTG_BASIS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS         
-    WHERE BD.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD 
-        AND BD.CAL_ACCTG_PERIOD > cb.DATAROLLEDUP_THRU_PERIOD COLLATE SQL_Latin1_General_CP1_CS_AS 
-        AND A.ACCTG_BASIS_CODE = ''STATA'' 
-        AND ((ACCOUNT_NUMBER NOT IN (''25000000'', ''25000100'', ''40000000'', ''40100000'', ''40200000'', ''44010000'', ''53900000'')) 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''20000000'' AND ''23021700'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''25001000'' AND ''25001100'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''25002000'' AND ''25002100'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''25010000'' AND ''25500200'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''44001000'' AND ''44001200'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''44002000'' AND ''44008100'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''50000000'' AND ''50001000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''50100000'' AND ''50101000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''50200000'' AND ''50201000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''51000000'' AND ''51001000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''51100000'' AND ''51101000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''51200000'' AND ''51201000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''53000000'' AND ''53002000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''53100000'' AND ''53102000'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''53200000'' AND ''53202000'') 
-        AND (BD.ACCOUNT_NUMBER NOT LIKE ''54%'') 
-        AND (BD.ACCOUNT_NUMBER NOT BETWEEN ''56000000'' AND ''56003000''))         
-    GROUP BY 
-        BD.CAL_ACCTG_PERIOD, 
-        BD.COMPANY_CODE, 
-        BD.ACCOUNT_NUMBER, 
-        TPS.BU_TYPE_CODE, 
-        TPS.BU_CODE, 
-        TPS.SEG, 
-        BH.STATUS_CODE, 
-        A.ACCTG_BASIS_CODE
+REM Set Archive Directory Based on Environment
+IF %environment%==PROD SET archivedir="\\nicoad\nico\Finance\EAS\Archive\SGImports\MULTICHECKUPLOAD-SS"
+IF %environment%==TEST SET archivedir="\\nicoad\nico\Finance\EASTest\Archive\SGImports\MULTICHECKUPLOAD-SS"
+IF %environment%==UAT  SET archivedir="\\nicoad\nico\Finance\EASUAT\Archive\SGImports\MULTICHECKUPLOAD-SS"
 
-    UNION ALL
+REM Create Archive Directory if Not Exists
+SET archivedir=%archivedir%\%year%
+IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%
+SET archivedir=%archivedir%\%yearmonth%
+IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%
 
-    SELECT 
-        SS.CAL_ACCTG_PERIOD COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.ACCOUNT_NUMBER COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.ACCTG_BASIS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.BU_TYPE_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.ROLLUP_CODE COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS, 
-        SS.BALANCE, 
-        SS.STATUS_CODE COLLATE SQL_Latin1_General_CP1_CS_AS         
-    FROM EASSupportingPrograms.PgmDeliv.RollUpSegSummary SS        
-    INNER JOIN #TempProgramSubset TPS ON TPS.BU_TYPE_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.BU_TYPE_CODE  
-        AND TPS.BU_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.ROLLUP_CODE  
-        AND TPS.SEG COLLATE SQL_Latin1_General_CP1_CS_AS = SS.SEG 
-        AND TPS.COMPANY_CODE COLLATE SQL_Latin1_General_CP1_CS_AS = SS.COMPANY_CODE 
-    WHERE SS.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD 
-        AND SS.ACCTG_BASIS_CODE = ''STATA'' 
-        AND ((SS.ACCOUNT_NUMBER NOT IN (''25000000'', ''25000100'', ''40000000'', ''40100000'', ''40200000'', ''44010000'', ''53900000'')) 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''20000000'' AND ''23021700'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''25001000'' AND ''25001100'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''25002000'' AND ''25002100'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''25010000'' AND ''25500200'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''44001000'' AND ''44001200'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''44002000'' AND ''44008100'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''50000000'' AND ''50001000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''50100000'' AND ''50101000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''50200000'' AND ''50201000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''51000000'' AND ''51001000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''51100000'' AND ''51101000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''51200000'' AND ''51201000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''53000000'' AND ''53002000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''53100000'' AND ''53102000'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''53200000'' AND ''53202000'') 
-        AND (SS.ACCOUNT_NUMBER NOT LIKE ''54%'') 
-        AND (SS.ACCOUNT_NUMBER NOT BETWEEN ''56000000'' AND ''56003000''));    
+REM Create Log Directory if Not Exists
+SET logdir="\\%server%\server\custom\log\MultiCheckSS\%year%\%yearmonth%"
+IF NOT EXIST %logdir%\NUL MKDIR %logdir%
 
-    DROP TABLE #TempProgramSubset;'
+SET logfilename=%logdir%\MultiCheck_SS_%filetimestamp%.log
+echo The logfilename is [%logfilename%].
 
-    EXEC sp_executesql @sql, 
-        N' @ProgDefineMethod varchar(8), 
-            @RollupType varchar(15), 
-            @CURRENT_PERIOD varchar(10), 
-            @ProgList nvarchar(800)',
-        @ProgDefineMethod, 
-        @RollupType, 
-        @CURRENT_PERIOD, 
-        @ProgList
-END
-GO
+echo +++++++++++++++++++++++++++++++++++++++++ >>%logfilename%
+echo Start time %date% %time%                  >>%logfilename%
+echo User [%username%]                         >>%logfilename%
+echo environment = [%environment%].            >>%logfilename%
+echo server = [%server%].                      >>%logfilename%
+echo archivedir = [%archivedir%].              >>%logfilename%
+echo sourcedir = [%sourcedir%].                >>%logfilename%
+echo sourcefile = [%sourcefile%].              >>%logfilename%
+echo .                                         >>%logfilename%
+
+REM Check if Source File Exists
+IF NOT EXIST %sourcedir%%sourcefile% (
+    echo The [%sourcedir%%sourcefile%] source file does not exist. >>%logfilename%
+    GOTO END
+)
+
+REM Archive the Source File
+echo Archiving the [%sourcedir%%sourcefile%] file(s). >>%logfilename%
+COPY %sourcedir%%sourcefile% %archivedir% >>%logfilename%
+
+REM Rename the Archived File with Timestamp
+SET newfilename=%filetimestamp%_MultiCheckUpload_SS_###_%filetimestamp%.dat
+REN "%archivedir%\%sourcefile%" "%newfilename%" >>%logfilename%
+echo Renamed file to [%newfilename%]. >>%logfilename%
+
+REM Move the Source File to Rearrange Directory
+MOVE %sourcedir%%sourcefile% %RRNGDIR% >>%logfilename%
+
+REM Prep the Rearrange File
+IF EXIST %RRNGDIR%%sourcefile% REN %RRNGDIR%%sourcefile% %RRNGFILE% >>%logfilename%
+echo Finished renaming [%RRNGDIR%%sourcefile%] to [%RRNGFILE%]. >>%logfilename%
+
+REM Validate Rearrange File
+IF NOT EXIST %RRNGDIR%%RRNGFILE% GOTO END
+
+echo Starting Validation for [%RRNGDIR%%RRNGFILE%]. >>%logfilename%
+pushd D:\eas\server\bin
+CALL VALDAP.EXE
+popd
+echo Finished Validation for [%RRNGDIR%%RRNGFILE%]. >>%logfilename%
+
+:END
+echo End time %date% %time% >>%logfilename%
+echo +++++++++++++++++++++++++++++++++++++++++ >>%logfilename%
+echo Finished RUN_ MultiCheckSS.bat >>%logfilename%
