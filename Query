@@ -1,10 +1,8 @@
-YYYYMMDD_MultiCheckUpload_SS_###._YYYYMMDD_HHMMSS.dat
-
-echo Started RUN_ MultiCheckSS.bat 
 @ECHO OFF
+echo Started RUN_IDTS_PARTIAL.bat
 
 REM Assign Rearrange Format Parameter.
-REM The acceptable rearrange format is APSS.
+REM The acceptable rearrange format is IDTSCurr.
 REM Assign SELECTED Source Directory and Source File parameters to variables.
 REM Assign the environment name argument to variable. The environment passed includes the environment variable, i.e. whether test or prod.
 REM This is done to keep the batch file in sync with the VisualCron job and
@@ -14,7 +12,7 @@ SET environment=%1
 echo The environment is [%environment%].
 SET server=%2
 echo The server is [%server%].
-SET RRNGFMT=APSS
+SET RRNGFMT=IDTSCurr
 echo Rearrange format is [%RRNGFMT%].
 SET sourcedir=%3
 echo The source directory is [%sourcedir%].
@@ -29,8 +27,6 @@ echo .
 REM Date Variable Definition
 FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B 
 For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set date=%%a%%b%%c)
-
-
 set year=%date:~4,4%
 set month=%date:~0,2%
 set yearmonth=%year%%month%
@@ -41,27 +37,25 @@ echo hour=%hour%
 IF "%hour:~0,1%" == " " SET hour=0%hour:~1,1%
 echo hour=%hour%
 SET minute=%time:~3,2%
+set seconds=%time:~6,2%
+echo seconds=%seconds%
 SET filetimestamp=%year%%month%%day%_%hour%%minute%
 echo filetimestamp=%filetimestamp%
+SET archivefiletimestamp=%year%%month%%day%_%hour%%minute%%seconds%
+echo %archivefiletimestamp% 
 
 if %environment%==PROD (
-     SET archivedir="\\nicoad\nico\Finance\EAS\Archive\SGImports\MULTICHECKUPLOAD-SS"
-   )
+	SET archivedir="\\nicoad\nico\Finance\EAS\Archive\SGImports\IDTS_PARTIAL"
+)
 if %environment%==TEST (
-    SET archivedir="\\nicoad\nico\Finance\EASTest\Archive\SGImports\MULTICHECKUPLOAD-SS"
-	
-   )
+	SET archivedir="\\nicoad\nico\Finance\EASTest\Archive\SGImports\IDTS_PARTIAL"
+)
 if %environment%==UAT (
-    SET archivedir="\\nicoad\nico\Finance\EASUAT\Archive\SGImports\MULTICHECKUPLOAD-SS"
+	SET archivedir="\\nicoad\nico\Finance\EASUAT\Archive\SGImports\IDTS_PARTIAL"
 )
 
-
 REM DECLARE VARIABLES
-REM sourcefile variable is assigned from first parameter passed in.
-SET logdir="\\%server%\server\custom\log\MultiCheckSS"
-REM SET sourcedir=D:\EAS\Server\log\
-SET sourcedir="\\%server%\EAS\SGImports\MULTICHECKUPLOAD-SS\"
-rem SET sourcefile=*_MultiCheckUpload_SS_*.dat
+SET logdir="\\%server%\server\custom\log\IDTS_PARTIAL"
 
 REM DECLARE REARRANGE VARIABLES
 SET RRNGDATA=%RRNGDIR%%RRNGFILE%
@@ -71,15 +65,30 @@ SET LogDir=%logdir%\%year%
 IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
 SET LogDir=%LogDir%\%yearmonth%
 IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
-SET logfilename=%LogDir%\MultiCheck_SS_%filetimestamp%.log
+SET logfilename=%LogDir%\IDTS_PARTIAL_%filetimestamp%.log
 echo The logfilename is [%logfilename%].
+
+set lastchar=%sourcefile:~26,1%
+echo lastchar = [%lastchar%]    >>%logfilename%
+
+if %lastchar%=='E' (
+	set archivefilename=%sourcefile:~0,27%
+	echo EEE archivefilename = [%archivefilename%]   >>%logfilename%
+)
+else
+(
+	set archivefilename=%sourcefile:~0,29%
+	echo archivefilename = [%archivefilename%]  	>>%logfilename%
+)
+
+
 
 echo +++++++++++++++++++++++++++++++++++++++++ >>%logfilename%
 echo .                                         >>%logfilename%
+
 echo Start time %date% %time%                  >>%logfilename%
 echo User [%username%]                         >>%logfilename%
 echo .                                         >>%logfilename%
-
 echo environment = [%environment%].            >>%logfilename%
 echo server = [%server%].                      >>%logfilename%
 echo archivedir = [%archivedir%].              >>%logfilename%
@@ -126,7 +135,7 @@ IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                
 SET archivedir=%archivedir%\%yearmonth%
 IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                                            >>%logfilename%
 echo Executing [COPY %sourcedir%%sourcefile% %archivedir%].                                                 >>%logfilename%
-IF EXIST %sourcedir%%sourcefile% COPY %sourcedir%%sourcefile% %archivedir%								            >>%logfilename%
+IF EXIST %sourcedir%%sourcefile% COPY %sourcedir%%sourcefile% %archivedir%\%archivefilename%_%archivefiletimestamp%.dat    >>%logfilename%
 echo Finished archiving the [%sourcedir%%sourcefile%] source file.                                          >>%logfilename%
 echo .                                                                                                      >>%logfilename%
 
@@ -147,7 +156,6 @@ IF EXIST %RRNGDIR%%sourcefile% REN %RRNGDIR%%sourcefile% %RRNGFILE%             
 echo Finished renaming ["%RRNGDIR%%sourcefile%"] to [%RRNGFILE%].                                           >>%logfilename%
 echo .                                                                                                      >>%logfilename%
 
-
 echo Checking to see if [%RRNGDATA%] rearrange file exist.                    >>%logfilename%
 echo If the rearrange file does not exist, batch file will end.               >>%logfilename%
 IF NOT EXIST %RRNGDATA% (
@@ -161,19 +169,14 @@ rem --------------------------------------------------------------
 rem  SET RRNGFMT=your rearrange format name
 rem --------------------------------------------------------------
 rem  SET RRNGDATA=your rearrange input data file name
-
   
 echo Starting Rearrange for [%RRNGDATA%]               %date% %time%                                        >>%logfilename%
 pushd D:\eas\server\bin
-call RRNG -AP
+call RRNG -FR
 echo Finished Rearrange for [%RRNGDATA%]               %date% %time%                                        >>%logfilename%
 echo .                                                                                                      >>%logfilename%
-
-
 echo Starting Validation for [%RRNGDATA%]              %date% %time%                                        >>%logfilename%
-
-
-CALL VALDAP.EXE
+CALL VALDLOAD.EXE
 echo Finished Validation for [%RRNGDATA%]              %date% %time%                                        >>%logfilename%
 echo .                                                                                                      >>%logfilename%
 
@@ -181,4 +184,4 @@ echo .                                                                          
 echo End time %date% %time%                        >>%logfilename%
 echo +++++++++++++++++++++++++++++++++++++++++     >>%logfilename%
 echo .                                             >>%logfilename%
-echo Finished RUN_ MultiCheckSS.bat                      >>%logfilename%                                                                                
+echo Finished RUN_IDTS_PARTIAL.bat                     >>%logfilename%                                                                                
