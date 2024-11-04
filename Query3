@@ -5,3 +5,18 @@ During the discussion with Desiree, we reviewed two approaches to handle the sum
 **Second Approach:** We would create a new job using the same script.
 
 After discussing both approaches, Desiree recommended proceeding with the new job option, as it would be more flexible for handling this type of error.
+
+
+In today's discussion call, I spoke with Desiree about the time challenges involved in creating a new job and proposed a solution to add tasks within the summary job itself.
+
+However, her preference is to proceed with the new job approach. In case the summary job fails, she suggested the following steps to handle it:
+
+1. Stop the job.
+
+
+2. Update the status to "error."
+
+
+3. Delete the session lock.
+
+
