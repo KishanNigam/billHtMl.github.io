@@ -1,22 +1,16 @@
-During the discussion with Desiree, we reviewed two approaches to handle the summary lock.
+Based on today’s call and our previous discussions, here is the final conclusion to update in the DevOps user story:
 
-**First Approach:** We would create a task containing a script with two queries. The first query selects the session ID, and the second query deletes the selected session ID. This task would then be added to the summary job.
+Objective: Handle summary lock issues effectively to prevent job failures.
 
-**Second Approach:** We would create a new job using the same script.
+Approaches Discussed:
 
-After discussing both approaches, Desiree recommended proceeding with the new job option, as it would be more flexible for handling this type of error.
+Add Tasks within the Summary Job: Proposed to streamline by adding tasks directly in the summary job, which would include:
+A task to identify and delete the session lock, executed only if the summary job encounters a lock issue.
+Create a New Job: Preferred by Desiree for its flexibility in handling similar errors independently.
+Decision: Desiree recommended creating a new job with the same script to handle session locks, which will offer better adaptability.
 
+Failure Handling Steps (If Summary Job Fails):
 
-In today's discussion call, I spoke with Desiree about the time challenges involved in creating a new job and proposed a solution to add tasks within the summary job itself.
-
-However, her preference is to proceed with the new job approach. In case the summary job fails, she suggested the following steps to handle it:
-
-1. Stop the job.
-
-
-2. Update the status to "error."
-
-
-3. Delete the session lock.
-
-
+Stop the job immediately.
+Update the job status to “error.”
+Delete the session lock to allow retry or further actions.
