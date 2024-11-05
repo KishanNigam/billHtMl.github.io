@@ -1,16 +1,5 @@
-Based on today’s call and our previous discussions, here is the final conclusion to update in the DevOps user story:
+Lauren reached out regarding the FABCE import job not triggering when the file was placed. The reason identified was that Lauren renamed the file to the source filename after placing it.
 
-Objective: Handle summary lock issues effectively to prevent job failures.
+When I placed the file, the job triggered successfully, and the data was also loaded into EAS. However, I noticed that the file was not moving to the archive location. Upon investigation, I found that there is some extra space in the archive variable within the batch file.
 
-Approaches Discussed:
-
-Add Tasks within the Summary Job: Proposed to streamline by adding tasks directly in the summary job, which would include:
-A task to identify and delete the session lock, executed only if the summary job encounters a lock issue.
-Create a New Job: Preferred by Desiree for its flexibility in handling similar errors independently.
-Decision: Desiree recommended creating a new job with the same script to handle session locks, which will offer better adaptability.
-
-Failure Handling Steps (If Summary Job Fails):
-
-Stop the job immediately.
-Update the job status to “error.”
-Delete the session lock to allow retry or further actions.
+Please look into this issue. For now, I have manually moved the source file to the archive location.
