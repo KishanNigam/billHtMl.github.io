@@ -10,3 +10,17 @@ VALUES
 (30398, 300, 'AP Process Checks', '2024-11-05 02:34:12.133', '2024-11-05 02:34:13.937'),
 (30397, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-04 12:42:08.120', '2024-11-04 14:32:06.993'),
 (30396, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-04 12:01:17.430', '2024-11-04 12:41:58.877');
+=============================================================================================================================
+DECLARE @Variable1 NVARCHAR(50) = 'variable1'
+DECLARE @Variable2 NVARCHAR(50) = 'variable2'
+DECLARE @Variable3 NVARCHAR(50) = 'variable3'
+
+-- Agar aapke paas sirf 1 variable hai toh uske hisaab se query likhe
+Update EAS_JOBS 
+SET Status_ind = '300' 
+WHERE job_ID IN (
+    CASE WHEN @Variable1 IS NOT NULL THEN @Variable1 END,
+    CASE WHEN @Variable2 IS NOT NULL THEN @Variable2 END,
+    CASE WHEN @Variable3 IS NOT NULL THEN @Variable3 END
+);
+
