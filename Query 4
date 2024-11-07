@@ -1,10 +1,6 @@
 @ECHO OFF
 
-REM ***
-
-REM Assign the environment name argument to variable. The environment passed includes the environment variable, i.e. whether test or prod.
-REM This is done to keep the batch file in sync with the VisualCron job and
-REM allow the job to pass environment value to the batch file, irrespective of the environment.
+REM ** Variable Assignments **
 SET server=%1
 echo The server is [%server%].
 
@@ -14,27 +10,20 @@ echo The version is [%version%].
 SET environment=%3
 echo The environment is [%environment%].
 
-REM Date Variable Definition
-FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B 
+REM Date Variable Definitions
+FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B
 For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set date=%%a%%b%%c)
-REM echo cdate=%cdate%
-REM echo date %date%
 set year=%date:~4,4%
-REM echo year %year%
 set month=%date:~0,2%
-REM echo month %month%
 set yearmonth=%year%%month%
-REM echo yearmonth %yearmonth%
 SET day=%date:~2,2%
-echo day=%day%
 SET hour=%time:~0,2%
-echo hour-%hour%
 IF "%hour:~0,1%" == " " SET hour=0%hour:~1,1%
-echo hour=%hour%
 SET minute=%time:~3,2%
 SET filetimestamp=%year%%month%%day%_%hour%%minute%
 echo %filetimestamp%
 
+REM Directory Paths Based on Environment
 if %environment%==PROD (
 	set archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
 )
@@ -49,7 +38,16 @@ SET sourcedir=\\%server%\Server\log\Deployment\Summery_LOCK\SourceDIR\
 SET logdir=\\%server%\server\log\Deployment\Summery_LOCK\log
 SET sourcefile=session_lock.txt
 
-REM Create the log directory if it does not exist.
+REM Assign JOB_ID variables from session_lock.txt
+SETLOCAL ENABLEDELAYEDEXPANSION
+SET idx=1
+FOR /F "tokens=*" %%L IN (%sourcedir%%sourcefile%) DO (
+    SET JOB_ID_!idx!=%%L
+    SET /A idx+=1
+)
+ENDLOCAL
+
+REM Logging Details
 SET logdir=%logdir%\%year%
 IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
 SET logdir=%logdir%\%yearmonth%
@@ -67,13 +65,14 @@ echo sourcedir = [%sourcedir%].            >>%logfilename%
 echo sourcefile = [%sourcefile%].          >>%logfilename%
 echo .                                     >>%logfilename%
 
-echo Executing session_lock.VBS script.       >>%logfilename%
-CSCRIPT \\%server%\server\log\Deployment\Summery_LOCK\SUMMARY_Session_LOCK_DLT.vbs %server% %version%               >>%logfilename%
-echo Finished session_lock.VBS script.        >>%logfilename%
+REM Execute VBScript with JOB_ID variables
+echo Executing session_lock.VBS script.    >>%logfilename%
+CSCRIPT \\%server%\server\log\Deployment\Summery_LOCK\SUMMARY_Session_LOCK_DLT.vbs %server% %version% %JOB_ID_1% %JOB_ID_2% %JOB_ID_3% >>%logfilename%
+echo Finished session_lock.VBS script.     >>%logfilename%
 echo .                                     >>%logfilename%
 
-REM Archive the agt_list.txt file.  DO NOT MOVBE THE FILE.
-echo Archiving the [%sourcedir%%sourcefile%] file.                                                                            >>%logfilename%
+REM Archive Source File
+echo Archiving the [%sourcedir%%sourcefile%] file.                                                                             >>%logfilename%
 SET archivedir=%archivedir%\%year%
 IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                                                               >>%logfilename%
 SET archivedir=%archivedir%\%yearmonth%
@@ -85,3 +84,21 @@ echo .                                                                          
 echo End time %date% %time%                        >>%logfilename%
 echo *****************************************     >>%logfilename%
 echo .                                             >>%logfilename%
+
+
+
+
+
+
+
+=======================
+REM Assign JOB_ID variables from session_lock.txt, removing any trailing spaces
+SETLOCAL ENABLEDELAYEDEXPANSION
+SET idx=1
+FOR /F "usebackq tokens=*" %%L IN ("%sourcedir%%sourcefile%") DO (
+    SET line=%%L
+    SET line=!line: =!
+    SET JOB_ID_!idx!=!line!
+    SET /A idx+=1
+)
+ENDLOCAL
