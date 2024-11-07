@@ -43,15 +43,13 @@ REM Assign JOB_ID variables from session_lock.txt, handling missing lines
 SET idx=1
 FOR /F "usebackq tokens=*" %%L IN ("%sourcedir%%sourcefile%") DO (
     SET "line=%%L"
-    SET "line=!line: =!"  
+    SET "line=!line: =!"  REM Remove spaces from the line
     SET "JOB_ID_!idx!=!line!"
     SET /A idx+=1
-    IF !idx! GTR 3 GOTO Done 
+    IF !idx! GTR 3 GOTO Done  REM Stop after assigning JOB_ID_1, JOB_ID_2, and JOB_ID_3
 )
 
 :Done
-
-
 
 REM Logging Details
 SET logdir=%logdir%\%year%
@@ -70,10 +68,12 @@ echo logdir = [%logdir%].                  >>%logfilename%
 echo sourcedir = [%sourcedir%].            >>%logfilename%
 echo sourcefile = [%sourcefile%].          >>%logfilename%
 echo .                                     >>%logfilename%
+
 REM Display assigned values (for testing)
 echo JOB_ID_1=%JOB_ID_1% >>%logfilename%
 echo JOB_ID_2=%JOB_ID_2% >>%logfilename%
 echo JOB_ID_3=%JOB_ID_3% >>%logfilename%
+
 REM Execute VBScript with JOB_ID variables
 echo Executing session_lock.VBS script.    >>%logfilename%
 CSCRIPT \\%server%\server\log\Deployment\Summery_LOCK\SUMMARY_Session_LOCK_DLT.vbs %server% %version% %JOB_ID_1% %JOB_ID_2% %JOB_ID_3% >>%logfilename%
@@ -93,10 +93,3 @@ echo .                                                                          
 echo End time %date% %time%                        >>%logfilename%
 echo *****************************************     >>%logfilename%
 echo .                                             >>%logfilename%
-
-
-
-
-
-
-
