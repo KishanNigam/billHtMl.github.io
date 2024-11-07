@@ -1,15 +1,102 @@
+@ECHO OFF
+
+REM ** Variable Assignments **
+SET server=%1
+echo The server is [%server%].
+
+SET version=%2
+echo The version is [%version%].
+
+SET environment=%3
+echo The environment is [%environment%].
+
+REM Date Variable Definitions
+FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B
+For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set date=%%a%%b%%c)
+set year=%date:~4,4%
+set month=%date:~0,2%
+set yearmonth=%year%%month%
+SET day=%date:~2,2%
+SET hour=%time:~0,2%
+IF "%hour:~0,1%" == " " SET hour=0%hour:~1,1%
+SET minute=%time:~3,2%
+SET filetimestamp=%year%%month%%day%_%hour%%minute%
+echo %filetimestamp%
+
+REM Directory Paths Based on Environment
+if %environment%==PROD (
+	set archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
+)
+if %environment%==TEST (
+	set archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
+)
+if %environment%==UAT (
+	SET archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
+)
+
+SET sourcedir=\\%server%\Server\log\Deployment\Summery_LOCK\SourceDIR\
+SET logdir=\\%server%\server\log\Deployment\Summery_LOCK\log
+SET sourcefile=session_lock.txt
+
+=======================
 REM Assign JOB_ID variables from session_lock.txt, handling missing lines
 SET idx=1
 FOR /F "usebackq tokens=*" %%L IN ("%sourcedir%%sourcefile%") DO (
     SET "line=%%L"
-    SET "line=!line: =!"  REM Remove all spaces from the line
+    SET "line=!line: =!"  
     SET "JOB_ID_!idx!=!line!"
     SET /A idx+=1
-    IF !idx! GTR 3 GOTO Done  REM Stop if we have set JOB_ID_1, JOB_ID_2, and JOB_ID_3
+    IF !idx! GTR 3 GOTO Done 
 )
 
 :Done
+
+
+
+REM Logging Details
+SET logdir=%logdir%\%year%
+IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
+SET logdir=%logdir%\%yearmonth%
+IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
+SET logfilename=%LogDir%\session_lock_%filetimestamp%.log
+
+echo Start time %date% %time%              >>%logfilename%
+echo .                                     >>%logfilename%
+
+echo server = [%server%].                  >>%logfilename%
+echo version = [%version%].                >>%logfilename%
+echo archivedir = [%archivedir%].          >>%logfilename%
+echo logdir = [%logdir%].                  >>%logfilename%
+echo sourcedir = [%sourcedir%].            >>%logfilename%
+echo sourcefile = [%sourcefile%].          >>%logfilename%
+echo .                                     >>%logfilename%
 REM Display assigned values (for testing)
-echo JOB_ID_1=%JOB_ID_1%
-echo JOB_ID_2=%JOB_ID_2%
-echo JOB_ID_3=%JOB_ID_3%
+echo JOB_ID_1=%JOB_ID_1% >>%logfilename%
+echo JOB_ID_2=%JOB_ID_2% >>%logfilename%
+echo JOB_ID_3=%JOB_ID_3% >>%logfilename%
+REM Execute VBScript with JOB_ID variables
+echo Executing session_lock.VBS script.    >>%logfilename%
+CSCRIPT \\%server%\server\log\Deployment\Summery_LOCK\SUMMARY_Session_LOCK_DLT.vbs %server% %version% %JOB_ID_1% %JOB_ID_2% %JOB_ID_3% >>%logfilename%
+echo Finished session_lock.VBS script.     >>%logfilename%
+echo .                                     >>%logfilename%
+
+REM Archive Source File
+echo Archiving the [%sourcedir%%sourcefile%] file.                                                                             >>%logfilename%
+SET archivedir=%archivedir%\%year%
+IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                                                               >>%logfilename%
+SET archivedir=%archivedir%\%yearmonth%
+IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                                                               >>%logfilename%
+echo Executing COPY [%sourcedir%%sourcefile% %archivedir%\%filetimestamp%_%sourcefile%].                                       >>%logfilename%
+IF EXIST %sourcedir%%sourcefile% COPY %sourcedir%%sourcefile% %archivedir%\%filetimestamp%_%sourcefile%                        >>%logfilename%
+echo .                                                                                                                         >>%logfilename%
+
+echo End time %date% %time%                        >>%logfilename%
+echo *****************************************     >>%logfilename%
+echo .                                             >>%logfilename%
+
+
+
+
+
+
+
