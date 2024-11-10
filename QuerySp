@@ -1,77 +1,47 @@
-DECLARE @PRIOR_PERIOD DATE, 
-        @CURRENT_PERIOD DATE, 
-        @PRIOR_PERIOD2 DATE, 
-        @BASIS1 VARCHAR(50), 
-        @BASIS2 VARCHAR(50), 
-        @COMPANY_CODE VARCHAR(50), 
-        @BU_CODE_SEG VARCHAR(50), 
-        @BU_CODE_AGENT VARCHAR(50), 
-        @BU_CODE_CLASS VARCHAR(50), 
-        @BU_CODE_REINS VARCHAR(50), 
-        @BU_CODE_AFFIL VARCHAR(50), 
-        @BU_CODE_EXPG VARCHAR(50);
+Subject: New Job Creation and CIA Update Requirements
 
--- Assign values to the variables as needed
-SET @PRIOR_PERIOD = '2023-01-01';  -- Example date
-SET @CURRENT_PERIOD = '2023-12-31';  -- Example date
-SET @PRIOR_PERIOD2 = '2022-01-01';  -- Example date
-SET @BASIS1 = 'BASIS1';  -- Example basis code
-SET @BASIS2 = 'BASIS2';  -- Example basis code
-SET @COMPANY_CODE = 'COMP123';  -- Example company code
-SET @BU_CODE_SEG = 'SEG001';  -- Example BU_CODE for SEG
-SET @BU_CODE_AGENT = 'AGT001';  -- Example BU_CODE for AGENT
-SET @BU_CODE_CLASS = 'CLS001';  -- Example BU_CODE for CLASS
-SET @BU_CODE_REINS = 'RNS001';  -- Example BU_CODE for REINS
-SET @BU_CODE_AFFIL = 'AFF001';  -- Example BU_CODE for AFFIL
-SET @BU_CODE_EXPG = 'EXG001';  -- Example BU_CODE for EXPG
+Summary of Discussion
+As we discussed, we will proceed with the new job setup. Below are the steps to handle the New Job Summary Lock.
 
--- Your query
-SELECT 
-    BD.CAL_ACCTG_PERIOD, 
-    BD.COMPANY_CODE,
-    BD.ACCOUNT_NUMBER,
-    AC.DESCRIPTION, 
-    @BU_CODE_SEG AS 'SEG',
-    @BU_CODE_AGENT AS 'AGENT',
-    @BU_CODE_CLASS AS 'CLASS',
-    @BU_CODE_REINS AS 'REINS',
-    @BU_CODE_AFFIL AS 'AFFIL',
-    @BU_CODE_EXPG AS 'EXPG',
-    SUM(BD.CONVERTED_AMOUNT) AS 'BALANCE', 
-    BH.STATUS_CODE,
-    A.ACCTG_BASIS_CODE
+Job Objective
+The job will:
 
-FROM   
-    [REPL_EAS].[dbo].BSTRN_HEADER BH 
-    INNER JOIN [REPL_EAS].[dbo].BSTRN_DETAIL BD ON BH.TRAN_ID = BD.TRAN_ID 
-    LEFT OUTER JOIN [REPL_EAS].[dbo].AP_BSTRN_HEADER AP ON BH.TRAN_ID = AP.TRAN_ID 
-    INNER JOIN [REPL_EAS].[dbo].ACCT_BAS_ACCT_BAS A ON BD.ACCTG_BASIS_CODE = A.REL_ACCT_BAS_CODE
-    FULL OUTER JOIN [REPL_EAS].[dbo].ACCOUNT AC ON BD.ACCOUNT_NUMBER = AC.ACCT_NUMBER AND BD.COMPANY_CODE = AC.COMPANY_CODE
+Retrieve the JOB_ID of a stuck summary job from a source file and change its status from "started" to "Errored."
+Read the EAS_LOCK table and remove any lock entries if they exist.
+Technical Steps
+Analysis and Extraction of Stuck Summary Job ID
 
-WHERE   
-    (BD.CAL_ACCTG_PERIOD >= @PRIOR_PERIOD AND BD.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD) 
-    AND A.ACCTG_BASIS_CODE IN (@BASIS1, @BASIS2)
-    AND BD.COMPANY_CODE = @COMPANY_CODE 
-    AND AC.ACCT_CLASS_IND IN ('A', 'L', 'S', 'E', 'G') 
-    OR (BD.CAL_ACCTG_PERIOD >= @PRIOR_PERIOD2 AND BD.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD) 
-    AND A.ACCTG_BASIS_CODE IN (@BASIS1, @BASIS2)
-    AND BD.COMPANY_CODE = @COMPANY_CODE 
-    AND AC.ACCT_CLASS_IND IN ('I', 'X', 'F')
+Analyze the summary job failure, retrieve the JOB_ID of the stuck summary job from the EAS_JOBS table, and store this ID in a TXT file.
+Save this TXT file at a specified location (referred to as the SOURCE FILE and SOURCE PATH).
+Run the Job
 
-GROUP BY
-    BD.CAL_ACCTG_PERIOD, 
-    BD.COMPANY_CODE,
-    BD.ACCOUNT_NUMBER,
-    AC.DESCRIPTION,
-    BH.STATUS_CODE,
-    A.ACCTG_BASIS_CODE,
-    @BU_CODE_SEG,
-    @BU_CODE_AGENT,
-    @BU_CODE_CLASS,
-    @BU_CODE_REINS,
-    @BU_CODE_AFFIL,
-    @BU_CODE_EXPG
+After placing the SOURCE FILE, proceed to run the job.
+Execute the Batch (BAT) File
 
-ORDER BY 
-    BD.ACCOUNT_NUMBER,
-    BD.CAL_ACCTG_PERIOD;
+The BAT file will:
+Log its operations and move the SOURCE FILE to the archive location.
+Call the VBScript.
+Execute the VBScript
+
+The VBScript will:
+Assign the retrieved JOB_ID from the SOURCE FILE to a variable, then run an update query to set the status of the stuck summary job to "Errored."
+Read the EAS_LOCK table; if any lock entries are found, they will be deleted.
+Log Documentation
+
+Document all steps in the log for record-keeping.
+Please feel free to contact me with any questions.
+
+CIA Update Requirements
+For creating the New Job, the following information is required:
+
+Job Name
+Source File Name
+Source File Path
+Archive Path
+Batch Log Path
+Batch Log File Name
+VBScript Log Path
+VBScript Log File Name
+Visual Cron Log Path
+Visual Cron Log File Name
+Please review and analyze the information above to update in DevOps as required.
