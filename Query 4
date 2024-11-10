@@ -1,95 +1,118 @@
-@ECHO OFF
+Dim db, rs, db2, rs2
 
-REM ** Variable Assignments **
-SET server=%1
-echo The server is [%server%].
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+RECSREAD = 0
+RECSINS = 0
+RECSUPD = 0
+RECSSKIP = 0
+RECSREJ = 0
 
-SET version=%2
-echo The version is [%version%].
+'Added the logic to read the parameter to get the server and executing environment
+  IF WScript.Arguments.Count = 0 then
+      WScript.Echo "Missing parameters"
+      WScript.Quit
+  END IF
+  Execserver = Wscript.Arguments.Item(0)
+  VersionKey = Wscript.Arguments.Item(1)
+'Added the logic to read the parameter to get the server and executing environment
 
-SET environment=%3
-echo The environment is [%environment%].
+   EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
+   LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+   'LOGFilePath = "C:\Users\jlwelna\Desktop\Temp\Agent File\AGENTS_IMPORT_" & sDate & ".LOG"
+   set objLOG = createobject("Scripting.FileSystemObject")
+   set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+   objLOGFile.WriteLine("Summery Lock Delete file  [" & EASFilePath & "]."    "RUN DATE: " & DATE & "  " & TIME)
+   objLOGFile.WriteLine("   ")
 
-REM Date Variable Definitions
-FOR /F "TOKENS=1* DELIMS= " %%A IN ('DATE/T') DO SET CDATE=%%B
-For /f "tokens=2-4 delims=/ " %%a in ('date /t') do (set date=%%a%%b%%c)
-set year=%date:~4,4%
-set month=%date:~0,2%
-set yearmonth=%year%%month%
-SET day=%date:~2,2%
-SET hour=%time:~0,2%
-IF "%hour:~0,1%" == " " SET hour=0%hour:~1,1%
-SET minute=%time:~3,2%
-SET filetimestamp=%year%%month%%day%_%hour%%minute%
-echo %filetimestamp%
+'  Read the SourceDir file all three varriable code start
+' Read the SourceDir file all three varriable code END
 
-REM Directory Paths Based on Environment
-if %environment%==PROD (
-	set archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
-)
-if %environment%==TEST (
-	set archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
-)
-if %environment%==UAT (
-	SET archivedir=\\%server%\Server\log\Deployment\Summery_LOCK\archive_Deleted_Locks_file
-)
+ 'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   Const ForReading = 1
+   Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   Set keyValues = CreateObject("Scripting.Dictionary")
+   Do Until objFileReg.AtEndOfStream
+   line =objFileReg.ReadLine
+   parts = Split(line,"=")
+   If UBound(parts) = 1 Then
+      key = Trim(parts(0))
+      value = Trim(parts(1))
+      keyValues(key) = value
+   End If
+   Loop
+   objFileReg.Close
+   Val=keyValues(VersionKey)
+   DBDetails = Split(Val,",")
+   If UBound(DBDetails) >= 0 Then
+      DBServerVal = DBDetails(0)
+      DBDBVal=DBDetails(1)
+      DBUserVal=DBDetails(2)
+      DBPassVal=DBDetails(3)
+      DBServer = ReadReg(DBServerVal)
+      DBDB = ReadReg(DBDBVal)
+      DBUser = ReadReg(DBUserVal)
+      DBPass = ReadReg(DBPassVal)
+   Else
+      WScript.Echo "No values in the file to match the upgrade version"
+   End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
 
-SET sourcedir=\\%server%\Server\log\Deployment\Summery_LOCK\SourceDIR\
-SET logdir=\\%server%\server\log\Deployment\Summery_LOCK\log
-SET sourcefile=session_lock.txt
+   sConnect = "Driver={ODBC Driver 17 for SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";ColumnEncryption=Enabled;"
 
-=======================
-REM Assign JOB_ID variables from session_lock.txt, handling missing lines
-SET idx=1
-FOR /F "usebackq tokens=*" %%L IN ("%sourcedir%%sourcefile%") DO (
-    SET "line=%%L"
-    SET "line=!line: =!"  REM Remove spaces from the line
-    SET "JOB_ID_!idx!=!line!"
-    SET /A idx+=1
-    IF !idx! GTR 3 GOTO Done  REM Stop after assigning JOB_ID_1, JOB_ID_2, and JOB_ID_3
-)
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect 
+    sQuery="Update Dummy_EAS_JOBS " & _ 
+            "SET Status_ind = '300' " & _ 
+            "WHERE job_ID IN ( " & _
+            "CASE WHEN @JOB_ID_1 IS NOT NULL THEN @JOB_ID_1 END, " & _
+            "CASE WHEN @JOB_ID_2 IS NOT NULL THEN @JOB_ID_2 END, " & _
+            "CASE WHEN @JOB_ID_3 IS NOT NULL THEN @JOB_ID_3 END " & _
+            ");" 
 
-:Done
+    Set rs=db.execute(sQuery)
+    On Error Resume Next
+    rs.MoveFirst
 
-REM Logging Details
-SET logdir=%logdir%\%year%
-IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
-SET logdir=%logdir%\%yearmonth%
-IF NOT EXIST %LogDir%\NUL MKDIR %LogDir%
-SET logfilename=%LogDir%\session_lock_%filetimestamp%.log
 
-echo Start time %date% %time%              >>%logfilename%
-echo .                                     >>%logfilename%
+WScript.Quit(0)
 
-echo server = [%server%].                  >>%logfilename%
-echo version = [%version%].                >>%logfilename%
-echo archivedir = [%archivedir%].          >>%logfilename%
-echo logdir = [%logdir%].                  >>%logfilename%
-echo sourcedir = [%sourcedir%].            >>%logfilename%
-echo sourcefile = [%sourcefile%].          >>%logfilename%
-echo .                                     >>%logfilename%
 
-REM Display assigned values (for testing)
-echo JOB_ID_1=%JOB_ID_1% >>%logfilename%
-echo JOB_ID_2=%JOB_ID_2% >>%logfilename%
-echo JOB_ID_3=%JOB_ID_3% >>%logfilename%
+Function ReadReg(RegPath)
+     Dim objRegistry, Key
+     Set objRegistry = CreateObject("Wscript.shell")
+     Key = objRegistry.RegRead(RegPath)
+     ReadReg = Key
+End Function
 
-REM Execute VBScript with JOB_ID variables
-echo Executing session_lock.VBS script.    >>%logfilename%
-CSCRIPT \\%server%\server\log\Deployment\Summery_LOCK\SUMMARY_Session_LOCK_DLT.vbs %server% %version% %JOB_ID_1% %JOB_ID_2% %JOB_ID_3% >>%logfilename%
-echo Finished session_lock.VBS script.     >>%logfilename%
-echo .                                     >>%logfilename%
+Function ZeroFill (ByVal String, ByVal length )
+     ZeroFill = Trim(String)
+     Do While Len(ZeroFill) < length
+         ZeroFill = "0" & ZeroFill
+     Loop
+End Function
 
-REM Archive Source File
-echo Archiving the [%sourcedir%%sourcefile%] file.                                                                             >>%logfilename%
-SET archivedir=%archivedir%\%year%
-IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                                                               >>%logfilename%
-SET archivedir=%archivedir%\%yearmonth%
-IF NOT EXIST %archivedir%\NUL MKDIR %archivedir%                                                                               >>%logfilename%
-echo Executing COPY [%sourcedir%%sourcefile% %archivedir%\%filetimestamp%_%sourcefile%].                                       >>%logfilename%
-IF EXIST %sourcedir%%sourcefile% COPY %sourcedir%%sourcefile% %archivedir%\%filetimestamp%_%sourcefile%                        >>%logfilename%
-echo .                                                                                                                         >>%logfilename%
+Function BLANKFill (ByVal String, ByVal length )
+     BLANKFill = Trim(String)
+     Do While Len(BLANKFill) < length
+         BLANKFill = " " & BLANKFill
+     Loop
+End Function
 
-echo End time %date% %time%                        >>%logfilename%
-echo *****************************************     >>%logfilename%
-echo .                                             >>%logfilename%
+
