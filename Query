@@ -1,11 +1,156 @@
-REM Logic to Check Last Character of Filename
-set lastchar=%sourcefile:~26,1%
-echo lastchar = [%lastchar%]    >>%logfilename%
+Dim db, rs, db2, rs2
 
-if "%lastchar%"=="E" (
-    set archivefilename=%sourcefile:~0,27%
-    echo EEE archivefilename = [%archivefilename%]   >>%logfilename%
-) else (
-    set archivefilename=%sourcefile:~0,29%
-    echo archivefilename = [%archivefilename%]   >>%logfilename%
-)
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+RECSREAD = 0
+RECSINS = 0
+RECSUPD = 0
+RECSSKIP = 0
+RECSREJ = 0
+
+'Added the logic to read the parameter to get the server and executing environment
+IF WScript.Arguments.Count = 0 then
+    WScript.Echo "Missing parameters"
+    WScript.Quit
+END IF
+Execserver = Wscript.Arguments.Item(0)
+VersionKey = Wscript.Arguments.Item(1)
+'Added the logic to read the parameter to get the server and executing environment
+
+EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+set objLOG = createobject("Scripting.FileSystemObject")
+set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+objLOGFile.WriteLine("Summery Lock Delete file  [" & EASFilePath & "]." & " RUN DATE: " & DATE & " " & TIME)
+objLOGFile.WriteLine("   ")
+
+ 'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   Const ForReading = 1
+   Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   Set keyValues = CreateObject("Scripting.Dictionary")
+   Do Until objFileReg.AtEndOfStream
+   line =objFileReg.ReadLine
+   parts = Split(line,"=")
+   If UBound(parts) = 1 Then
+      key = Trim(parts(0))
+      value = Trim(parts(1))
+      keyValues(key) = value
+   End If
+   Loop
+   objFileReg.Close
+   Val=keyValues(VersionKey)
+   DBDetails = Split(Val,",")
+   If UBound(DBDetails) >= 0 Then
+      DBServerVal = DBDetails(0)
+      DBDBVal=DBDetails(1)
+      DBUserVal=DBDetails(2)
+      DBPassVal=DBDetails(3)
+      DBServer = ReadReg(DBServerVal)
+      DBDB = ReadReg(DBDBVal)
+      DBUser = ReadReg(DBUserVal)
+      DBPass = ReadReg(DBPassVal)
+   Else
+      WScript.Echo "No values in the file to match the upgrade version"
+   End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+
+' 'DBServer = ReadReg("HKLM\SOFTWARE\FIS Insurance Systems\EAS\Server\DB Server")
+' 'DBDB = ReadReg("HKLM\SOFTWARE\FIS Insurance Systems\EAS\Server\DB Database")
+' 'DBUser = ReadReg("HKLM\SOFTWARE\FIS Insurance Systems\EAS\Server\DB Userid")
+' 'DBPass = ReadReg("HKLM\SOFTWARE\FIS Insurance Systems\EAS\Server\DB Password")
+
+'    'sConnect = "Driver={SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";"
+'    sConnect = "Driver={ODBC Driver 17 for SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";ColumnEncryption=Enabled;"
+
+' Set db = CreateObject("ADODB.Connection")
+' db.CommandTimeout = 0
+' db.Open sConnect 
+
+
+' Read the SourceDir file and assign variables
+Dim fso, srcFile, JOB_ID_1, JOB_ID_2, JOB_ID_3
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+If fso.FileExists(EASFilePath & "session_lock.txt") Then
+    Set srcFile = fso.OpenTextFile(EASFilePath & "session_lock.txt", 1)
+    JOB_ID_1 = Trim(srcFile.ReadLine)
+    JOB_ID_2 = Trim(srcFile.ReadLine)
+    JOB_ID_3 = Trim(srcFile.ReadLine)
+    srcFile.Close
+Else
+    objLOGFile.WriteLine "Source file not found: " & EASFilePath & "session_lock.txt"
+    WScript.Quit
+End If
+
+If JOB_ID_1 = "" And JOB_ID_2 = "" And JOB_ID_3 = "" Then
+    objLOGFile.WriteLine "No value for updating the Status in EAS_JOBS table."
+Else
+    ' Constructing the sQuery based on non-empty job IDs
+    sQuery = "Select * from Dummy_EAS_JOBS WHERE job_ID IN ("
+    If JOB_ID_1 <> "" Then sQuery = sQuery & "'" & JOB_ID_1 & "', "
+    If JOB_ID_2 <> "" Then sQuery = sQuery & "'" & JOB_ID_2 & "', "
+    If JOB_ID_3 <> "" Then sQuery = sQuery & "'" & JOB_ID_3 & "', "
+    sQuery = Left(sQuery, Len(sQuery) - 2) & ");"  ' Remove trailing comma and add closing parenthesis
+    
+    objLOGFile.WriteLine "Executing Query: " & sQuery
+
+    ' Database connection and query execution
+    'sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+    sConnect = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=NICOSQL94\FINSYS_DEV;UID=SYSTEM;Trusted_Connection=yes;DATABASE=EASSupportingPrograms;"
+    Set db = CreateObject("ADODB.Connection")
+    db.CommandTimeout = 0
+    On Error Resume Next  ' Enable error handling for query execution
+
+    db.Open sConnect
+    Set rs = db.Execute(sQuery)
+
+    ' Error handling and logging
+    If Err.Number <> 0 Then
+        objLOGFile.WriteLine "Error executing query: " & Err.Description & " (Error Number: " & Err.Number & ")"
+    Else
+        objLOGFile.WriteLine "Query executed successfully. Rows affected: " & rs.RecordCount
+    End If
+
+    On Error GoTo 0  ' Disable error handling
+
+    rs.Close
+    db.Close
+End If
+
+WScript.Quit(0)
+
+Function ReadReg(RegPath)
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+End Function
+
+Function ZeroFill (ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length)
+    BLANKFill = Trim(String)
+    Do While Len(BLANKFill) < length
+        BLANKFill = " " & BLANKFill
+    Loop
+End Function  
