@@ -1,12 +1,118 @@
-INSERT INTO EAS_JOBS (JOB_ID, STATUS_IND, JOB_DESC, START_TIME, STATUS_TIME)
-VALUES
-(30405, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-06 12:40:18.043', '2024-11-06 14:15:47.670'),
-(30404, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-06 12:01:08.623', '2024-11-06 12:40:12.673'),
-(30403, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUMMARY', '2024-11-06 12:00:12.933', '2024-11-06 12:01:03.067'),
-(30402, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-05 12:43:45.933', '2024-11-05 14:02:41.470'),
-(30401, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-05 12:01:05.437', '2024-11-05 12:43:36.373'),
-(30400, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUMMARY', '2024-11-05 12:00:10.170', '2024-11-05 12:00:59.150'),
-(30399, 222, 'AP Process Checks', '2024-11-05 02:38:34.837', '2024-11-05 02:38:56.870'),
-(30398, 300, 'AP Process Checks', '2024-11-05 02:34:12.133', '2024-11-05 02:34:13.937'),
-(30397, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-04 12:42:08.120', '2024-11-04 14:32:06.993'),
-(30396, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-04 12:01:17.430', '2024-11-04 12:41:58.877');
+Dim db, rs, db2, rs2
+
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+RECSREAD = 0
+RECSINS = 0
+RECSUPD = 0
+RECSSKIP = 0
+RECSREJ = 0
+
+'Added the logic to read the parameter to get the server and executing environment
+IF WScript.Arguments.Count = 0 then
+    WScript.Echo "Missing parameters"
+    WScript.Quit
+END IF
+Execserver = Wscript.Arguments.Item(0)
+VersionKey = Wscript.Arguments.Item(1)
+'Added the logic to read the parameter to get the server and executing environment
+
+EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+set objLOG = createobject("Scripting.FileSystemObject")
+set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+objLOGFile.WriteLine("Summery Lock Delete file  [" & EASFilePath & "]." & " RUN DATE: " & DATE & " " & TIME)
+objLOGFile.WriteLine("   ")
+
+' Read the SourceDir file and assign variables
+Dim fso, srcFile, JOB_ID_1, JOB_ID_2, JOB_ID_3
+Set fso = CreateObject("Scripting.FileSystemObject")
+
+If fso.FileExists(EASFilePath & "session_lock.txt") Then
+    Set srcFile = fso.OpenTextFile(EASFilePath & "session_lock.txt", 1)
+    
+    ' Default each JOB_ID variable to an empty string
+    JOB_ID_1 = ""
+    JOB_ID_2 = ""
+    JOB_ID_3 = ""
+    
+    ' Assign values based on the number of lines in the file
+    If Not srcFile.AtEndOfStream Then JOB_ID_1 = Trim(srcFile.ReadLine)
+    If Not srcFile.AtEndOfStream Then JOB_ID_2 = Trim(srcFile.ReadLine)
+    If Not srcFile.AtEndOfStream Then JOB_ID_3 = Trim(srcFile.ReadLine)
+    srcFile.Close
+Else
+    objLOGFile.WriteLine "Source file not found: " & EASFilePath & "session_lock.txt"
+    WScript.Quit
+End If
+
+If JOB_ID_1 = "" And JOB_ID_2 = "" And JOB_ID_3 = "" Then
+    objLOGFile.WriteLine "No value for updating the Status in EAS_JOBS table."
+Else
+    ' Constructing the sQuery based on non-empty job IDs
+    sQuery = "Update Dummy_EAS_JOBS SET Status_ind = '300' WHERE job_ID IN ("
+    If JOB_ID_1 <> "" Then sQuery = sQuery & "'" & JOB_ID_1 & "', "
+    If JOB_ID_2 <> "" Then sQuery = sQuery & "'" & JOB_ID_2 & "', "
+    If JOB_ID_3 <> "" Then sQuery = sQuery & "'" & JOB_ID_3 & "', "
+    sQuery = Left(sQuery, Len(sQuery) - 2) & ");"  ' Remove trailing comma and add closing parenthesis
+    
+    objLOGFile.WriteLine "Executing Query: " & sQuery
+
+    ' Database connection and query execution
+    sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+    Set db = CreateObject("ADODB.Connection")
+    db.CommandTimeout = 0
+    On Error Resume Next  ' Enable error handling for query execution
+
+    db.Open sConnect
+    Set rs = db.Execute(sQuery)
+
+    ' Error handling and logging
+    If Err.Number <> 0 Then
+        objLOGFile.WriteLine "Error executing query: " & Err.Description & " (Error Number: " & Err.Number & ")"
+    Else
+        objLOGFile.WriteLine "Query executed successfully. Rows affected: " & rs.RecordCount
+    End If
+
+    On Error GoTo 0  ' Disable error handling
+
+    rs.Close
+    db.Close
+End If
+
+WScript.Quit(0)
+
+Function ReadReg(RegPath)
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+End Function
+
+Function ZeroFill (ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length)
+    BLANKFill = Trim(String)
+    Do While Len(BLANKFill) < length
+        BLANKFill = " " & BLANKFill
+    Loop
+End Function  
