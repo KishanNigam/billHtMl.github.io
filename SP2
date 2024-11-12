@@ -1,8 +1,7 @@
-I had a discussion with Aarohi, and she would like to review the following scenarios:
-
-Behavior of the EAS_LOCK Table During Summary Job Execution
-
-Determine if locks are created exclusively for the summary job in the EAS_LOCK table while it is running, or if locks for other processes can also appear in the table simultaneously.
-EAS_JOBS Table Entry and Status for Subsequent Summary Jobs
-
-In the EAS_JOBS table: If the first summary job fails and we run the second job manually, will there be an entry for the third summary job in the EAS_JOBS table? If so, what would be the STATUS_IND value for this entry?
+CREATE TABLE EAS_JOBS (
+    JOB_ID INT PRIMARY KEY,
+    STATUS_IND INT,
+    JOB_DESC VARCHAR(100),
+    START_TIME DATETIME,
+    STATUS_TIME DATETIME
+);
