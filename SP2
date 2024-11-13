@@ -1,5 +1,8 @@
-Dim db, rs, db2, rs2
+' Start of Script
+Dim db, rs, objExcel, objWorkbook, objSheet
+Dim JOB_ID_1, JOB_ID_2, JOB_ID_3, LOCK_SESSION_ID, sQuery, updateExecuted, deleteExecuted
 
+' Set date and file path details for logging
 sDate = DatePart("yyyy", Now) 
 RPTDATE = sDate
 YYEAR= DatePart("yyyy", Now)  
@@ -16,86 +19,132 @@ mns = DatePart("n", Now)
 hrno = ZeroFill(hrs,2)
 minno = ZeroFill(mns,2)
 sDate = sDate & hrno & minno
-RECSREAD = 0
-RECSINS = 0
-RECSUPD = 0
-RECSSKIP = 0
-RECSREJ = 0
 
-'Added the logic to read the parameter to get the server and executing environment
+' Parameters for server and environment
 IF WScript.Arguments.Count = 0 then
     WScript.Echo "Missing parameters"
     WScript.Quit
 END IF
 Execserver = Wscript.Arguments.Item(0)
 VersionKey = Wscript.Arguments.Item(1)
-'Added the logic to read the parameter to get the server and executing environment
 
 EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
 LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+
+' Initialize logging
 set objLOG = createobject("Scripting.FileSystemObject")
 set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
-objLOGFile.WriteLine("Summery Lock Delete file  [" & EASFilePath & "]." & " RUN DATE: " & DATE & " " & TIME)
-objLOGFile.WriteLine("   ")
+objLOGFile.WriteLine("Script started [" & EASFilePath & "]. Run Date: " & DATE & " " & TIME)
+objLOGFile.WriteLine(" ")
 
-' Read the SourceDir file and assign variables
-Dim fso, srcFile, JOB_ID_1, JOB_ID_2, JOB_ID_3
-Set fso = CreateObject("Scripting.FileSystemObject")
-
-If fso.FileExists(EASFilePath & "session_lock.txt") Then
-    Set srcFile = fso.OpenTextFile(EASFilePath & "session_lock.txt", 1)
-    
-    ' Default each JOB_ID variable to an empty string
-    JOB_ID_1 = ""
-    JOB_ID_2 = ""
-    JOB_ID_3 = ""
-    
-    ' Assign values based on the number of lines in the file
-    If Not srcFile.AtEndOfStream Then JOB_ID_1 = Trim(srcFile.ReadLine)
-    If Not srcFile.AtEndOfStream Then JOB_ID_2 = Trim(srcFile.ReadLine)
-    If Not srcFile.AtEndOfStream Then JOB_ID_3 = Trim(srcFile.ReadLine)
-    srcFile.Close
-Else
-    objLOGFile.WriteLine "Source file not found: " & EASFilePath & "session_lock.txt"
-    WScript.Quit
-End If
-
-If JOB_ID_1 = "" And JOB_ID_2 = "" And JOB_ID_3 = "" Then
-    objLOGFile.WriteLine "No value for updating the Status in EAS_JOBS table."
-Else
-    ' Constructing the sQuery based on non-empty job IDs
-    sQuery = "Update Dummy_EAS_JOBS SET Status_ind = '300' WHERE job_ID IN ("
-    If JOB_ID_1 <> "" Then sQuery = sQuery & "'" & JOB_ID_1 & "', "
-    If JOB_ID_2 <> "" Then sQuery = sQuery & "'" & JOB_ID_2 & "', "
-    If JOB_ID_3 <> "" Then sQuery = sQuery & "'" & JOB_ID_3 & "', "
-    sQuery = Left(sQuery, Len(sQuery) - 2) & ");"  ' Remove trailing comma and add closing parenthesis
-    
-    objLOGFile.WriteLine "Executing Query: " & sQuery
-
-    ' Database connection and query execution
-    sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
-    Set db = CreateObject("ADODB.Connection")
-    db.CommandTimeout = 0
-    On Error Resume Next  ' Enable error handling for query execution
-
-    db.Open sConnect
-    Set rs = db.Execute(sQuery)
-
-    ' Error handling and logging
-    If Err.Number <> 0 Then
-        objLOGFile.WriteLine "Error executing query: " & Err.Description & " (Error Number: " & Err.Number & ")"
-    Else
-        objLOGFile.WriteLine "Query executed successfully. Rows affected: " & rs.RecordCount
+' Database connection parameters from registry
+Const ForReading = 1
+Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+Set keyValues = CreateObject("Scripting.Dictionary")
+Do Until objFileReg.AtEndOfStream
+    line = objFileReg.ReadLine
+    parts = Split(line, "=")
+    If UBound(parts) = 1 Then
+        key = Trim(parts(0))
+        value = Trim(parts(1))
+        keyValues(key) = value
     End If
-
-    On Error GoTo 0  ' Disable error handling
-
-    rs.Close
-    db.Close
+Loop
+objFileReg.Close
+Val = keyValues(VersionKey)
+DBDetails = Split(Val, ",")
+If UBound(DBDetails) >= 0 Then
+    DBServerVal = DBDetails(0)
+    DBDBVal = DBDetails(1)
+    DBUserVal = DBDetails(2)
+    DBPassVal = DBDetails(3)
+    DBServer = ReadReg(DBServerVal)
+    DBDB = ReadReg(DBDBVal)
+    DBUser = ReadReg(DBUserVal)
+    DBPass = ReadReg(DBPassVal)
+Else
+    WScript.Echo "No values found in RegistryDtls.txt for the upgrade version"
 End If
 
-WScript.Quit(0)
+' Read values from Excel
+Set objExcel = CreateObject("Excel.Application")
+Set objWorkbook = objExcel.Workbooks.Open(EASFilePath & "Session_lock.xlsx")
+Set objSheet = objWorkbook.Sheets(1)
 
+' Fetch JOB_ID values from Excel columns and remove spaces
+JOB_ID_1 = Trim(objSheet.Cells(2, 3).Value)
+JOB_ID_2 = Trim(objSheet.Cells(3, 3).Value)
+JOB_ID_3 = Trim(objSheet.Cells(4, 3).Value)
+
+' Log the JOB_ID values
+objLOGFile.WriteLine("JOB_ID_1: " & JOB_ID_1)
+objLOGFile.WriteLine("JOB_ID_2: " & JOB_ID_2)
+objLOGFile.WriteLine("JOB_ID_3: " & JOB_ID_3)
+
+' Fetch LOCK_SESSION_ID value from Excel and remove spaces
+LOCK_SESSION_ID = Trim(objSheet.Cells(6, 3).Value)
+
+' Log LOCK_SESSION_ID value
+objLOGFile.WriteLine("LOCK_SESSION_ID: " & LOCK_SESSION_ID)
+
+' Close Excel
+objWorkbook.Close False
+objExcel.Quit
+Set objSheet = Nothing
+Set objWorkbook = Nothing
+Set objExcel = Nothing
+
+' Database connection and query execution
+sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
+
+' Execute Update Query if any JOB_ID has a value
+updateExecuted = False
+If JOB_ID_1 <> "" Or JOB_ID_2 <> "" Or JOB_ID_3 <> "" Then
+    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & JOB_ID_1 & "','" & JOB_ID_2 & "','" & JOB_ID_3 & "')"
+    objLOGFile.WriteLine("Executing Update Query: " & sQuery)
+    Set rs = db.Execute(sQuery)
+    objLOGFile.WriteLine("Update Query executed successfully.")
+    updateExecuted = True
+Else
+    objLOGFile.WriteLine("No JOB_ID values found; skipping Update Query.")
+End If
+
+' Check if Update Query executed and log accordingly
+If updateExecuted Then
+    objLOGFile.WriteLine("Update operation completed.")
+Else
+    objLOGFile.WriteLine("No Update operation needed.")
+End If
+
+' Execute Delete Query if LOCK_SESSION_ID has a value
+deleteExecuted = False
+If LOCK_SESSION_ID <> "" Then
+    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
+    objLOGFile.WriteLine("Executing Delete Query: " & sQuery)
+    db.Execute(sQuery)
+    objLOGFile.WriteLine("Delete Query executed successfully.")
+    deleteExecuted = True
+Else
+    objLOGFile.WriteLine("No LOCK_SESSION_ID value found; skipping Delete Query.")
+End If
+
+' Check if Delete Query executed and log accordingly
+If deleteExecuted Then
+    objLOGFile.WriteLine("Delete operation completed.")
+Else
+    objLOGFile.WriteLine("No Delete operation needed.")
+End If
+
+' Close database connection and log file
+db.Close
+objLOGFile.WriteLine("Script completed.")
+objLOGFile.Close
+
+' Helper functions
 Function ReadReg(RegPath)
     Dim objRegistry, Key
     Set objRegistry = CreateObject("Wscript.shell")
@@ -103,16 +152,10 @@ Function ReadReg(RegPath)
     ReadReg = Key
 End Function
 
-Function ZeroFill (ByVal String, ByVal length)
+Function ZeroFill(ByVal String, ByVal length)
     ZeroFill = Trim(String)
     Do While Len(ZeroFill) < length
         ZeroFill = "0" & ZeroFill
     Loop
 End Function
-
-Function BLANKFill (ByVal String, ByVal length)
-    BLANKFill = Trim(String)
-    Do While Len(BLANKFill) < length
-        BLANKFill = " " & BLANKFill
-    Loop
-End Function  
+' End of Script
