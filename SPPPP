@@ -1,114 +1,162 @@
---Update the name of parameters of the SP -Modify Date:20-08-2024
-ALTER PROCEDURE [NICOAD\KNigam].[Trailbalance_6bu_testV01]
-    @PRIOR_PERIOD Varchar(10), 
-    @CURRENT_PERIOD Varchar(10), 
-    @PRIOR_PERIOD2 Varchar(10), 
-    @BASIS1 VARCHAR(50), 
-    @BASIS2 VARCHAR(50), 
-    @COMPANY_CODE VARCHAR(50), 
-    @BU_CODE_1 VARCHAR(50) = '', -- Default to an empty string
-    @BU_CODE_2 VARCHAR(50) = '', -- Default to an empty string
-    @BU_CODE_3 VARCHAR(50) = '', -- Default to an empty string
-    @BU_CODE_4 VARCHAR(50) = '', -- Default to an empty string
-    @BU_CODE_5 VARCHAR(50) = '', -- Default to an empty string
-    @BU_CODE_6 VARCHAR(50) = '' -- Default to an empty string
-AS
-BEGIN
-    DECLARE @database NVARCHAR(100);
+I need a code addition based on my below requirments.
+Obective:
+I need a script which read a file (Source file). In the source file there are three lines. all three lines read by script and assign in the three variable 
+(Variable 1: JOB_ID_1, Variable 2: JOB_ID_2, Variable 3: JOB_ID_3). When script read these variable remove the spaces just read only value.
+ Next step is Script check if teeno variables main kisi main bhi value hai to unhe below update query main bheje and execute kare. 
+ if file main koi value nhi h to msg log main print karo ki "No value for Update the Statsus in EAS_JOBS table."
+After execute query usheka sQuery variable main output lekar ushe bhi log main print kare with heading. kiya update hua hai.
 
-    SET @database = (
-        SELECT name 
-        FROM sys.databases
-        WHERE name LIKE 'EAS_REPL' OR name LIKE 'REPL_EAS'
-    );
-    DECLARE @sql NVARCHAR(MAX) = N'
+Objective: 
+Create a VB script jha pe do steps hai.
+first is:
+Ek VB script hai jo xlsx file se JOB_ID_1, JOB_ID_2, JOB_ID_3 ke value ko pick karege or update query main assion krke EAS_JOBS table main STATUS_IND kon 100 se 300 update karege.
+Second steps is :
+same xlsx file se Lock_session_ID ko pick karege or ek delete query main Lock_session_ID ko assign kar ke EAS_LOCKS tables jo ush entry ko delete kar dega.
+NOTE: har ek steps ko LOG main print karna h. Like Source file name. All JOB_ID value. and Lock_session_ID step by steps are print in log for records
 
-    SELECT 
-        BD.CAL_ACCTG_PERIOD, 
-        BD.COMPANY_CODE,
-        BD.ACCOUNT_NUMBER,
-        AC.DESCRIPTION,' +
-        CASE WHEN ISNULL(@BU_CODE_1, '') <> '' THEN ' SD2.BU_CODE AS ' + @BU_CODE_1 + ',' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_2, '') <> '' THEN ' SD3.BU_CODE AS ' + @BU_CODE_2 + ',' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_3, '') <> '' THEN ' SD4.BU_CODE AS ' + @BU_CODE_3 + ',' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_4, '') <> '' THEN ' SD5.BU_CODE AS ' + @BU_CODE_4 + ',' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_5, '') <> '' THEN ' SD6.BU_CODE AS ' + @BU_CODE_5 + ',' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_6, '') <> '' THEN ' SD7.BU_CODE AS ' + @BU_CODE_6 + ',' ELSE '' END + '
-        SUM(BD.CONVERTED_AMOUNT) AS BALANCE, 
-        BH.STATUS_CODE,
-        A.ACCTG_BASIS_CODE
-    FROM   
-        ' + QUOTENAME(@database) + '.[dbo].BSTRN_HEADER BH 
-    INNER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BSTRN_DETAIL BD ON BH.TRAN_ID = BD.TRAN_ID 
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].AP_BSTRN_HEADER AP ON BH.TRAN_ID = AP.TRAN_ID 
-    INNER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].ACCT_BAS_ACCT_BAS A ON BD.ACCTG_BASIS_CODE = A.REL_ACCT_BAS_CODE
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BU_SET_DETAILS SD2 ON BD.BU_SET_ID = SD2.BU_SET_ID AND SD2.BU_TYPE = ' + @BU_CODE_1 + '
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BU_SET_DETAILS SD3 ON BD.BU_SET_ID = SD3.BU_SET_ID AND SD3.BU_TYPE = ' + @BU_CODE_2 + '
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BU_SET_DETAILS SD4 ON BD.BU_SET_ID = SD4.BU_SET_ID AND SD4.BU_TYPE = ' + @BU_CODE_3 + '
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BU_SET_DETAILS SD5 ON BD.BU_SET_ID = SD5.BU_SET_ID AND SD5.BU_TYPE = ' + @BU_CODE_4 + '
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BU_SET_DETAILS SD6 ON BD.BU_SET_ID = SD6.BU_SET_ID AND SD6.BU_TYPE = ' + @BU_CODE_5 + '
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].BU_SET_DETAILS SD7 ON BD.BU_SET_ID = SD7.BU_SET_ID AND SD7.BU_TYPE = ' + @BU_CODE_6 + '
-    LEFT OUTER JOIN 
-        ' + QUOTENAME(@database) + '.[dbo].ACCOUNT AC ON BD.ACCOUNT_NUMBER = AC.ACCT_NUMBER AND BD.COMPANY_CODE = AC.COMPANY_CODE
-    WHERE   
-        (BD.CAL_ACCTG_PERIOD >= @PRIOR_PERIOD AND BD.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD) 
-        AND A.ACCTG_BASIS_CODE IN (@BASIS1, @BASIS2)
-        AND BD.COMPANY_CODE = @COMPANY_CODE 
-        AND AC.ACCT_CLASS_IND IN (''A'', ''L'', ''S'', ''E'', ''G'')
-        OR (BD.CAL_ACCTG_PERIOD >= @PRIOR_PERIOD2 AND BD.CAL_ACCTG_PERIOD <= @CURRENT_PERIOD) 
-        AND A.ACCTG_BASIS_CODE IN (@BASIS1, @BASIS2)
-        AND BD.COMPANY_CODE = @COMPANY_CODE 
-        AND AC.ACCT_CLASS_IND IN (''I'', ''X'', ''F'')
-    GROUP BY
-        BD.CAL_ACCTG_PERIOD, 
-        BD.COMPANY_CODE,
-        BD.ACCOUNT_NUMBER,
-        AC.DESCRIPTION,' +
-        CASE WHEN ISNULL(@BU_CODE_1, '') <> '' THEN ' SD2.BU_CODE,' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_2, '') <> '' THEN ' SD3.BU_CODE,' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_3, '') <> '' THEN ' SD4.BU_CODE,' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_4, '') <> '' THEN ' SD5.BU_CODE,' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_5, '') <> '' THEN ' SD6.BU_CODE,' ELSE '' END +
-        CASE WHEN ISNULL(@BU_CODE_6, '') <> '' THEN ' SD7.BU_CODE,' ELSE '' END + '
-        BH.STATUS_CODE,
-        A.ACCTG_BASIS_CODE
-    ORDER BY 
-        BD.ACCOUNT_NUMBER,
-        BD.CAL_ACCTG_PERIOD
-    OPTION(RECOMPILE);'
+Below are the detailed explaination.
 
-    EXEC sp_executesql @sql, 
-        N'@PRIOR_PERIOD VARCHAR(10), 
-          @CURRENT_PERIOD VARCHAR(10), 
-          @BASIS1 VARCHAR(50), 
-          @BASIS2 VARCHAR(50), 
-          @PRIOR_PERIOD2 VARCHAR(10), 
-          @COMPANY_CODE VARCHAR(50), 
-          @BU_CODE_1 VARCHAR(50), 
-          @BU_CODE_2 VARCHAR(50), 
-          @BU_CODE_3 VARCHAR(50), 
-          @BU_CODE_4 VARCHAR(50), 
-          @BU_CODE_5 VARCHAR(50), 
-          @BU_CODE_6 VARCHAR(50)',
-        @PRIOR_PERIOD, 
-        @CURRENT_PERIOD, 
-        @BASIS1, 
-        @BASIS2, 
-        @PRIOR_PERIOD2, 
-        @COMPANY_CODE,
-        @BU_CODE_1,
-        @BU_CODE_2,
-        @BU_CODE_3,
-        @BU_CODE_4,
-        @BU_CODE_5,
-        @BU_CODE_6
-END
+Source file name: Session_lock.xlsx
+Script Code: (NOTE: I have create a prototype code kindly analysis and add code as per the requirments)
+' Code start
+Dim db, rs, db2, rs2
+
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+
+'Added the logic to read the parameter to get the server and executing environment
+IF WScript.Arguments.Count = 0 then
+    WScript.Echo "Missing parameters"
+    WScript.Quit
+END IF
+Execserver = Wscript.Arguments.Item(0)
+VersionKey = Wscript.Arguments.Item(1)
+'Added the logic to read the parameter to get the server and executing environment
+
+EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+set objLOG = createobject("Scripting.FileSystemObject")
+set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+objLOGFile.WriteLine("Hundle lock Script is started  [" & EASFilePath & "]." & " RUN DATE: " & DATE & " " & TIME)
+objLOGFile.WriteLine("   ")
+
+ 'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   Const ForReading = 1
+   Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   Set keyValues = CreateObject("Scripting.Dictionary")
+   Do Until objFileReg.AtEndOfStream
+   line =objFileReg.ReadLine
+   parts = Split(line,"=")
+   If UBound(parts) = 1 Then
+      key = Trim(parts(0))
+      value = Trim(parts(1))
+      keyValues(key) = value
+   End If
+   Loop
+   objFileReg.Close
+   Val=keyValues(VersionKey)
+   DBDetails = Split(Val,",")
+   If UBound(DBDetails) >= 0 Then
+      DBServerVal = DBDetails(0)
+      DBDBVal=DBDetails(1)
+      DBUserVal=DBDetails(2)
+      DBPassVal=DBDetails(3)
+      DBServer = ReadReg(DBServerVal)
+      DBDB = ReadReg(DBDBVal)
+      DBUser = ReadReg(DBUserVal)
+      DBPass = ReadReg(DBPassVal)
+   Else
+      WScript.Echo "No values in the file to match the upgrade version"
+   End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+
+' Start code Fetch the EAS_JOBS Data from Source file column and assign in variable for update query - JOB_ID_1 fetch coulmn C2 -- JOB_ID_2 fetch coulmn C3 -- JOB_ID_3 fetch coulmn C4--
+    'CHATGPT adding code here and after add remove his comment line no 68
+
+' End CODE Fetch the EAS_JOBS Data from Source file column - JOB_ID_1 fetch coulmn C2 -- JOB_ID_2 fetch coulmn C3 -- JOB_ID_3 fetch coulmn C4--
+
+' Start code fetch the EAS_LOCKS data from source file column and assign in variable for Delete query - LOCK_SESSION_ID fetch coulmn C6
+    'CHATGPT adding code here and after add remove his comment line no 73
+' END code fetch the EAS_LOCKS data from source file column and assign in variable for Delete query - LOCK_SESSION_ID fetch coulmn C6
+
+    ' Database connection and query execution
+    sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+    ' sConnect = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=NICOSQL94\FINSYS_DEV;UID=SYSTEM;Trusted_Connection=yes;DATABASE=EASSupportingPrograms;"
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
+    
+    sQuery= "UPDATE EAS_JOBS " & _
+            "SET STATUS_IND = 300 " & _
+            "WHERE JOB_ID in ('@JOB_ID_1','@JOB_ID_2','@JOB_ID_3');"
+
+        
+
+    Set rs = db.Execute(sQuery)
+
+     sQuery= "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '@LOCK_SESSION_ID'; " & _
+        
+
+    rs.Close
+    db.Close
+End If
+
+WScript.Quit(0)
+
+Function ReadReg(RegPath)
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+End Function
+
+Function ZeroFill (ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length)
+    BLANKFill = Trim(String)
+    Do While Len(BLANKFill) < length
+        BLANKFill = " " & BLANKFill
+    Loop
+End Function  
+' Code end 
+
+Requirments:
+Point 1: Script start ho or source file se JOB_ID_1, JOB_ID_2, JOB_ID_3 ka data diye gye code main se die gae columns se fetch kare or variable main assign kare. 
+    a. IF fetch karte time value main koi space h to ushe hata de sirf value hee pick kare.
+Point 2: Script fir se source file se fetch kare LOCK_SESSION_ID ka data dia gye code main se die gae column se fetch kare or variable main assign kare.
+    a. IF fetch karte time value main koi space h to ushe hata de sirf value hee pick kare.
+Point 3: Connection stablish kare jesha ki phele se code main diya hua h.
+Point 4: assign hue variabe ke sath Update query execute kare.
+    Importent point a: IF JOB_ID_1 main bas value ho to bhi update query chale. If JOB_ID_1 & and JOB_ID_2 main value ho to bhi update query chale. and if JOB_ID_1, JOB_ID_2 & JOB_ID_3 teeno value ho to bhi update query chale.
+    Importent Point b: IF JOB_ID_1, JOB_ID_2, & JOB_ID_3 teeno main koi value na ho to update query na chale baki ka neche di gai script run ho .
+    Importent Point c: Update query run hoti h ya nhi dono scenario ka output log main print ho.
+Point 5: assign hue variable ke sath (Variable: @LOCK_SESSION_ID)Delete query Execute kare.
+    Importent Point a: IF LOCK_SESSION_ID  main koi value na ho to Delete query na chale baki ka neche di gai script run ho .
+    Importent Point b: Delete query run hoti h ya nhi dono scenario ka output log main print ho.
+
+NOTE 1: Sabhi points ko log main print hona chahie
+NOTE 2: IF update query ke liye koi variable nhi milta or Delete query ke liye variable main value h to delete query chale.
+NOTE 3: If Delete query ke liye variable na ho or update query ke lie variable main value h to update query run ho or delete query run an ho.
+
+
+Most importent point : Do not chnage any thing ust do only jo above requirment main bola hai.... Dont touch Start block and end lock part and also sConnect wala part bhi alag rakho jha pe jo comment kiya h whi pe code ka logic lagao
