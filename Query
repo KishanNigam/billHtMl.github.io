@@ -1,8 +1,38 @@
+' Initialize Excel application
 Set objExcel = CreateObject("Excel.Application")
-If IsObject(objExcel) Then
-    WScript.Echo "Excel instance created successfully."
-    objExcel.Quit
-    Set objExcel = Nothing
-Else
-    WScript.Echo "Failed to create Excel instance."
+objExcel.Visible = False ' Set to True if you want to see the Excel window for debugging
+
+' Full path to the Excel file
+Dim excelFilePath
+excelFilePath = EASFilePath & "Session_lock.xlsx"
+
+' Check if file exists before proceeding
+If Not objLOG.FileExists(excelFilePath) Then
+    objLOGFile.WriteLine("ERROR: Source file 'Session_lock.xlsx' not found at path: " & EASFilePath)
+    WScript.Quit
 End If
+
+' Open the workbook and assign the worksheet
+Set objWorkbook = objExcel.Workbooks.Open(excelFilePath)
+Set objSheet = objWorkbook.Sheets(1) ' Use the sheet index or name if specified
+
+' Read values from specified cells and remove spaces
+JOB_ID_1 = Trim(objSheet.Range("C2").Value)
+JOB_ID_2 = Trim(objSheet.Range("C3").Value)
+JOB_ID_3 = Trim(objSheet.Range("C4").Value)
+LOCK_SESSION_ID = Trim(objSheet.Range("C6").Value)
+
+' Log the fetched values for debugging
+objLOGFile.WriteLine("INFO: Fetched JOB_ID_1 = " & JOB_ID_1)
+objLOGFile.WriteLine("INFO: Fetched JOB_ID_2 = " & JOB_ID_2)
+objLOGFile.WriteLine("INFO: Fetched JOB_ID_3 = " & JOB_ID_3)
+objLOGFile.WriteLine("INFO: Fetched LOCK_SESSION_ID = " & LOCK_SESSION_ID)
+
+' Close the workbook and quit Excel to free up resources
+objWorkbook.Close False
+objExcel.Quit
+
+' Release Excel objects from memory
+Set objSheet = Nothing
+Set objWorkbook = Nothing
+Set objExcel = Nothing
