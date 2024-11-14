@@ -1,10 +1,82 @@
-when I passed multiple value for JOB_ID its not updated STATUS_IND. I think in the query start and end single ' is not applied "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN (208862','208846)"
+Dim db, rs, sConnect, objFSO, objFile, line, JOB_IDs, LOCK_SESSION_ID, sQuery
+Dim db2, rs2, dbServer, dbDB, dbUser, dbPass, objLOG, objLOGFile
 
-THis log printed msg:
-Handle Lock Script started. Source Path: \\nicoeas12\Server\log\Deployment\Summery_LOCK\SourceDIR\ | Date: 11/14/2024 11:36:30 AM
-   
-JOB_ID fetched: 208862,208846
-LOCK_SESSION_ID fetched: 3668314
-Executing update query: UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN (208862','208846)
+' Set date format for log file naming
+sDate = Year(Now) & Right("0" & Month(Now), 2) & Right("0" & Day(Now), 2) & Right("0" & Hour(Now), 2) & Right("0" & Minute(Now), 2)
+LOGFilePath = "\\nicoeas12\Server\log\Deployment\Summery_LOCK\log\" & Year(Now) & "\" & Year(Now) & Right("0" & Month(Now), 2) & "\session_VBS_" & sDate & ".LOG"
 
-Kindly fix only this thing. do not change any thing.
+Set objLOG = CreateObject("Scripting.FileSystemObject")
+Set objLOGFile = objLOG.CreateTextFile(LOGFilePath, True)
+objLOGFile.WriteLine("Handle Lock Script started. Source Path: \\nicoeas12\Server\log\Deployment\Summery_LOCK\SourceDIR\ | Date: " & Date & " " & Time)
+objLOGFile.WriteLine("   ")
+
+' Read JOB_ID and LOCK_SESSION_ID from the source file
+Set objFSO = CreateObject("Scripting.FileSystemObject")
+Set objFile = objFSO.OpenTextFile("\\nicoeas12\Server\log\Deployment\Summery_LOCK\SourceDIR\Session_lock.txt", 1)
+
+Do Until objFile.AtEndOfStream
+    line = objFile.ReadLine
+    If InStr(line, "JOB_ID=") > 0 Then
+        JOB_IDs = Replace(Split(line, "=")(1), " ", "")
+    ElseIf InStr(line, "LOCK_SESSION_ID=") > 0 Then
+        LOCK_SESSION_ID = Replace(Split(line, "=")(1), " ", "")
+    End If
+Loop
+objFile.Close
+
+' Log fetched values
+objLOGFile.WriteLine("JOB_ID fetched: " & JOB_IDs)
+objLOGFile.WriteLine("LOCK_SESSION_ID fetched: " & LOCK_SESSION_ID)
+
+' Database connection setup
+sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=DBServer;Database=DBDB;Uid=DBUser;Pwd=DBPass;ColumnEncryption=Enabled;"
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
+
+' Format JOB_IDs for the query, adding single quotes around each ID
+If JOB_IDs <> "" Then
+    Dim JOB_IDsArray, formattedJOB_IDs, i
+    JOB_IDsArray = Split(JOB_IDs, ",")
+    formattedJOB_IDs = ""
+    
+    For i = 0 To UBound(JOB_IDsArray)
+        If i > 0 Then formattedJOB_IDs = formattedJOB_IDs & ","
+        formattedJOB_IDs = formattedJOB_IDs & "'" & Trim(JOB_IDsArray(i)) & "'"
+    Next
+
+    ' Update query for JOB_IDs
+    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN (" & formattedJOB_IDs & ")"
+    objLOGFile.WriteLine("Executing update query: " & sQuery)
+    
+    ' Execute the update query
+    Set rs = db.Execute(sQuery)
+    objLOGFile.WriteLine("Update query executed successfully.")
+Else
+    objLOGFile.WriteLine("No JOB_ID values provided. Skipping update query.")
+End If
+
+' Delete query for LOCK_SESSION_ID
+If LOCK_SESSION_ID <> "" Then
+    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
+    objLOGFile.WriteLine("Executing delete query: " & sQuery)
+    
+    ' Execute the delete query
+    Set rs2 = db.Execute(sQuery)
+    objLOGFile.WriteLine("Delete query executed successfully.")
+Else
+    objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
+End If
+
+' Clean up
+If Not rs Is Nothing Then rs.Close
+If Not rs2 Is Nothing Then rs2.Close
+db.Close
+
+objLOGFile.WriteLine("Script execution completed.")
+objLOGFile.Close
+
+' Function to pad numbers with leading zeros
+Function ZeroFill(value, length)
+    ZeroFill = Right(String(length, "0") & value, length)
+End Function
