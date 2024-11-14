@@ -1,4 +1,171 @@
-If Not objLOG.FileExists(EASFilePath & "Session_lock.xlsx") Then
-    objLOGFile.WriteLine("Error: Excel file not found at " & EASFilePath & "Session_lock.xlsx")
+I need a code addition based on my below requirments.
+Obective:
+I need a script which read a file (Source file). In the source file there are two lines. all two lines read by script and assign in the two variable 
+(Variable 1: JOB_ID). When script read these variable remove the spaces just read only value.
+ Next step is Script check if teeno variables main kisi main bhi value hai to unhe below update query main bheje and execute kare. 
+ if file main koi value nhi h to msg log main print karo ki "No value for Update the Statsus in EAS_JOBS table."
+After execute query usheka sQuery variable main output lekar ushe bhi log main print kare with heading. kiya update hua hai.
+
+Objective: 
+Create a VB script jha pe do steps hai.
+first is:
+Ek VB script hai jo txt file se first line main JOB_ID ke value ko pick karege or update query main assion krke EAS_JOBS table main STATUS_IND kon 100 se 300 update karege.
+    Note: JOB_ID main variabe comma (,) dekar kitne bhi ho sakte hai line example : JOB_ID=23123,12321,1213122,2121212
+    NOTE: first value se lekar comma ke bad ane wale sabhi value ko variable main assign karke update query main assign kar ke query execute karna h.
+    NOTE: TXT file main JOB_ID variable main kitne bhi value ho sakte h.
+Second steps is :
+same TXT file maine second line main se Lock_session_ID ko pick karege or ek delete query main Lock_session_ID ko assign kar ke EAS_LOCKS tables jo ush entry ko delete kar dega.
+NOTE: har ek steps ko LOG main print karna h. Like Source file name. All JOB_ID value. and Lock_session_ID step by steps are print in log for records
+
+Below are the detailed explaination.
+
+Source file name: Session_lock.txt
+Source file ke andar ka data kuch esha hoga:
+JOB_ID=2313121,121123,1323231,13213123
+LOCK_SESSION_ID=3212313
+
+
+
+Script Code: (NOTE: I have create a prototype code kindly analysis and add code as per the requirments)
+' Code start
+Dim db, rs, db2, rs2
+
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+
+'Added the logic to read the parameter to get the server and executing environment
+IF WScript.Arguments.Count = 0 then
+    WScript.Echo "Missing parameters"
     WScript.Quit
+END IF
+Execserver = Wscript.Arguments.Item(0)
+VersionKey = Wscript.Arguments.Item(1)
+'Added the logic to read the parameter to get the server and executing environment
+
+EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+set objLOG = createobject("Scripting.FileSystemObject")
+set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+objLOGFile.WriteLine("Hundle lock Script is started  [" & EASFilePath & "]." & " RUN DATE: " & DATE & " " & TIME)
+objLOGFile.WriteLine("   ")
+
+ 'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   Const ForReading = 1
+   Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   Set keyValues = CreateObject("Scripting.Dictionary")
+   Do Until objFileReg.AtEndOfStream
+   line =objFileReg.ReadLine
+   parts = Split(line,"=")
+   If UBound(parts) = 1 Then
+      key = Trim(parts(0))
+      value = Trim(parts(1))
+      keyValues(key) = value
+   End If
+   Loop
+   objFileReg.Close
+   Val=keyValues(VersionKey)
+   DBDetails = Split(Val,",")
+   If UBound(DBDetails) >= 0 Then
+      DBServerVal = DBDetails(0)
+      DBDBVal=DBDetails(1)
+      DBUserVal=DBDetails(2)
+      DBPassVal=DBDetails(3)
+      DBServer = ReadReg(DBServerVal)
+      DBDB = ReadReg(DBDBVal)
+      DBUser = ReadReg(DBUserVal)
+      DBPass = ReadReg(DBPassVal)
+   Else
+      WScript.Echo "No values in the file to match the upgrade version"
+   End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+
+' Start code Fetch  all from first line the EAS_JOBS Data from Source file assign in variable for update query - JOB_ID fetch comma
+   
+
+' End code Fetch  all from first line the EAS_JOBS Data from Source file assign in variable for update query - JOB_ID fetch comma
+
+' Start code fetch in second line the EAS_LOCKS data from source file column and assign in variable for Delete query - LOCK_SESSION_ID fetch
+ 
+' END code fetch in second line the EAS_LOCKS data from source file column and assign in variable for Delete query - LOCK_SESSION_ID fetch
+
+    ' Database connection and query execution
+    sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+    ' sConnect = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=NICOSQL94\FINSYS_DEV;UID=SYSTEM;Trusted_Connection=yes;DATABASE=EASSupportingPrograms;"
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
+    
+    sQuery= "UPDATE EAS_JOBS " & _
+            "SET STATUS_IND = 300 " & _
+            "WHERE JOB_ID in ('@JOB_ID_1','@JOB_ID_2','@JOB_ID_3');"
+
+        
+
+    Set rs = db.Execute(sQuery)
+
+     sQuery= "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '@LOCK_SESSION_ID'; " & _
+        
+
+    rs.Close
+    db.Close
 End If
+
+WScript.Quit(0)
+
+Function ReadReg(RegPath)
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+End Function
+
+Function ZeroFill (ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length)
+    BLANKFill = Trim(String)
+    Do While Len(BLANKFill) < length
+        BLANKFill = " " & BLANKFill
+    Loop
+End Function  
+' Code end 
+
+Requirments:
+Point 1: Script start ho or source file se JOB_ID ka data diye gye code main se die gae txt file se fetch kare or variable main assign kare. fetch all value kare jo bhi comma ke baad tak h . 
+    a. IF fetch karte time value main koi space h to ushe hata de sirf value hee pick kare.
+Point 2: Script fir se source file se second line se fetch kare LOCK_SESSION_ID ka data dia gye code main se die gae column se fetch kare or variable main assign kare.
+    a. IF fetch karte time value main koi space h to ushe hata de sirf value hee pick kare.
+Point 3: Connection stablish kare jesha ki phele se code main diya hua h.
+Point 4: assign hue variabe ke sath Update query execute kare.
+    Importent point a: IF JOB_ID main ek value ho ya maximum kitne bhi ho update query chalne chahiye.
+    Importent Point b: IF JOB_ID  main koi value na ho to update query na chale baki ka neche di gai script run ho .
+    Importent Point c: Update query run hoti h ya nhi dono scenario ka output log main print ho.
+Point 5: assign hue variable ke sath (Variable: @LOCK_SESSION_ID)Delete query Execute kare.
+    Importent Point a: IF LOCK_SESSION_ID  main koi value na ho to Delete query na chale baki ka neche di gai script run ho .
+    Importent Point b: Delete query run hoti h ya nhi dono scenario ka output log main print ho.
+
+NOTE 1: Sabhi points ko log main print hona chahie
+NOTE 2: IF update query ke liye koi variable nhi milta or Delete query ke liye variable main value h to delete query chale.
+NOTE 3: If Delete query ke liye variable na ho or update query ke lie variable main value h to update query run ho or delete query run an ho.
+
+
+Most importent point : Do not chnage any thing ust do only jo above requirment main bola hai.... Dont touch Start block and end lock part and also sConnect wala part bhi alag rakho jha pe jo comment kiya h whi pe code ka logic lagao
