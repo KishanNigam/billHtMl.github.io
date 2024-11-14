@@ -1,26 +1,133 @@
-INSERT INTO EAS_JOBS (JOB_ID, STATUS_IND, JOB_DESC, START_TIME, STATUS_TIME)
-VALUES
-(30405, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-06 12:40:18.043', '2024-11-06 14:15:47.670'),
-(30404, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-06 12:01:08.623', '2024-11-06 12:40:12.673'),
-(30403, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUMMARY', '2024-11-06 12:00:12.933', '2024-11-06 12:01:03.067'),
-(30402, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-05 12:43:45.933', '2024-11-05 14:02:41.470'),
-(30401, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-05 12:01:05.437', '2024-11-05 12:43:36.373'),
-(30400, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUMMARY', '2024-11-05 12:00:10.170', '2024-11-05 12:00:59.150'),
-(30399, 222, 'AP Process Checks', '2024-11-05 02:38:34.837', '2024-11-05 02:38:56.870'),
-(30398, 300, 'AP Process Checks', '2024-11-05 02:34:12.133', '2024-11-05 02:34:13.937'),
-(30397, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU_CURR', '2024-11-04 12:42:08.120', '2024-11-04 14:32:06.993'),
-(30396, 200, 'Summarize BSTRN_DETAIL table to BSTRN_SUM_BU', '2024-11-04 12:01:17.430', '2024-11-04 12:41:58.877');
-=============================================================================================================================
-DECLARE @Variable1 NVARCHAR(50) = 'variable1'
-DECLARE @Variable2 NVARCHAR(50) = 'variable2'
-DECLARE @Variable3 NVARCHAR(50) = 'variable3'
+' Code start
+Dim db, rs, db2, rs2, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
 
--- Agar aapke paas sirf 1 variable hai toh uske hisaab se query likhe
-Update EAS_JOBS 
-SET Status_ind = '300' 
-WHERE job_ID IN (
-    CASE WHEN @Variable1 IS NOT NULL THEN @Variable1 END,
-    CASE WHEN @Variable2 IS NOT NULL THEN @Variable2 END,
-    CASE WHEN @Variable3 IS NOT NULL THEN @Variable3 END
-);
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
 
+'Added the logic to read the parameter to get the server and executing environment
+IF WScript.Arguments.Count = 0 then
+    WScript.Echo "Missing parameters"
+    WScript.Quit
+END IF
+Execserver = Wscript.Arguments.Item(0)
+VersionKey = Wscript.Arguments.Item(1)
+
+EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+set objLOG = createobject("Scripting.FileSystemObject")
+set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+objLOGFile.WriteLine("Handle Lock Script started. Source Path: " & EASFilePath & " | Date: " & Date & " " & Time)
+objLOGFile.WriteLine("   ")
+
+' Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+Const ForReading = 1
+Set objFSOReg = CreateObject("Scripting.FileSystemObject")
+Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+Set keyValues = CreateObject("Scripting.Dictionary")
+Do Until objFileReg.AtEndOfStream
+    line =objFileReg.ReadLine
+    parts = Split(line,"=")
+    If UBound(parts) = 1 Then
+        key = Trim(parts(0))
+        value = Trim(parts(1))
+        keyValues(key) = value
+    End If
+Loop
+objFileReg.Close
+Val=keyValues(VersionKey)
+DBDetails = Split(Val,",")
+If UBound(DBDetails) >= 0 Then
+    DBServerVal = DBDetails(0)
+    DBDBVal=DBDetails(1)
+    DBUserVal=DBDetails(2)
+    DBPassVal=DBDetails(3)
+    DBServer = ReadReg(DBServerVal)
+    DBDB = ReadReg(DBDBVal)
+    DBUser = ReadReg(DBUserVal)
+    DBPass = ReadReg(DBPassVal)
+Else
+    WScript.Echo "No values in the file to match the upgrade version"
+End If
+' End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+
+' Read JOB_ID and LOCK_SESSION_ID from source file
+Set objSourceFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(EASFilePath & "Session_lock.txt", ForReading)
+Do Until objSourceFile.AtEndOfStream
+    line = Trim(objSourceFile.ReadLine)
+    If Left(line, 7) = "JOB_ID=" Then
+        JOB_ID = Replace(Mid(line, 8), " ", "")
+        objLOGFile.WriteLine("JOB_ID fetched: " & JOB_ID)
+    ElseIf Left(line, 15) = "LOCK_SESSION_ID=" Then
+        LOCK_SESSION_ID = Replace(Mid(line, 16), " ", "")
+        objLOGFile.WriteLine("LOCK_SESSION_ID fetched: " & LOCK_SESSION_ID)
+    End If
+Loop
+objSourceFile.Close
+
+' Establish database connection
+sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
+
+' Execute update query if JOB_ID has values
+If JOB_ID <> "" Then
+    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN (" & Replace(JOB_ID, ",", "','") & ")"
+    objLOGFile.WriteLine("Executing update query: " & sQuery)
+    Set rs = db.Execute(sQuery)
+    objLOGFile.WriteLine("Update query executed successfully.")
+Else
+    objLOGFile.WriteLine("No JOB_ID provided. Skipping update query.")
+End If
+
+' Execute delete query if LOCK_SESSION_ID has a value
+If LOCK_SESSION_ID <> "" Then
+    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
+    objLOGFile.WriteLine("Executing delete query: " & sQuery)
+    Set rs = db.Execute(sQuery)
+    objLOGFile.WriteLine("Delete query executed successfully.")
+Else
+    objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
+End If
+
+db.Close
+objLOGFile.WriteLine("Script completed successfully.")
+objLOGFile.Close
+
+WScript.Quit(0)
+
+Function ReadReg(RegPath)
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+End Function
+
+Function ZeroFill(ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
+End Function
+
+Function BLANKFill(ByVal String, ByVal length)
+    BLANKFill = Trim(String)
+    Do While Len(BLANKFill) < length
+        BLANKFill = " " & BLANKFill
+    Loop
+End Function
+' Code end
