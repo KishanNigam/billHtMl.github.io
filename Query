@@ -1,7 +1,59 @@
-Describe the Change Being Requested:
-Request here is to get job failure notification for condition “RECORD(S) REJECTED” in VisualCron.
+Here's a concise version of the document:
+
+
+---
+
+Technical Analysis Document
+
+Change Request:
+Configure VisualCron to send failure notifications when the condition "RECORD(S) REJECTED" is encountered.
+
 Analysis:
-•	In the Visual Cron go through all the scan tasks.
-•	Scan 3 task is reading batch log.
-•	So, I have to apply conditions in scan 3 task.
-•	Every time job will fail due to RECORD(S) REJECTED. Job send a error mail.
+
+1. Current Setup:
+
+VisualCron has multiple tasks; Scan 3 Task reads the batch log.
+
+
+
+2. Proposed Solution:
+
+Modify Scan 3 Task to check for the condition "RECORD(S) REJECTED" in the log.
+
+Trigger job failure when the condition is met.
+
+Configure an error notification email for job failure.
+
+
+
+
+Implementation Steps:
+
+1. Edit the Scan 3 Task to include the new condition.
+
+
+2. Add failure state and email notification for the job.
+
+
+
+Impact:
+
+Technical: Minimal workflow changes.
+
+Business: Improved monitoring and issue notification.
+
+
+Assumptions:
+
+Batch log format remains consistent.
+
+
+Next Steps:
+
+Implement and test changes in a non-production environment.
+
+
+
+---
+
+Let me know if this meets your expectations!
