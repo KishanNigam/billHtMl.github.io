@@ -1,5 +1,5 @@
 ' Code start
-Dim db, rs, db2, rs2, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
+Dim db, rs, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
 
 sDate = DatePart("yyyy", Now) 
 RPTDATE = sDate
@@ -26,8 +26,8 @@ END IF
 Execserver = Wscript.Arguments.Item(0)
 VersionKey = Wscript.Arguments.Item(1)
 
-EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
-LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
+EASFilePath = "\\" & Execserver & "\server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\Session_vbs_" & sDate & ".LOG"
 set objLOG = createobject("Scripting.FileSystemObject")
 set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
 objLOGFile.WriteLine("Handle Lock Script started. Source Path: " & EASFilePath & " | Date: " & Date & " " & Time)
@@ -71,8 +71,8 @@ Do Until objSourceFile.AtEndOfStream
     If Left(line, 7) = "JOB_ID=" Then
         JOB_ID = Replace(Mid(line, 8), " ", "")
         objLOGFile.WriteLine("JOB_ID fetched: " & JOB_ID)
-    ElseIf Left(line, 15) = "LOCK_SESSION_ID=" Then
-        LOCK_SESSION_ID = Replace(Mid(line, 16), " ", "")
+    ElseIf Left(line, 16) = "LOCK_SESSION_ID=" Then
+        LOCK_SESSION_ID = Replace(Mid(line, 17), " ", "")
         objLOGFile.WriteLine("LOCK_SESSION_ID fetched: " & LOCK_SESSION_ID)
     End If
 Loop
@@ -86,20 +86,38 @@ db.Open sConnect
 
 ' Execute update query if JOB_ID has values
 If JOB_ID <> "" Then
-    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN (" & Replace(JOB_ID, ",", "','") & ")"
-    objLOGFile.WriteLine("Executing update query: " & sQuery)
+    objLOGFile.WriteLine("Validating JOB_ID in the database: " & JOB_ID)
+    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_JOBS WHERE JOB_ID = '" & JOB_ID & "'"
     Set rs = db.Execute(sQuery)
-    objLOGFile.WriteLine("Update query executed successfully.")
+    If Not rs.EOF And rs("RecordCount") > 0 Then
+        objLOGFile.WriteLine("JOB_ID exists in the database. Executing update query.")
+        sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID = '" & JOB_ID & "'"
+        objLOGFile.WriteLine("Executing update query: " & sQuery)
+        db.Execute(sQuery)
+        objLOGFile.WriteLine("Update query executed successfully.")
+    Else
+        objLOGFile.WriteLine("Error: JOB_ID is wrong!")
+    End If
+    rs.Close
 Else
     objLOGFile.WriteLine("No JOB_ID provided. Skipping update query.")
 End If
 
 ' Execute delete query if LOCK_SESSION_ID has a value
 If LOCK_SESSION_ID <> "" Then
-    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
-    objLOGFile.WriteLine("Executing delete query: " & sQuery)
+    objLOGFile.WriteLine("Validating LOCK_SESSION_ID in the database: " & LOCK_SESSION_ID)
+    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
     Set rs = db.Execute(sQuery)
-    objLOGFile.WriteLine("Delete query executed successfully.")
+    If Not rs.EOF And rs("RecordCount") > 0 Then
+        objLOGFile.WriteLine("LOCK_SESSION_ID exists in the database. Executing delete query.")
+        sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
+        objLOGFile.WriteLine("Executing delete query: " & sQuery)
+        db.Execute(sQuery)
+        objLOGFile.WriteLine("Delete query executed successfully.")
+    Else
+        objLOGFile.WriteLine("Error: LOCK_SESSION_ID is wrong!")
+    End If
+    rs.Close
 Else
     objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
 End If
