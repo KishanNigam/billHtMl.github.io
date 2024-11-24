@@ -1,59 +1,145 @@
-Here's a concise version of the document:
+Please add this logic.
+1. IF source file main JOB_ID ho to ushe phele check kare db main ki txt file main  di gai JOB_ID db main exist karte h to Update query run kare or agar nhi karte h then log main messag print ho "Error: JOB_ID is wrong!"
+2. IF source file main LOCK_SESSION_ID ho to ushe phele check kare db main ki txt file main di gai LOCK_SESSION_ID db main exist karte h to Delete query run kare or agar nhi karte h then log main messag print ho "Error: Lock_Session_ID is wrong!"
 
-
----
-
-Technical Analysis Document
-
-Change Request:
-Configure VisualCron to send failure notifications when the condition "RECORD(S) REJECTED" is encountered.
-
-Analysis:
-
-1. Current Setup:
-
-VisualCron has multiple tasks; Scan 3 Task reads the batch log.
-
-
-
-2. Proposed Solution:
-
-Modify Scan 3 Task to check for the condition "RECORD(S) REJECTED" in the log.
-
-Trigger job failure when the condition is met.
-
-Configure an error notification email for job failure.
+NOTE: a. Print all steps in log both success and failure logic.
+b.Most important thing do not chnage any thing in code just fix only above logic.
 
 
 
 
-Implementation Steps:
-
-1. Edit the Scan 3 Task to include the new condition.
 
 
-2. Add failure state and email notification for the job.
+' Code start
+Dim db, rs, db2, rs2, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
 
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
 
+'Added the logic to read the parameter to get the server and executing environment
+IF WScript.Arguments.Count = 0 then
+    WScript.Echo "Missing parameters"
+    WScript.Quit
+END IF
+Execserver = Wscript.Arguments.Item(0)
+VersionKey = Wscript.Arguments.Item(1)
 
-Impact:
+EASFilePath = "\\" & Execserver & "\server\log\Deployment\Summery_LOCK\SourceDIR\"
+LOGFilePath = "\\" & Execserver & "\server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\Session_vbs_" & sDate & ".LOG"
+set objLOG = createobject("Scripting.FileSystemObject")
+set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+objLOGFile.WriteLine("Handle Lock Script started. Source Path: " & EASFilePath & " | Date: " & Date & " " & Time)
+objLOGFile.WriteLine("   ")
 
-Technical: Minimal workflow changes.
+' Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+Const ForReading = 1
+Set objFSOReg = CreateObject("Scripting.FileSystemObject")
+Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+Set keyValues = CreateObject("Scripting.Dictionary")
+Do Until objFileReg.AtEndOfStream
+    line =objFileReg.ReadLine
+    parts = Split(line,"=")
+    If UBound(parts) = 1 Then
+        key = Trim(parts(0))
+        value = Trim(parts(1))
+        keyValues(key) = value
+    End If
+Loop
+objFileReg.Close
+Val=keyValues(VersionKey)
+DBDetails = Split(Val,",")
+If UBound(DBDetails) >= 0 Then
+    DBServerVal = DBDetails(0)
+    DBDBVal=DBDetails(1)
+    DBUserVal=DBDetails(2)
+    DBPassVal=DBDetails(3)
+    DBServer = ReadReg(DBServerVal)
+    DBDB = ReadReg(DBDBVal)
+    DBUser = ReadReg(DBUserVal)
+    DBPass = ReadReg(DBPassVal)
+Else
+    WScript.Echo "No values in the file to match the upgrade version"
+End If
+' End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
 
-Business: Improved monitoring and issue notification.
+' Read JOB_ID and LOCK_SESSION_ID from source file
+Set objSourceFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(EASFilePath & "Session_lock.txt", ForReading)
+Do Until objSourceFile.AtEndOfStream
+    line = Trim(objSourceFile.ReadLine)
+    If Left(line, 7) = "JOB_ID=" Then
+        JOB_ID = Replace(Mid(line, 8), " ", "")
+        objLOGFile.WriteLine("JOB_ID fetched: " & JOB_ID)
+    ElseIf Left(line, 16) = "LOCK_SESSION_ID=" Then
+        LOCK_SESSION_ID = Replace(Mid(line, 17), " ", "")
+        objLOGFile.WriteLine("LOCK_SESSION_ID fetched: " & LOCK_SESSION_ID)
+    End If
+Loop
+objSourceFile.Close
 
+' Establish database connection
+sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
 
-Assumptions:
+' Execute update query if JOB_ID has values
+If JOB_ID <> "" Then
+    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
+    objLOGFile.WriteLine("Executing update query: " & sQuery)
+    Set rs = db.Execute(sQuery)
+    objLOGFile.WriteLine("Update query executed successfully.")
+Else
+    objLOGFile.WriteLine("No JOB_ID provided. Skipping update query.")
+End If
 
-Batch log format remains consistent.
+' Execute delete query if LOCK_SESSION_ID has a value
+If LOCK_SESSION_ID <> "" Then
+    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
+    objLOGFile.WriteLine("Executing delete query: " & sQuery)
+    Set rs = db.Execute(sQuery)
+    objLOGFile.WriteLine("Delete query executed successfully.")
+Else
+    objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
+End If
 
+db.Close
+objLOGFile.WriteLine("Script completed successfully.")
+objLOGFile.Close
 
-Next Steps:
+WScript.Quit(0)
 
-Implement and test changes in a non-production environment.
+Function ReadReg(RegPath)
+    Dim objRegistry, Key
+    Set objRegistry = CreateObject("Wscript.shell")
+    Key = objRegistry.RegRead(RegPath)
+    ReadReg = Key
+End Function
 
+Function ZeroFill(ByVal String, ByVal length)
+    ZeroFill = Trim(String)
+    Do While Len(ZeroFill) < length
+        ZeroFill = "0" & ZeroFill
+    Loop
+End Function
 
-
----
-
-Let me know if this meets your expectations!
+Function BLANKFill(ByVal String, ByVal length)
+    BLANKFill = Trim(String)
+    Do While Len(BLANKFill) < length
+        BLANKFill = " " & BLANKFill
+    Loop
+End Function
+' Code end
