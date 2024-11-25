@@ -1,17 +1,5 @@
-Please add this logic.
-1. IF source file main JOB_ID ho to ushe phele check kare db main ki txt file main  di gai JOB_ID db main exist karte h to Update query run kare or agar nhi karte h then log main messag print ho "Error: JOB_ID is wrong!"
-2. IF source file main LOCK_SESSION_ID ho to ushe phele check kare db main ki txt file main di gai LOCK_SESSION_ID db main exist karte h to Delete query run kare or agar nhi karte h then log main messag print ho "Error: Lock_Session_ID is wrong!"
-
-NOTE: a. Print all steps in log both success and failure logic.
-b.Most important thing do not chnage any thing in code just fix only above logic.
-
-
-
-
-
-
 ' Code start
-Dim db, rs, db2, rs2, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
+Dim db, rs, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
 
 sDate = DatePart("yyyy", Now) 
 RPTDATE = sDate
@@ -30,7 +18,7 @@ hrno = ZeroFill(hrs,2)
 minno = ZeroFill(mns,2)
 sDate = sDate & hrno & minno
 
-'Added the logic to read the parameter to get the server and executing environment
+' Added the logic to read the parameter to get the server and executing environment
 IF WScript.Arguments.Count = 0 then
     WScript.Echo "Missing parameters"
     WScript.Quit
@@ -45,13 +33,20 @@ set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
 objLOGFile.WriteLine("Handle Lock Script started. Source Path: " & EASFilePath & " | Date: " & Date & " " & Time)
 objLOGFile.WriteLine("   ")
 
+' Check if the source file exists
+If Not CreateObject("Scripting.FileSystemObject").FileExists(EASFilePath & "Session_lock.txt") Then
+    objLOGFile.WriteLine("Error: Source file is not available or Source file name is not correct.")
+    objLOGFile.Close
+    WScript.Quit(1)
+End If
+
 ' Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
 Const ForReading = 1
 Set objFSOReg = CreateObject("Scripting.FileSystemObject")
 Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
 Set keyValues = CreateObject("Scripting.Dictionary")
 Do Until objFileReg.AtEndOfStream
-    line =objFileReg.ReadLine
+    line = objFileReg.ReadLine
     parts = Split(line,"=")
     If UBound(parts) = 1 Then
         key = Trim(parts(0))
@@ -60,13 +55,13 @@ Do Until objFileReg.AtEndOfStream
     End If
 Loop
 objFileReg.Close
-Val=keyValues(VersionKey)
+Val = keyValues(VersionKey)
 DBDetails = Split(Val,",")
 If UBound(DBDetails) >= 0 Then
     DBServerVal = DBDetails(0)
-    DBDBVal=DBDetails(1)
-    DBUserVal=DBDetails(2)
-    DBPassVal=DBDetails(3)
+    DBDBVal = DBDetails(1)
+    DBUserVal = DBDetails(2)
+    DBPassVal = DBDetails(3)
     DBServer = ReadReg(DBServerVal)
     DBDB = ReadReg(DBDBVal)
     DBUser = ReadReg(DBUserVal)
@@ -90,28 +85,65 @@ Do Until objSourceFile.AtEndOfStream
 Loop
 objSourceFile.Close
 
-' Establish database connection
+' Establish database connection with error handling
+On Error Resume Next
 sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
 Set db = CreateObject("ADODB.Connection")
 db.CommandTimeout = 0
 db.Open sConnect
+If Err.Number <> 0 Then
+    objLOGFile.WriteLine("Error: Database Issue - " & Err.Description)
+    objLOGFile.Close
+    WScript.Quit(1)
+End If
+On Error GoTo 0
 
 ' Execute update query if JOB_ID has values
 If JOB_ID <> "" Then
-    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
-    objLOGFile.WriteLine("Executing update query: " & sQuery)
+    objLOGFile.WriteLine("Validating JOB_ID in the database: " & JOB_ID)
+    On Error Resume Next
+    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_JOBS WHERE JOB_ID = '" & JOB_ID & "'"
     Set rs = db.Execute(sQuery)
-    objLOGFile.WriteLine("Update query executed successfully.")
+    If Err.Number <> 0 Then
+        objLOGFile.WriteLine("Error: Database Issue - " & Err.Description)
+        objLOGFile.Close
+        WScript.Quit(1)
+    End If
+    On Error GoTo 0
+    If Not rs.EOF And rs("RecordCount") > 0 Then
+        objLOGFile.WriteLine("JOB_ID exists in the database. Executing update query.")
+        sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID = '" & JOB_ID & "'"
+        db.Execute(sQuery)
+        objLOGFile.WriteLine("Update query executed successfully.")
+    Else
+        objLOGFile.WriteLine("Error: JOB_ID is wrong!")
+    End If
+    rs.Close
 Else
     objLOGFile.WriteLine("No JOB_ID provided. Skipping update query.")
 End If
 
 ' Execute delete query if LOCK_SESSION_ID has a value
 If LOCK_SESSION_ID <> "" Then
-    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
-    objLOGFile.WriteLine("Executing delete query: " & sQuery)
+    objLOGFile.WriteLine("Validating LOCK_SESSION_ID in the database: " & LOCK_SESSION_ID)
+    On Error Resume Next
+    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
     Set rs = db.Execute(sQuery)
-    objLOGFile.WriteLine("Delete query executed successfully.")
+    If Err.Number <> 0 Then
+        objLOGFile.WriteLine("Error: Database Issue - " & Err.Description)
+        objLOGFile.Close
+        WScript.Quit(1)
+    End If
+    On Error GoTo 0
+    If Not rs.EOF And rs("RecordCount") > 0 Then
+        objLOGFile.WriteLine("LOCK_SESSION_ID exists in the database. Executing delete query.")
+        sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
+        db.Execute(sQuery)
+        objLOGFile.WriteLine("Delete query executed successfully.")
+    Else
+        objLOGFile.WriteLine("Error: LOCK_SESSION_ID is wrong!")
+    End If
+    rs.Close
 Else
     objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
 End If
