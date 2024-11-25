@@ -1,13 +1,3 @@
-You use last time this code for handling multiple value of job_id
- sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
-
-Please update Below code
-1. If job_id 1 ho to bhi check kare db main and update kare or do ho to bhi check kare db main and update ho
-2. Most importent do not change any thing just add multiple job_id value logic. 
-3. After add this code give me complete script. 
-
-
-
 ' Code start
 Dim db, rs, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
 
@@ -112,7 +102,7 @@ On Error GoTo 0
 If JOB_ID <> "" Then
     objLOGFile.WriteLine("Validating JOB_ID in the database: " & JOB_ID)
     On Error Resume Next
-    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_JOBS WHERE JOB_ID = '" & JOB_ID & "'"
+    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_JOBS WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
     Set rs = db.Execute(sQuery)
     If Err.Number <> 0 Then
         objLOGFile.WriteLine("Error: Database Issue - " & Err.Description)
@@ -121,12 +111,12 @@ If JOB_ID <> "" Then
     End If
     On Error GoTo 0
     If Not rs.EOF And rs("RecordCount") > 0 Then
-        objLOGFile.WriteLine("JOB_ID exists in the database. Executing update query.")
-        sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID = '" & JOB_ID & "'"
+        objLOGFile.WriteLine("JOB_ID(s) exist in the database. Executing update query.")
+        sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
         db.Execute(sQuery)
         objLOGFile.WriteLine("Update query executed successfully.")
     Else
-        objLOGFile.WriteLine("Error: JOB_ID is wrong!")
+        objLOGFile.WriteLine("Error: JOB_ID(s) are wrong or do not exist!")
     End If
     rs.Close
 Else
