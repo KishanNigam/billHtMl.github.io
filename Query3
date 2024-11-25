@@ -9,3 +9,10 @@
 
 I have made updates to the code to handle error scenarios, including wrong job ID and additional negative scenarios.  
 I have also attached the 'Code Test Case Scenario.docx' document, which details all the error-handling cases managed by the code."
+
+
+
+
+
+
+"The code is handling all negative error scenarios correctly. However, the Visual Cron script is not throwing an error even after reading the error from the script log. I have applied the necessary condition, but could you please check why the condition in Visual Cron is not working as expected?"
