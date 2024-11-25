@@ -1,151 +1,64 @@
-' Code start
-Dim db, rs, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
+Script Structure and Mechanism
+Date and Time Initialization
 
-sDate = DatePart("yyyy", Now) 
-RPTDATE = sDate
-YYEAR= DatePart("yyyy", Now)  
-mmno = DatePart("m", Now)
-monthno = ZeroFill(mmno,2)
-sDate = sDate & monthno   
-RPTDATE = RPTDATE & "-" & monthno
-ddno = DatePart("d", Now)
-dayno = ZeroFill(ddno,2)
-sDate = sDate & dayno  
-RPTDATE = RPTDATE & "-" & dayno
-hrs = DatePart("h", Now)
-mns = DatePart("n", Now)
-hrno = ZeroFill(hrs,2)
-minno = ZeroFill(mns,2)
-sDate = sDate & hrno & minno
+Generates timestamps (sDate, RPTDATE) with zero-padded month, day, hour, and minute values for use in file paths and log file naming.
+Uses helper functions ZeroFill and BLANKFill to pad values.
+Parameter Validation
 
-'Added the logic to read the parameter to get the server and executing environment
-IF WScript.Arguments.Count = 0 then
-    WScript.Echo "Missing parameters"
-    WScript.Quit
-END IF
-Execserver = Wscript.Arguments.Item(0)
-VersionKey = Wscript.Arguments.Item(1)
+Checks if required arguments (Execserver, VersionKey) are passed.
+Exits with an error message if arguments are missing.
+File Path and Log Initialization
 
-EASFilePath = "\\" & Execserver & "\server\log\Deployment\Summery_LOCK\SourceDIR\"
-LOGFilePath = "\\" & Execserver & "\server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\Session_vbs_" & sDate & ".LOG"
-set objLOG = createobject("Scripting.FileSystemObject")
-set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
-objLOGFile.WriteLine("Handle Lock Script started. Source Path: " & EASFilePath & " | Date: " & Date & " " & Time)
-objLOGFile.WriteLine("   ")
+Constructs paths for:
+Source File: Based on Execserver and a static directory structure.
+Log File: Includes the current year, month, and timestamp for unique naming.
+Creates a log file and starts logging script actions and progress.
+Reading Registry Values
 
-' Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
-Const ForReading = 1
-Set objFSOReg = CreateObject("Scripting.FileSystemObject")
-Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
-Set keyValues = CreateObject("Scripting.Dictionary")
-Do Until objFileReg.AtEndOfStream
-    line =objFileReg.ReadLine
-    parts = Split(line,"=")
-    If UBound(parts) = 1 Then
-        key = Trim(parts(0))
-        value = Trim(parts(1))
-        keyValues(key) = value
-    End If
-Loop
-objFileReg.Close
-Val=keyValues(VersionKey)
-DBDetails = Split(Val,",")
-If UBound(DBDetails) >= 0 Then
-    DBServerVal = DBDetails(0)
-    DBDBVal=DBDetails(1)
-    DBUserVal=DBDetails(2)
-    DBPassVal=DBDetails(3)
-    DBServer = ReadReg(DBServerVal)
-    DBDB = ReadReg(DBDBVal)
-    DBUser = ReadReg(DBUserVal)
-    DBPass = ReadReg(DBPassVal)
-Else
-    WScript.Echo "No values in the file to match the upgrade version"
-End If
-' End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+Reads database connection details (DBServerVal, DBDBVal, etc.) from RegistryDtls.txt.
+Utilizes ReadReg function to fetch registry values based on parsed keys.
+Reading Source File
 
-' Read JOB_ID and LOCK_SESSION_ID from source file
-Set objSourceFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(EASFilePath & "Session_lock.txt", ForReading)
-Do Until objSourceFile.AtEndOfStream
-    line = Trim(objSourceFile.ReadLine)
-    If Left(line, 7) = "JOB_ID=" Then
-        JOB_ID = Replace(Mid(line, 8), " ", "")
-        objLOGFile.WriteLine("JOB_ID fetched: " & JOB_ID)
-    ElseIf Left(line, 16) = "LOCK_SESSION_ID=" Then
-        LOCK_SESSION_ID = Replace(Mid(line, 17), " ", "")
-        objLOGFile.WriteLine("LOCK_SESSION_ID fetched: " & LOCK_SESSION_ID)
-    End If
-Loop
-objSourceFile.Close
+Reads Session_lock.txt line by line.
+Extracts JOB_ID and LOCK_SESSION_ID values, logging each fetched value.
+Database Connection
 
-' Establish database connection
-sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
-Set db = CreateObject("ADODB.Connection")
-db.CommandTimeout = 0
-db.Open sConnect
+Establishes a connection to the SQL Server database using ADODB with ODBC Driver 17.
+Specifies the connection string, including encryption and credentials.
+SQL Query Execution
 
-' Execute update query if JOB_ID has values
-If JOB_ID <> "" Then
-    objLOGFile.WriteLine("Validating JOB_ID in the database: " & JOB_ID)
-    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_JOBS WHERE JOB_ID = '" & JOB_ID & "'"
-    Set rs = db.Execute(sQuery)
-    If Not rs.EOF And rs("RecordCount") > 0 Then
-        objLOGFile.WriteLine("JOB_ID exists in the database. Executing update query.")
-        sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID = '" & JOB_ID & "'"
-        objLOGFile.WriteLine("Executing update query: " & sQuery)
-        db.Execute(sQuery)
-        objLOGFile.WriteLine("Update query executed successfully.")
-    Else
-        objLOGFile.WriteLine("Error: JOB_ID is wrong!")
-    End If
-    rs.Close
-Else
-    objLOGFile.WriteLine("No JOB_ID provided. Skipping update query.")
-End If
+Update Query: Updates STATUS_IND to 300 in the EAS_JOBS table if JOB_ID is valid.
+Delete Query: Deletes a record from the EAS_LOCKS table if LOCK_SESSION_ID is valid.
+Logs every query execution, including success or failure.
+Error Handling
 
-' Execute delete query if LOCK_SESSION_ID has a value
-If LOCK_SESSION_ID <> "" Then
-    objLOGFile.WriteLine("Validating LOCK_SESSION_ID in the database: " & LOCK_SESSION_ID)
-    sQuery = "SELECT COUNT(*) AS RecordCount FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
-    Set rs = db.Execute(sQuery)
-    If Not rs.EOF And rs("RecordCount") > 0 Then
-        objLOGFile.WriteLine("LOCK_SESSION_ID exists in the database. Executing delete query.")
-        sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
-        objLOGFile.WriteLine("Executing delete query: " & sQuery)
-        db.Execute(sQuery)
-        objLOGFile.WriteLine("Delete query executed successfully.")
-    Else
-        objLOGFile.WriteLine("Error: LOCK_SESSION_ID is wrong!")
-    End If
-    rs.Close
-Else
-    objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
-End If
+Logs and exits gracefully in case of missing or invalid JOB_ID or LOCK_SESSION_ID.
+Logs query results, whether successful or erroneous.
+Clean-Up and Exit
 
-db.Close
-objLOGFile.WriteLine("Script completed successfully.")
-objLOGFile.Close
+Closes database connections and log file before exiting the script.
+Error Handling Points
+Source File Availability
 
-WScript.Quit(0)
+Ensures Session_lock.txt exists in EASFilePath.
+If not found, logs "Source file is not available or Source file name is not correct." and exits.
+Parameter Check
 
-Function ReadReg(RegPath)
-    Dim objRegistry, Key
-    Set objRegistry = CreateObject("Wscript.shell")
-    Key = objRegistry.RegRead(RegPath)
-    ReadReg = Key
-End Function
+Exits with "Missing parameters" if no arguments are passed.
+Registry Value Errors
 
-Function ZeroFill(ByVal String, ByVal length)
-    ZeroFill = Trim(String)
-    Do While Len(ZeroFill) < length
-        ZeroFill = "0" & ZeroFill
-    Loop
-End Function
+Validates parsed values from RegistryDtls.txt. If any value is missing or VersionKey is invalid, logs the issue and skips further execution.
+Database Connection Failures
 
-Function BLANKFill(ByVal String, ByVal length)
-    BLANKFill = Trim(String)
-    Do While Len(BLANKFill) < length
-        BLANKFill = " " & BLANKFill
-    Loop
-End Function
-' Code end
+Wraps the db.Open method in error-handling logic to log failures:
+"Database Issue: Unable to connect to the database."
+Ends the script if the connection cannot be established.
+Query Execution Errors
+
+Catches and logs errors during SQL execution:
+Logs the query being executed for debugging.
+Reports specific database errors, such as syntax issues or missing table/column definitions.
+Invalid Source File Data
+
+Checks if JOB_ID and LOCK_SESSION_ID are missing or malformed.
+Logs "Error: JOB_ID is wrong!" or "Error: LOCK_SESSION_ID is wrong!" based on the issue.
