@@ -1,133 +1,45 @@
-' Code start
-Dim db, rs, db2, rs2, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
-
-sDate = DatePart("yyyy", Now) 
-RPTDATE = sDate
-YYEAR= DatePart("yyyy", Now)  
-mmno = DatePart("m", Now)
-monthno = ZeroFill(mmno,2)
-sDate = sDate & monthno   
-RPTDATE = RPTDATE & "-" & monthno
-ddno = DatePart("d", Now)
-dayno = ZeroFill(ddno,2)
-sDate = sDate & dayno  
-RPTDATE = RPTDATE & "-" & dayno
-hrs = DatePart("h", Now)
-mns = DatePart("n", Now)
-hrno = ZeroFill(hrs,2)
-minno = ZeroFill(mns,2)
-sDate = sDate & hrno & minno
-
-'Added the logic to read the parameter to get the server and executing environment
-IF WScript.Arguments.Count = 0 then
-    WScript.Echo "Missing parameters"
-    WScript.Quit
-END IF
-Execserver = Wscript.Arguments.Item(0)
-VersionKey = Wscript.Arguments.Item(1)
-
-EASFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\SourceDIR\"
-LOGFilePath = "\\" & Execserver & "\Server\log\Deployment\Summery_LOCK\log\" & YYEAR & "\" & YYEAR & monthno & "\session_VBS_" & sDate & ".LOG"
-set objLOG = createobject("Scripting.FileSystemObject")
-set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
-objLOGFile.WriteLine("Handle Lock Script started. Source Path: " & EASFilePath & " | Date: " & Date & " " & Time)
-objLOGFile.WriteLine("   ")
-
-' Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
-Const ForReading = 1
-Set objFSOReg = CreateObject("Scripting.FileSystemObject")
-Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
-Set keyValues = CreateObject("Scripting.Dictionary")
-Do Until objFileReg.AtEndOfStream
-    line =objFileReg.ReadLine
-    parts = Split(line,"=")
-    If UBound(parts) = 1 Then
-        key = Trim(parts(0))
-        value = Trim(parts(1))
-        keyValues(key) = value
-    End If
-Loop
-objFileReg.Close
-Val=keyValues(VersionKey)
-DBDetails = Split(Val,",")
-If UBound(DBDetails) >= 0 Then
-    DBServerVal = DBDetails(0)
-    DBDBVal=DBDetails(1)
-    DBUserVal=DBDetails(2)
-    DBPassVal=DBDetails(3)
-    DBServer = ReadReg(DBServerVal)
-    DBDB = ReadReg(DBDBVal)
-    DBUser = ReadReg(DBUserVal)
-    DBPass = ReadReg(DBPassVal)
-Else
-    WScript.Echo "No values in the file to match the upgrade version"
-End If
-' End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
-
-' Read JOB_ID and LOCK_SESSION_ID from source file
-Set objSourceFile = CreateObject("Scripting.FileSystemObject").OpenTextFile(EASFilePath & "Session_lock.txt", ForReading)
-Do Until objSourceFile.AtEndOfStream
-    line = Trim(objSourceFile.ReadLine)
-    If Left(line, 7) = "JOB_ID=" Then
-        JOB_ID = Replace(Mid(line, 8), " ", "")
-        objLOGFile.WriteLine("JOB_ID fetched: " & JOB_ID)
-    ElseIf Left(line, 16) = "LOCK_SESSION_ID=" Then
-        LOCK_SESSION_ID = Replace(Mid(line, 17), " ", "")
-        objLOGFile.WriteLine("LOCK_SESSION_ID fetched: " & LOCK_SESSION_ID)
-    End If
-Loop
-objSourceFile.Close
-
-' Establish database connection
-sConnect = "Driver={ODBC Driver 17 for SQL Server};Server=" & DBServer & ";Database=" & DBDB & ";Uid=" & DBUser & ";Pwd=" & DBPass & ";ColumnEncryption=Enabled;"
-Set db = CreateObject("ADODB.Connection")
-db.CommandTimeout = 0
-db.Open sConnect
-
-' Execute update query if JOB_ID has values
-If JOB_ID <> "" Then
-    sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
-    objLOGFile.WriteLine("Executing update query: " & sQuery)
-    Set rs = db.Execute(sQuery)
-    objLOGFile.WriteLine("Update query executed successfully.")
-Else
-    objLOGFile.WriteLine("No JOB_ID provided. Skipping update query.")
-End If
-
-' Execute delete query if LOCK_SESSION_ID has a value
-If LOCK_SESSION_ID <> "" Then
-    sQuery = "DELETE FROM EAS_LOCKS WHERE LOCK_SESSION_ID = '" & LOCK_SESSION_ID & "'"
-    objLOGFile.WriteLine("Executing delete query: " & sQuery)
-    Set rs = db.Execute(sQuery)
-    objLOGFile.WriteLine("Delete query executed successfully.")
-Else
-    objLOGFile.WriteLine("No LOCK_SESSION_ID provided. Skipping delete query.")
-End If
-
-db.Close
-objLOGFile.WriteLine("Script completed successfully.")
-objLOGFile.Close
-
-WScript.Quit(0)
-
-Function ReadReg(RegPath)
-    Dim objRegistry, Key
-    Set objRegistry = CreateObject("Wscript.shell")
-    Key = objRegistry.RegRead(RegPath)
-    ReadReg = Key
-End Function
-
-Function ZeroFill(ByVal String, ByVal length)
-    ZeroFill = Trim(String)
-    Do While Len(ZeroFill) < length
-        ZeroFill = "0" & ZeroFill
-    Loop
-End Function
-
-Function BLANKFill(ByVal String, ByVal length)
-    BLANKFill = Trim(String)
-    Do While Len(BLANKFill) < length
-        BLANKFill = " " & BLANKFill
-    Loop
-End Function
-' Code end
+Test Cases and Scenarios
+1. File and Parameter Validation
+Test Case ID	Scenario	Expected Result
+TC01	Source file Session_lock.txt is missing	Script logs: "Error: Source file is not available or Source file name is not correct." and exits.
+TC02	Source file exists but JOB_ID and LOCK_SESSION_ID are missing	Script logs: "No JOB_ID provided. Skipping update query." and "No LOCK_SESSION_ID provided. Skipping delete query."
+TC03	No parameters passed to the script	Script logs: "Missing parameters" and exits.
+TC04	Invalid parameters passed to the script	Script behaves as intended for valid logic, ignoring irrelevant input.
+2. JOB_ID Validation
+Test Case ID	Scenario	Expected Result
+TC05	Single valid JOB_ID provided	Script updates the record, logs success, and completes.
+TC06	Single invalid JOB_ID provided	Script logs: "Error: JOB_ID [value] is wrong!" and exits.
+TC07	Multiple valid JOB_ID values provided	Script updates all records, logs success for each, and completes.
+TC08	Multiple JOB_ID values with one invalid (e.g., JOB_ID=123,INVALID)	Script logs: "Error: JOB_ID [value] is wrong!" for the invalid value and exits without updating any records.
+TC09	No JOB_ID provided	Script logs: "No JOB_ID provided. Skipping update query."
+3. LOCK_SESSION_ID Validation
+Test Case ID	Scenario	Expected Result
+TC10	Valid LOCK_SESSION_ID provided	Script deletes the record, logs success, and completes.
+TC11	Invalid LOCK_SESSION_ID provided	Script logs: "Error: LOCK_SESSION_ID is wrong!" but continues with other tasks.
+TC12	No LOCK_SESSION_ID provided	Script logs: "No LOCK_SESSION_ID provided. Skipping delete query."
+4. Database Connection
+Test Case ID	Scenario	Expected Result
+TC13	Valid database connection parameters	Script connects to the database successfully and executes queries.
+TC14	Invalid database connection parameters	Script logs: "Error: Database Issue - [description]" and exits.
+TC15	Network issue causing database connection failure	Script logs: "Error: Database Issue - [description]" and exits.
+5. Mixed Scenarios
+Test Case ID	Scenario	Expected Result
+TC16	Both JOB_ID and LOCK_SESSION_ID are valid	Script updates and deletes records, logs success, and completes.
+TC17	Valid JOB_ID with invalid LOCK_SESSION_ID	Script updates records for JOB_ID, logs error for LOCK_SESSION_ID, and completes.
+TC18	Invalid JOB_ID with valid LOCK_SESSION_ID	Script logs error for JOB_ID, skips updates, deletes record for LOCK_SESSION_ID, and completes.
+TC19	Both JOB_ID and LOCK_SESSION_ID are invalid	Script logs errors for both, skips all operations, and exits.
+TC20	Empty Session_lock.txt file	Script logs: "No JOB_ID provided. Skipping update query." and "No LOCK_SESSION_ID provided. Skipping delete query."
+6. Logging Validation
+Test Case ID	Scenario	Expected Result
+TC21	Successful execution of all tasks	Log file contains all success messages and timestamped logs.
+TC22	Error occurs during JOB_ID validation	Log file contains the error message: "Error: JOB_ID [value] is wrong!"
+TC23	Error occurs during database connection	Log file contains the error message: "Error: Database Issue - [description]"
+7. Error Handling
+Test Case ID	Scenario	Expected Result
+TC24	Unexpected error during query execution	Script logs the error and exits gracefully.
+TC25	Invalid SQL query in the script	Script logs: "Error: Database Issue - [description]" and exits.
+8. Edge Cases
+Test Case ID	Scenario	Expected Result
+TC26	Extra spaces or special characters in JOB_ID or LOCK_SESSION_ID values	Script trims spaces, processes valid values, and logs errors for invalid ones.
+TC27	Session_lock.txt file contains duplicate JOB_ID or LOCK_SESSION_ID values	Script processes each value independently and does not fail.
+TC28	Very large number of JOB_ID values provided	Script processes all values without performance issues.
