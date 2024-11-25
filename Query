@@ -1,3 +1,13 @@
+You use last time this code for handling multiple value of job_id
+ sQuery = "UPDATE EAS_JOBS SET STATUS_IND = 300 WHERE JOB_ID IN ('" & Replace(JOB_ID, ",", "','") & "')"
+
+Please update Below code
+1. If job_id 1 ho to bhi check kare db main and update kare or do ho to bhi check kare db main and update ho
+2. Most importent do not change any thing just add multiple job_id value logic. 
+3. After add this code give me complete script. 
+
+
+
 ' Code start
 Dim db, rs, JOB_ID, LOCK_SESSION_ID, updateResult, deleteResult
 
