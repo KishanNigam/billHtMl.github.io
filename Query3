@@ -1,3 +1,10 @@
-This email refers to the work where I individually worked on multiple SQL queries, consolidated them, and created a stored procedure (SP). Additionally, I integrated this SP into a macro-enabled Excel file.
+**Subject:** Visual Cron Summary Job Condition Update  
 
-Currently, Lauren, Ashley, and the FSU team are actively using this automated Excel file for their daily operations.
+Dear [Recipient's Name],  
+
+As discussed with you, we need to set a condition in the Visual Cron Summary job that ensures the job does not trigger until the IDTS END file is fully loaded.  
+
+Please let me know if you need further details or assistance.  
+
+Best regards,  
+[Your Name]  
