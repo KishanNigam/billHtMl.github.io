@@ -1,12 +1,17 @@
-Hi Pavan,
+396131 - UnZip Concur Images folder under Concur_RawData
 
-Update of 3rd December
-1.	396131 - UnZip Concur Images folder under Concur_RawData – I have Raised the request - REQ0092278. The bat file not placed yet. I have reach out to Agent, but he did not reply.  Unit testing is pending.
-2.	Take Screenshots for summary job at 12 30 AM and check whether it has started by itself. – I sent to you in Team. Kindly Check.
-3.	Make the changes for Records Rejected on NICO UAT for all jobs applicable. – I am working on it.
+I raised the request (REQ0092278). However, the bat file has not been placed yet. I reached out to the agent, but there’s been no response.
+Unit testing is pending.
+Take Screenshots for Summary Job
 
-4.	Octopus member addition request – I have sent a mail to Binith for adding the members in  FinanceReportingQueries project for UAT approval in Octopus.
+I captured screenshots at 12:30 AM to verify if the summary job started by itself. I have sent them to you on Teams. Kindly check.
+Changes for Records Rejected on NICO UAT
 
-5.	We are facing some access issue in FinanceReportingQueries for deploying. So I send to a mail to Cristofer Bolanos for looking this issue.
+I am currently working on making the necessary changes for all applicable jobs.
+Octopus Member Addition Request
 
-I provided 2:30 HH of support to Aarohi and Bhavani for the FSU Octopus user story.
+I have sent an email to Binith for adding members to the FinanceReportingQueries project for UAT approval in Octopus.
+Access Issue in FinanceReportingQueries
+
+We are facing access issues for deployment. I have emailed Cristofer Bolanos to address this.
+Additionally, I provided 2 hours and 30 minutes of support to Aarohi and Bhavani for the FSU Octopus user story.
