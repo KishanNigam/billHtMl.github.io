@@ -1,3 +1,12 @@
-Apologies for the job failure. I was conducting unit testing for the Sysdata user story in the test environment, where I accidentally executed the Prod job instead of the Test job.
+**Subject:** Deployment Access Issue in Octopus Pipeline  
 
-Please note that this failure has not impacted production or business in any way. Kindly ignore this failure incident. I have also closed the incident.
+Hi [Recipient's Name],  
+
+Yesterday, I deployed a new file and was testing the Octopus pipeline. While I was able to successfully commit the code, the deployment is not proceeding in Octopus due to an access issue.  
+
+I have reached out to Cris regarding this, and he is currently working on resolving the issue.  
+
+Please let me know if you need any further details.  
+
+Best regards,  
+[Your Name]  
