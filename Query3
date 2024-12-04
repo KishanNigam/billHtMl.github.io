@@ -1,13 +1,12 @@
-•	I have added code review checklist on all the user stories.
-•	I have attached unit test documents in the user story where the documents Is not available.
-•	I had a discussion with regarding handle lock user story.
-	@Mala Kumari You can try below steps
-	
+I have added the code review checklist for all user stories.
 
-1.	Create JE entries 
-2.	Then start the Summary job
-3.	When the second summary job running then approve the transaction.
+I attached the unit test documents to the user stories where they were missing.
 
-•	Access Issue in FinanceReportingQueries
+Regarding the handle lock user story, I had a discussion and provided the following steps to @Mala Kumari:
 
-We are still facing access issues for deployment. I have emailed Cristofer Bolanos to address this again.
+Create JE entries.
+Start the Summary job.
+Approve the transaction while the second Summary job is running.
+Access Issue in FinanceReportingQueries
+
+We are still facing access issues for deployment. I have followed up by emailing Cristofer Bolanos again to address this.
