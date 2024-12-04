@@ -1,17 +1,3 @@
-396131 - UnZip Concur Images folder under Concur_RawData
+Apologies for the job failure. I was conducting unit testing for the Sysdata user story in the test environment, where I accidentally executed the Prod job instead of the Test job.
 
-I raised the request (REQ0092278). However, the bat file has not been placed yet. I reached out to the agent, but there’s been no response.
-Unit testing is pending.
-Take Screenshots for Summary Job
-
-I captured screenshots at 12:30 AM to verify if the summary job started by itself. I have sent them to you on Teams. Kindly check.
-Changes for Records Rejected on NICO UAT
-
-I am currently working on making the necessary changes for all applicable jobs.
-Octopus Member Addition Request
-
-I have sent an email to Binith for adding members to the FinanceReportingQueries project for UAT approval in Octopus.
-Access Issue in FinanceReportingQueries
-
-We are facing access issues for deployment. I have emailed Cristofer Bolanos to address this.
-Additionally, I provided 2 hours and 30 minutes of support to Aarohi and Bhavani for the FSU Octopus user story.
+Please note that this failure has not impacted production or business in any way. Kindly ignore this failure incident. I have also closed the incident.
