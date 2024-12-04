@@ -1,12 +1,13 @@
-**Subject:** Deployment Access Issue in Octopus Pipeline  
+•	I have added code review checklist on all the user stories.
+•	I have attached unit test documents in the user story where the documents Is not available.
+•	I had a discussion with regarding handle lock user story.
+	@Mala Kumari You can try below steps
+	
 
-Hi [Recipient's Name],  
+1.	Create JE entries 
+2.	Then start the Summary job
+3.	When the second summary job running then approve the transaction.
 
-Yesterday, I deployed a new file and was testing the Octopus pipeline. While I was able to successfully commit the code, the deployment is not proceeding in Octopus due to an access issue.  
+•	Access Issue in FinanceReportingQueries
 
-I have reached out to Cris regarding this, and he is currently working on resolving the issue.  
-
-Please let me know if you need any further details.  
-
-Best regards,  
-[Your Name]  
+We are still facing access issues for deployment. I have emailed Cristofer Bolanos to address this again.
