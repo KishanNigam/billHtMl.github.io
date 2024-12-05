@@ -1,1 +1,12 @@
-The file has been successfully deployed, and I have verified it. Additionally, I have completed the unit testing and attached the document for your reference.
+**Subject:** Apologies for the Inconvenience  
+
+Hi [Recipient's Name],  
+
+Apologies for the inconvenience caused. QA and Dev were conducting testing for the Summary job under user story 2222. To test all case scenarios, we intentionally caused the Summary to fail.  
+
+Currently, no further testing is being conducted, and you can proceed with your payment processing.  
+
+Thank you for your understanding.  
+
+Best regards,  
+[Your Name]  
