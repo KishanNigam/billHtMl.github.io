@@ -1,5 +1,43 @@
-Apologies for the inconvenience caused. The Summary jobs you noticed not completing or ending in error were part of the testing being conducted by QA and Dev under user story 2222. During testing, we had to intentionally fail the Summary jobs to validate various case scenarios.
+Describe the Change Being Requested:
 
-Currently, the testing has been completed, and no further testing is being conducted at this time. You can proceed with your payment processing, and the system should function as expected without further interruptions.
+Request here is to update job HSBC BAI2 IMPORT – International- RUN_BHSI-BAI2-IMPORT.bat file to copy the Posted payment files in Reporting solution location as well in NICO Server.
+1. APPLICATION INTRODUCTION: 
+As a central data repository for financial information, EAS Application is the source for accounting, reconciliation, budget information, allocations, and accounts payable.
+•	DESCRIBED BELOW IS THE EXISTING AP PROCESS THAT WOULD BE HELPFUL FOR THE TESTER WHILE TESTING
 
-If you encounter any issues or need additional support, please let me know.
+
+•	Execute the D:\EAS\Server\Custom\bat\RUN_BHSI-BAI2-IMPORT.bat batch file.  This batch file executes D:\EAS\Server\Custom\bin\BKSTMT_IMPORT.VBS\.  Afterwards, the batch file executes RRNG.exe and VALDLOAD.EXE.
+
+
+2. Current process: -
+Currently Posted Payment and Outstanding Payment files is saved under G:\Finance\BHSIC CASH\Daily_Feeds\HSBC_Data, once BAI loaded into EAS.
+3. Proposed change:
+Request here is to update job HSBC BAI2 IMPORT – International- RUN_BHSI-BAI2-IMPORT.bat file to copy the Posted payment files in Reporting solution location as well in NICO Server 
+Job Variables:
+Posted Payment Directory (PROD): G:\Finance\BHSIC CASH\Daily_Feeds\HSBC_Data
+Reporting Solution Posted Payment Directory (PROD): G:\Finance\BHSIC CASH\Daily_Feeds\HSBC_Data\RptSln
+
+Posted Payment Directory (TEST): G:\Finance\BHSIC CASH\Daily_Feeds\TEST\HSBC_Data
+Reporting Solution Posted Payment Directory (TEST): G:\Finance\BHSIC CASH\Daily_Feeds\TEST\HSBC_Data\RptSln
+
+Posted Payment Directory (UAT): G:\Finance\BHSIC CASH\Daily_Feeds\UAT\HSBC_Data
+Reporting Solution Posted Payment Directory (UAT): G:\Finance\BHSIC CASH\Daily_Feeds\UAT\HSBC_Data\RptSln
+Note: we don’t need to do anything with Outstanding Payments files.
+4. Expected output:
+
+Request here is to update job HSBC BAI2 IMPORT – International- RUN_BHSI-BAI2-IMPORT.bat file to copy the Posted payment files in Reporting solution location as well in NICO Server.
+
+
+
+
+
+REM Moving the HSBC Payments files to network location.
+echo Moving the HSBC Outstanding and Posted Payment files.                                                  >>%logfilename%
+echo Executing [MOVE %workdir%%HSBCOutstandngFiles% %HSBCPaymentsDir%].                                     >>%logfilename%
+IF EXIST %workdir%%HSBCOutstandngFiles% MOVE %workdir%%HSBCOutstandngFiles% %HSBCPaymentsDir%               >>%logfilename%
+echo Executing [MOVE %workdir%%HSBCPostedFiles% %RSHSBCPaymentsDir%].                                       >>%logfilename%
+IF EXIST %workdir%%HSBCPostedFiles% COPY %workdir%%HSBCPostedFiles% %RSHSBCPaymentsDir%                     >>%logfilename%
+echo Executing [MOVE %workdir%%HSBCPostedFiles% %HSBCPaymentsDir%].                                         >>%logfilename%
+IF EXIST %workdir%%HSBCPostedFiles% MOVE %workdir%%HSBCPostedFiles% %HSBCPaymentsDir%                       >>%logfilename%
+echo Finished moving the HSBC Outstanding and Posted Payment files.                                         >>%logfilename%
+echo .  
