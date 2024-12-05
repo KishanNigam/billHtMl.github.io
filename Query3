@@ -1,12 +1,1 @@
-**Subject:** Apologies for the Inconvenience  
-
-Hi [Recipient's Name],  
-
-Apologies for the inconvenience caused. QA and Dev were conducting testing for the Summary job under user story 2222. To test all case scenarios, we intentionally caused the Summary to fail.  
-
-Currently, no further testing is being conducted, and you can proceed with your payment processing.  
-
-Thank you for your understanding.  
-
-Best regards,  
-[Your Name]  
+Looking in the Process Monitor, it seems like the summary jobs are either not completing or ending in error quite a bit of the time over the last few days.  Is this all expected from your testing?  I’m trying to have an entry approved and the system won’t approve it.  Erin indicated that there was a lock on this entry and the summary job, so she cleared the locks, but she suggested that maybe the system wouldn’t be able to approve my JE until the summary jobs completed successfully.  Any idea if that will happen soon, or when they would run next?
