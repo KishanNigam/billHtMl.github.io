@@ -1,1 +1,5 @@
-Looking in the Process Monitor, it seems like the summary jobs are either not completing or ending in error quite a bit of the time over the last few days.  Is this all expected from your testing?  I’m trying to have an entry approved and the system won’t approve it.  Erin indicated that there was a lock on this entry and the summary job, so she cleared the locks, but she suggested that maybe the system wouldn’t be able to approve my JE until the summary jobs completed successfully.  Any idea if that will happen soon, or when they would run next?
+Apologies for the inconvenience caused. The Summary jobs you noticed not completing or ending in error were part of the testing being conducted by QA and Dev under user story 2222. During testing, we had to intentionally fail the Summary jobs to validate various case scenarios.
+
+Currently, the testing has been completed, and no further testing is being conducted at this time. You can proceed with your payment processing, and the system should function as expected without further interruptions.
+
+If you encounter any issues or need additional support, please let me know.
