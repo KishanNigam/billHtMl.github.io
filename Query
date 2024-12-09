@@ -1,8 +1,57 @@
-I wanted to clarify a few points about my recent work:
+Below are the CIA requirment
 
-I delivered the Handle Lock user story on Tuesday.
-I completed my assigned Sysdata user story on Thursday.
-On Friday, since Pavan was on leave, I picked up the remaining Sysdata user story assigned to Abhisek and completed it as well. If this had been completed earlier in the day, it would have been ready to hand over to QA by now.
-The feedback for Friday’s user story involved only 2-3 lines of changes, which I addressed immediately.
+CIA:
+Describe the Change Being Requested:
 
-I’m unsure why Pavan mentioned on the call that I’m delaying my work. All my updates and completion timelines are documented in my handover emails and DevOps comments, which can be reviewed.
+Request here is to update the script to exclude the payments from APSFC and APSFE sources so that it creates daily report for rest of the Sources only.
+
+1. APPLICATION INTRODUCTION: 
+As a central data repository for financial information, EAS Application is the source for accounting, reconciliation, budget information, allocations, and accounts payable.
+•	DESCRIBED BELOW IS THE EXISTING AP PROCESS THAT WOULD BE HELPFUL FOR THE TESTER WHILE TESTING
+
+
+•	Execute D:\EAS\Server\Custom\Bat\RUN_OFAC.BAT.  This batch file executes OFAC_EXPORT.VBS  The VBS script creates a single log file.  Read the log file for errors. If errors, then email the log file to designated recipients.
+
+
+2. Current process: -
+The Office of Foreign Assets Control (OFAC) of the US Department of Treasury requires us to check our policyholders, agents, claimants, etc. against a list they provide to us to identify potential terrorists and others subject to sanctions.
+
+
+
+3. Proposed change:
+Request here is to update the script to exclude the payments from APSFC and APSFE sources so that it creates daily report for rest of the Sources only. 
+
+4. Expected output:
+
+Request here is to update the script to exclude the payments from APSFC and APSFE sources so that it creates daily report for rest of the Sources only.
+
+Code change details:
+Accrording the CIA we have just add both source code in query where the condition applied 
+"source_code Not in"
+
+Code:
+sQuery="SELECT DISTINCT " & _ 
+              "SUBSTRING(C.COMPANY_CODE, 1, 5) + " & _
+              "SUBSTRING(D.SOURCE_CODE, 1, 5) + " & _
+              "SUBSTRING(A.CHECK_NUMBER,1,11) + " & _
+              "REPLACE(STR(CHECK_AMT,15,2),' ', '0') + " & _
+              "SUBSTRING(C.VENDOR_NAME1, 1, 60) + " & _
+              "SUBSTRING(CAST(E.REMIT_GEN_NAME2 AS CHAR(60)), 1, 60) AS DATA_FIELD " & _
+         "FROM XPORT_AP_TRIGGER A, AP_BSTRN_HEADER C, BSTRN_HEADER D, AP_REMIT_ADDR E " & _
+        "WHERE A.BANK                = C.BANK " & _
+          "AND ((C.CHECK_NUMBER        = A.CHECK_NUMBER AND " & _
+                "A.CHECK_RECON_STATUS IN ('O')) OR " & _
+               "(C.EFT_ADVICE_NUM     = A.CHECK_NUMBER AND " & _
+                "A.CHECK_RECON_STATUS IN ('C'))) " & _
+          "AND A.BANK_ACCOUNT        = C.BANK_ACCOUNT " & _
+          "AND C.TRAN_ID             = D.TRAN_ID " & _
+          "AND C.TRAN_ID             = E.TRAN_ID " & _
+          "AND D.SOURCE_CODE NOT IN ('APDCC','APRUC','APRCC','APSFC','APSFE') " & _
+          "AND NOT EXISTS " & _
+          "( SELECT * FROM XPORT_AP_CONTROL D " & _
+             "WHERE D.XPORT_AP_ID    = A.XPORT_AP_ID " & _
+               "AND D.EXPORT_PROCESS = 'OFAC') "  
+
+
+
+Analysis this and give me a sort Technical analysis docuement.
