@@ -1,64 +1,168 @@
-Script Structure and Mechanism
-Date and Time Initialization
+Technical Analysis Document
 
-Generates timestamps (sDate, RPTDATE) with zero-padded month, day, hour, and minute values for use in file paths and log file naming.
-Uses helper functions ZeroFill and BLANKFill to pad values.
-Parameter Validation
+Change Identification and Description
 
-Checks if required arguments (Execserver, VersionKey) are passed.
-Exits with an error message if arguments are missing.
-File Path and Log Initialization
+Request:
+The request is to update the existing script to exclude payments from APSFC and APSFE sources so that the daily report is generated for the remaining sources only.
 
-Constructs paths for:
-Source File: Based on Execserver and a static directory structure.
-Log File: Includes the current year, month, and timestamp for unique naming.
-Creates a log file and starts logging script actions and progress.
-Reading Registry Values
+Existing Process Overview
 
-Reads database connection details (DBServerVal, DBDBVal, etc.) from RegistryDtls.txt.
-Utilizes ReadReg function to fetch registry values based on parsed keys.
-Reading Source File
+1. Purpose:
+The current process involves executing the OFAC compliance check to identify payments associated with individuals/entities flagged by the US Department of Treasury's Office of Foreign Assets Control (OFAC).
 
-Reads Session_lock.txt line by line.
-Extracts JOB_ID and LOCK_SESSION_ID values, logging each fetched value.
-Database Connection
 
-Establishes a connection to the SQL Server database using ADODB with ODBC Driver 17.
-Specifies the connection string, including encryption and credentials.
-SQL Query Execution
+2. Execution Flow:
 
-Update Query: Updates STATUS_IND to 300 in the EAS_JOBS table if JOB_ID is valid.
-Delete Query: Deletes a record from the EAS_LOCKS table if LOCK_SESSION_ID is valid.
-Logs every query execution, including success or failure.
-Error Handling
+A batch file (RUN_OFAC.BAT) is executed.
 
-Logs and exits gracefully in case of missing or invalid JOB_ID or LOCK_SESSION_ID.
-Logs query results, whether successful or erroneous.
-Clean-Up and Exit
+This batch file invokes the VBScript OFAC_EXPORT.VBS.
 
-Closes database connections and log file before exiting the script.
-Error Handling Points
-Source File Availability
+The VBScript performs operations and logs the output into a log file.
 
-Ensures Session_lock.txt exists in EASFilePath.
-If not found, logs "Source file is not available or Source file name is not correct." and exits.
-Parameter Check
+Errors, if any, are emailed to the designated recipients.
 
-Exits with "Missing parameters" if no arguments are passed.
-Registry Value Errors
 
-Validates parsed values from RegistryDtls.txt. If any value is missing or VersionKey is invalid, logs the issue and skips further execution.
-Database Connection Failures
 
-Wraps the db.Open method in error-handling logic to log failures:
-"Database Issue: Unable to connect to the database."
-Ends the script if the connection cannot be established.
-Query Execution Errors
+3. Current Query Logic:
 
-Catches and logs errors during SQL execution:
-Logs the query being executed for debugging.
-Reports specific database errors, such as syntax issues or missing table/column definitions.
-Invalid Source File Data
+The query fetches distinct transaction details, including COMPANY_CODE, SOURCE_CODE, CHECK_NUMBER, CHECK_AMT, VENDOR_NAME, and REMIT_GEN_NAME.
 
-Checks if JOB_ID and LOCK_SESSION_ID are missing or malformed.
-Logs "Error: JOB_ID is wrong!" or "Error: LOCK_SESSION_ID is wrong!" based on the issue.
+A condition ensures that transactions from specific source codes (APDCC, APRUC, APRCC) are excluded using the NOT IN clause.
+
+Transactions already processed by the OFAC system are also excluded.
+
+
+
+
+
+---
+
+Proposed Change
+
+Update:
+Modify the query in the script to include two additional source codes (APSFC and APSFE) in the NOT IN clause, ensuring these sources are excluded from the report.
+
+Expected Behavior:
+
+Payments originating from the APSFC and APSFE sources will no longer appear in the daily report.
+
+The report will continue to include transactions from all other sources, excluding those already listed in the NOT IN clause or processed by OFAC.
+
+
+
+---
+
+Code Changes Required
+
+Updated Query:
+The NOT IN clause in the existing query will be updated as follows:
+
+AND D.SOURCE_CODE NOT IN ('APDCC', 'APRUC', 'APRCC', 'APSFC', 'APSFE')
+
+Modified Code Block:
+
+sQuery="SELECT DISTINCT " & _ 
+              "SUBSTRING(C.COMPANY_CODE, 1, 5) + " & _
+              "SUBSTRING(D.SOURCE_CODE, 1, 5) + " & _
+              "SUBSTRING(A.CHECK_NUMBER,1,11) + " & _
+              "REPLACE(STR(CHECK_AMT,15,2),' ', '0') + " & _
+              "SUBSTRING(C.VENDOR_NAME1, 1, 60) + " & _
+              "SUBSTRING(CAST(E.REMIT_GEN_NAME2 AS CHAR(60)), 1, 60) AS DATA_FIELD " & _
+         "FROM XPORT_AP_TRIGGER A, AP_BSTRN_HEADER C, BSTRN_HEADER D, AP_REMIT_ADDR E " & _
+        "WHERE A.BANK                = C.BANK " & _
+          "AND ((C.CHECK_NUMBER        = A.CHECK_NUMBER AND " & _
+                "A.CHECK_RECON_STATUS IN ('O')) OR " & _
+               "(C.EFT_ADVICE_NUM     = A.CHECK_NUMBER AND " & _
+                "A.CHECK_RECON_STATUS IN ('C'))) " & _
+          "AND A.BANK_ACCOUNT        = C.BANK_ACCOUNT " & _
+          "AND C.TRAN_ID             = D.TRAN_ID " & _
+          "AND C.TRAN_ID             = E.TRAN_ID " & _
+          "AND D.SOURCE_CODE NOT IN ('APDCC','APRUC','APRCC','APSFC','APSFE') " & _
+          "AND NOT EXISTS " & _
+          "( SELECT * FROM XPORT_AP_CONTROL D " & _
+             "WHERE D.XPORT_AP_ID    = A.XPORT_AP_ID " & _
+               "AND D.EXPORT_PROCESS = 'OFAC') "
+
+
+---
+
+Impact Analysis
+
+1. Functionality Impact:
+
+Excluding APSFC and APSFE payments ensures compliance with the new reporting requirement.
+
+No adverse impact on the logic or functionality of the script, as it simply expands the exclusion list.
+
+
+
+2. Performance Impact:
+
+Minimal performance impact, as the NOT IN clause is efficiently handled by most database engines.
+
+The expanded exclusion list does not significantly alter the complexity of the query.
+
+
+
+3. Error Handling:
+
+No changes in error handling mechanisms. Errors, if any, will continue to be logged and emailed to recipients.
+
+
+
+
+
+---
+
+Testing Requirements
+
+1. Unit Testing:
+
+Test the updated script to ensure APSFC and APSFE payments are excluded.
+
+Validate inclusion of payments from other source codes.
+
+
+
+2. Integration Testing:
+
+Execute the batch file and confirm successful generation of the daily report.
+
+Verify the log file for any unexpected errors.
+
+
+
+3. Regression Testing:
+
+Ensure existing functionality remains unaffected, especially for other excluded source codes and OFAC-processed transactions.
+
+
+
+4. Error Scenario Testing:
+
+Validate the behavior when errors occur in script execution or database connectivity.
+
+
+
+
+
+---
+
+Deliverables
+
+1. Updated VBScript with the modified query.
+
+
+2. Test case documentation for validation.
+
+
+3. Test results report confirming the successful implementation of the change.
+
+
+
+
+---
+
+Conclusion
+
+The proposed change is straightforward and low-risk, involving only a minor modification to the query logic. The implementation will ensure compliance with the updated reporting requirements while maintaining existing functionality.
