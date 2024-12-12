@@ -4,3 +4,29 @@ Unit testing is completed, and document has been attached in Devops.
 I have tested the FSU deployment. We have successfully committed the code and also, Package created successfully and updated code deployed in UAT env.
 3.	FinanceReportingQueries – Status
 I have received a mail where Lauren wants some support to deploy few files through FSU pipeline, so I have connected with Aarohi and Lauren and give the support for deployment.
+
+
+Here’s a more formal version of your update:
+
+
+---
+
+Subject: Status Update
+
+1. 378666 - Changes to NICO OFAC Job - Salesforce Sources
+Unit testing has been completed, and the corresponding document has been attached in DevOps.
+
+
+2. 362492 - SQL Connection Mapping - Deployment of Text File
+I have successfully tested the FSU deployment. The code has been committed, the package created successfully, and the updated code has been deployed to the UAT environment.
+
+
+3. Finance Reporting Queries – Status
+I received an email from Lauren requesting support for deploying a few files through the FSU pipeline. I coordinated with Aarohi and Lauren to provide the necessary support and successfully facilitated the deployment.
+
+
+
+
+---
+
+Let me know if you need further refinements!
