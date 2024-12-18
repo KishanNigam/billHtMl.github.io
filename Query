@@ -1,26 +1,9 @@
-•	Give support to Aarohi for extracting the data from NICO UAT using trailbalance_2basic store procedure.
-•	Incident  INC0172288 (HSBC Long running Query) – Checking the stats in lower and prod environment and send a analysis mail to Aarohi.
-•	Adding the code comparison document on all sysdata userstory.
+1.	INC0178629 / INC0178628 : EAS-P5-MW - [BiBerk Import Job] - PROD - (NICOEAS10) – 
+Issue & anlysis: I have analysed the issue the VC scanning whole VC log that’s why job generated the incident. 
+Solution: We need to add timestamp in vc log variable in the visual cron. So, every time job trigger log will be created new.
 
-Here's a professional way to rephrase the points for communication with your manager:
+2.	Summary lock is created on UAT, and I am performing the sanity.
 
+3.	362492 - SQL connection mapping - Deployment of text file - @Tanvi Attreya Lauren tried to delete the file during deployment but file is not deleted. Could you please check. If all things are ko please give her steps to delete the file.
 
----
-
-1. Support for Data Extraction:
-Provided assistance to Aarohi in extracting data from the NICO UAT environment using the trailbalance_2basic stored procedure.
-
-
-2. Incident Analysis (INC0172288 - HSBC Long Running Query):
-Reviewed and analyzed the query statistics in both lower and production environments. Shared the detailed analysis with Aarohi via email.
-
-
-3. Code Comparison Documentation:
-Completed and added the code comparison document for all SysData-related user stories.
-
-
-
-
----
-
-Let me know if you'd like further refinements!
+4.	I have deleted the summary lock from nicoeas12 server. Job’s next run will be successful.
