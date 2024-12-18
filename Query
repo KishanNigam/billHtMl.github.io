@@ -7,3 +7,32 @@ Solution: We need to add timestamp in vc log variable in the visual cron. So, ev
 3.	362492 - SQL connection mapping - Deployment of text file - @Tanvi Attreya Lauren tried to delete the file during deployment but file is not deleted. Could you please check. If all things are ko please give her steps to delete the file.
 
 4.	I have deleted the summary lock from nicoeas12 server. Job’s next run will be successful.
+
+
+Here’s a polished version for communication with your manager:
+
+
+---
+
+1. Incident INC0178629 / INC0178628:
+Issue and Analysis: Analyzed the issue with the EAS-P5-MW [BiBerk Import Job] on PROD (NICOEAS10). Found that the Visual Cron (VC) job scans the entire VC log, causing the incident.
+Solution: Suggested adding a timestamp to the VC log variable in Visual Cron. This will ensure a new log is created each time the job triggers.
+
+
+2. Summary Lock on UAT:
+A summary lock has been created on UAT. I am currently performing the sanity checks.
+
+
+3. Task 362492 - SQL Connection Mapping - Deployment of Text File:
+Tanvi Attreya and Lauren attempted to delete the file during deployment, but the file was not removed. Please verify the issue. If everything appears fine, kindly provide them with steps to delete the file.
+
+
+4. Summary Lock Removal on NICOEAS12 Server:
+Deleted the summary lock from the NICOEAS12 server. The job’s next run is expected to be successful.
+
+
+
+
+---
+
+Let me know if you need further adjustments!
