@@ -1,45 +1,9 @@
-Here’s a refined and professional rewrite of your self-review:
+Hi Cris,
 
----
+This is regarding the FSU pipeline:
 
-### 1. Value Driven Delivery  
-Identified opportunities to deliver value back to BHSI by enhancing efficiency in repetitive project areas through meticulous assessment of applications and projects.
+I attempted to delete a file and commit the code, but the file is not being deleted. It seems that after cloning the repository, the solution file is not being generated. This might be causing the issue where files intended for deletion remain present even after committing and deploying via Octopus.
 
-### 2. Goals / Key Result Areas Description  
-Delivered reliable and stable solutions addressing problems effectively and efficiently; demonstrated ownership and consistency in project deliverables with a focus on quality, timely delivery, and continuous improvement of KPIs.
+For reference, please check pull request 3242, where Lauren attempted modifications in two files and tried deleting one. While the modifications were successful, the deleted file still exists.
 
-### 3. Communication  
-Maintained clear and effective communication with stakeholders through timely updates and responses; actively participated in discussions on technical and delivery aspects, ensuring alignment with project objectives.
-
-### 4. CMMI Process Adherence  
-Exhibited a strong understanding and rigorous implementation of CMMI processes and templates; ensured adherence to these standards in all assigned projects.
-
-### 5. Architectural Compliance  
-Followed coding best practices to produce high-quality code with minimal defects; contributed to maintaining benchmarks for Static Code Analysis, Unit Testing, CI/CD, Security, and Performance Testing.
-
-### 6. Capability Building  
-Contributed to organizational initiatives, including Technology Roadmaps, Proof of Concepts (POCs), and discussion forums; actively participated in knowledge-sharing sessions to support technical advancements.
-
-### 7. Behavioral Attributes  
-Demonstrated a positive attitude with respect for others, punctuality, and adherence to company policies; maintained team harmony and actively engaged in effective communication within the team and with clients.
-
-### 8. Knowledge Management  
-Pursued certifications like AINS, Azure, and Mendix; contributed to knowledge-sharing programs and hiring activities to foster a culture of learning and continuity within the organization.
-
-### 9. IDP  
-Developed and regularly tracked an Individual Development Plan (IDP) to support professional growth and skill enhancement.
-
-### 10. Team Spirit  
-Fostered a positive team environment by supporting team members, leads, and managers; actively participated in team-building activities to promote unity and collaboration.
-
----
-
-### Goals Overall  
-Focused on delivering high-quality and reliable solutions while adhering to organizational standards and contributing to continuous improvement initiatives.
-
-### Overall Review  
-Demonstrated a strong commitment to achieving project goals with efficiency, effective communication, and proactive involvement in organizational and team development activities.
-
---- 
-
-This version is polished, concise, and aligns with a professional tone suitable for a self-review. Let me know if you'd like any further edits!
+Could you please look into this issue? If needed, I am available to connect over a meeting to discuss further.
