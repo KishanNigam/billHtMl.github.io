@@ -1,38 +1,48 @@
-1.	INC0178629 / INC0178628 : EAS-P5-MW - [BiBerk Import Job] - PROD - (NICOEAS10) – 
-Issue & anlysis: I have analysed the issue the VC scanning whole VC log that’s why job generated the incident. 
-Solution: We need to add timestamp in vc log variable in the visual cron. So, every time job trigger log will be created new.
+I need to self review on my company. below are the heading and description i fill. Please correct this and explain appropriate manner.
 
-2.	Summary lock is created on UAT, and I am performing the sanity.
+1. Value Driven Delivery
+    Assessment of applications and projects to identify the opportunity of delivering value back to BHSI by bringing in efficiency in repetitive work in the project areas.
 
-3.	362492 - SQL connection mapping - Deployment of text file - @Tanvi Attreya Lauren tried to delete the file during deployment but file is not deleted. Could you please check. If all things are ko please give her steps to delete the file.
+2. Goals / Key Result Areas Description
+    Reliable and stable solutions that solve problems effectively and efficiently;
+    Ownership and consistency towards assigned project deliverables;
+    Quality and timely delivery with continuous improvement in KPIs and mitigation in rework
 
-4.	I have deleted the summary lock from nicoeas12 server. Job’s next run will be successful.
+3. Communication
+    Clear and effective written and verbal communication with internal and external stakeholders;
+    Timely status updates and response to client/internal emails/queries with active participation in internal/client discussions;
+    Contributing towards discussions on technical items/delivery as and when needed;
 
+4. CMMI Process Adherence
+    Understanding of CMMi processes and templates related to development. Stronger rigor on implementation of CMMI processes in projects;
+    Adherence to CMMI processes in assigned projects of EA
 
-Here’s a polished version for communication with your manager:
+5. Architectural Compliance
+    Awareness and adherence to coding best practices and guidelines;
+    Writing a good quality code with minimal review and testing defects;
+    Helping TL/TA in maintaining Static Code Analysis (SonarQube), Unit Testing, CI/CD, Security and Performance Testing benchmarks for owned applications/module;
+    
+6. Capability Building
+    Contribution towards organization level initiatives which includes Technology Roadmaps tasks defined by Technical Architects, taking part in discussion forums and presenting the topic, POC's etc.
 
+7. Behavioural Attributes
+    Positive attitude, respect towards others, punctuality, no unplanned leaves, hygiene factors, adherence to company policies, attendance in all meetings/calls/trainings, timely communication with-in team and clients, bonding with team members, 
 
----
+8. Knowledge Management
+    Focus towards new certifications AINS, Azure, Mendix etc;
+    Train the trainers program to setup a learning atmosphere within organization
+    Contribute towards hiring activities as and when needed;
+    Be part of knowledge pool for effective backup planning;
 
-1. Incident INC0178629 / INC0178628:
-Issue and Analysis: Analyzed the issue with the EAS-P5-MW [BiBerk Import Job] on PROD (NICOEAS10). Found that the Visual Cron (VC) job scans the entire VC log, causing the incident.
-Solution: Suggested adding a timestamp to the VC log variable in Visual Cron. This will ensure a new log is created each time the job triggers.
+9. IDP
+    Develop IDP at individual level and track it at regular frequency;
 
+10. Team Spirit
+     Positive attitude;
+     Helping team members, leads and managers when required;
+     Participating in team building activities and contributing towards keeping team united, building better bonded team;
 
-2. Summary Lock on UAT:
-A summary lock has been created on UAT. I am currently performing the sanity checks.
-
-
-3. Task 362492 - SQL Connection Mapping - Deployment of Text File:
-Tanvi Attreya and Lauren attempted to delete the file during deployment, but the file was not removed. Please verify the issue. If everything appears fine, kindly provide them with steps to delete the file.
-
-
-4. Summary Lock Removal on NICOEAS12 Server:
-Deleted the summary lock from the NICOEAS12 server. The job’s next run is expected to be successful.
-
-
-
-
----
-
-Let me know if you need further adjustments!
+11. Goals Overall
+analysis above details and give me 2-3 lins
+12. Overall review
+analysis above details and give me 2-3 lins
