@@ -1,15 +1,10 @@
-gHi Cris,
+Hi Ms. Dipa,
 
-This is regarding the FSU pipeline:
+My name is Kishan Nigam (EMP ID: 3905). I am the employee of Xceedance consultancy pvt. Ltd. I have some queries.
 
-I attempted to delete a file and commit the code, but the file is not being deleted. It seems that after cloning the repository, the solution file is not being generated. This might be causing the issue where files intended for deletion remain present even after committing and deploying via Octopus.
+1. I want to know the procedure of applying insurance claim.
+2. Is there any chance where I get insurenc card or registration no like soft copy (Example: Ayushman card)
+3. Currently who is the member added in my insurance policy.
+4. what is the procedure to add member in the policy.
 
-For reference, please check pull request 3242, where Lauren attempted modifications in two files and tried deleting one. While the modifications were successful, the deleted file still exists.
-
-Could you please look into this issue? If needed, I am available to connect over a meeting to discuss further.
-
-
-I compared the Biberk import job in both prod and test environments and found that the event trigger configuration in test is different from prod. So, I tried to replicate the prod trigger in test to test the failure scenario but everything is working fine in test. Currently, there is no difference between prod and test.
-I believe the job failure is due to an internal tool issue that might have been created while creating the prod job.
-Solution: I propose that since the test and UAT jobs are working fine, we should create a new job from UAT to prod.
-Kindly provide your inputs."
+Kindly tell me that is very helpful for me.
