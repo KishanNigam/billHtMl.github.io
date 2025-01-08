@@ -1,15 +1,3 @@
-@echo off
-REM Set the network folder path
-set "folderPath=\\nicoeas12\server\CHASH.dat"
+During the last development, several configuration changes were made to the job tasks. As a result, I had to first fix the configurations of the tasks and then perform unit testing.
 
-REM Check if the folder exists at the specified network path
-if exist "%folderPath%" (
-    echo Renaming folder '%folderPath%' to 'import'...
-    pushd \\nicoeas12\server
-    ren "CHASH.dat" "import"
-    popd
-    echo Folder renamed successfully.
-) else (
-    echo Folder '%folderPath%' does not exist.
-)
-pause
+This process required an additional 2:30 hours of effort.
