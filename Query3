@@ -1,2 +1,15 @@
-As discussed with Desiree, it was noted that after downloading the file from MOVEit, the file is not being deleted from the MOVEit server. She has requested this issue to be fixed and suggested creating a user story for it.
-During testing, we observed that the GL files, after being downloaded, are appearing outside the GL folder. Please look into this issue as well.
+@echo off
+REM Set the network folder path
+set "folderPath=\\nicoeas12\server\CHASH.dat"
+
+REM Check if the folder exists at the specified network path
+if exist "%folderPath%" (
+    echo Renaming folder '%folderPath%' to 'import'...
+    pushd \\nicoeas12\server
+    ren "CHASH.dat" "import"
+    popd
+    echo Folder renamed successfully.
+) else (
+    echo Folder '%folderPath%' does not exist.
+)
+pause
