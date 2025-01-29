@@ -1,6 +1,7 @@
-I have completed the required changes in the code as per the CIA document. The following deliverables have been prepared and attached for your reference:
+Investigation Issue with Errors in Currency Extract Process:
 
-Updated BAT file
-Code comparison document
-Unit testing document
-The code is now ready for your review. 
+I am approaching this issue in two steps:
+
+Step 1: Currently, I am analyzing the behavior of the Trigger and Control tables when transactions are loaded into EAS.
+Step 2: I will then analyze the VB script and query.
+In parallel, I will document both approaches.
