@@ -1,23 +1,39 @@
- 
- 
-Create A local branch
- 
-Write the comment of reason why the file is removing.
- 
-Right click on the file and delete the file. 
- 
+Here’s a more polished version of your document:  
 
-Clinck on the git changes tab > write the comment under the comment section and click on the Commit ALL tab
- 
-After the successfully commit click push button.
-  
-Go to the Repository in browser under the Pull request and click in “Create a Pull Request”
- 
- 
-After the commit PR then click in Set auto complete tab and set the auto complete. 
- 
- 
+---
 
+### **CI/CD Deployment through Azure Pipeline**  
 
+#### **Steps to Remove a File and Create a Pull Request**  
 
+1. **Create a Local Branch**  
+   - Ensure you are working in the correct repository.  
+   - Create a new local branch for the changes.  
 
+2. **Delete the File with a Proper Justification**  
+   - Right-click on the file you want to remove.  
+   - Before deleting, add a meaningful comment explaining why the file is being removed.  
+   - Click **Delete** to remove the file.  
+
+3. **Commit the Changes**  
+   - Navigate to the **Git Changes** tab.  
+   - Enter a clear and concise commit message under the **Comment** section.  
+   - Click **Commit All** to commit the changes locally.  
+
+4. **Push the Changes to the Remote Repository**  
+   - After a successful commit, click the **Push** button to upload the changes to the remote repository.  
+
+5. **Create a Pull Request (PR)**  
+   - Open the repository in a web browser.  
+   - Navigate to the **Pull Requests** section.  
+   - Click on **Create a Pull Request** and ensure all details are correctly filled.  
+
+6. **Set Auto-Complete for the Pull Request**  
+   - After submitting the PR, click on **Set Auto-Complete**.  
+   - Configure auto-complete settings as required.  
+
+This ensures a smooth workflow for code changes and version control in your CI/CD pipeline.  
+
+---
+
+Let me know if you need further refinements! 🚀
