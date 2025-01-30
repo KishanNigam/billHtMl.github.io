@@ -1,24 +1,23 @@
+ 
+ 
+Create A local branch
+ 
+Write the comment of reason why the file is removing.
+ 
+Right click on the file and delete the file. 
+ 
 
-BCDBCM and BCDB Cash Import are part of sprint 23 as I have discussed in Handover connect and I have told that scripts are ready and add only the Auto Approval part . You no need to check on the script level that is taken care.. Since , we are doing Moola I wanted to finish these two also in this sprint only and as far BA is concerned , their CA will not available until next Sprint. Please add the auto approval part and perform unit testing.
+Clinck on the git changes tab > write the comment under the comment section and click on the Commit ALL tab
+ 
+After the successfully commit click push button.
+  
+Go to the Repository in browser under the Pull request and click in “Create a Pull Request”
+ 
+ 
+After the commit PR then click in Set auto complete tab and set the auto complete. 
+ 
+ 
 
-I Agree sir, I have already added auto approval task in VC. During the testing I have just faced issue when I load the file the transaction gone in error. So I send a query to BA for support. As you know Divya and Rohit is unavailable yesterday.
 
 
-Here’s a corrected version of your reply:  
 
----
-
-**Subject:** Update on Auto Approval Task  
-
-Dear [Tech Lead's Name],  
-
-I agree, sir. I have already added the auto-approval task in VC. However, during testing, I encountered an issue where the transaction went into an error state when loading the file. I have raised a query with the BA team for their support on this. As you are aware, both Divya and Rohit were unavailable yesterday, which caused a slight delay in resolving the issue.  
-
-Please let me know if you would like me to proceed in a specific direction or prioritize any additional tasks.  
-
-Best regards,  
-[Your Name]  
-
----  
-
-Let me know if you’d like further refinements!
