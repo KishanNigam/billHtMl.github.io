@@ -1,3 +1,11 @@
-After create package click on that and assign yourself and procced the process.
-After the Procced the all the below steps
-After the successfully deployment Folder update ho jayega or remove ki hui file ke sath sath baki files ka ek folder create ho kar backup folder ke andar archive ho jayega.
+Create and Assign the Package
+
+After creating the package, click on it and assign it to yourself.
+Proceed with the deployment process.
+Complete the Process
+
+Ensure all the above steps are completed before finalizing the deployment.
+Verify Deployment and Backup
+
+After a successful deployment, the folder will be updated.
+The removed file, along with all other files, will be backed up into a new folder inside the backup directory.
