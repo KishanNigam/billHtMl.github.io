@@ -1,1 +1,1 @@
-Actually Desiree, Both jobs created Same name logs (APRRNG) and also when job scanning log its pick latest one that’s why when Multicheck job scanning the log its pick biberk log and through the mail.
+both jobs are generating logs with the same name (APRRNG), and the job scan task always picks the latest log available. As a result, when the Multicheck job scans the latest log, it mistakenly selects the BiBerk log instead and triggers the email notification.
