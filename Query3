@@ -1,7 +1,1 @@
-Investigation Issue with Errors in Currency Extract Process:
-
-I am approaching this issue in two steps:
-
-Step 1: Currently, I am analyzing the behavior of the Trigger and Control tables when transactions are loaded into EAS.
-Step 2: I will then analyze the VB script and query.
-In parallel, I will document both approaches.
+Actually Desiree, Both jobs created Same name logs (APRRNG) and also when job scanning log its pick latest one that’s why when Multicheck job scanning the log its pick biberk log and through the mail.
