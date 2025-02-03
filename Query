@@ -1,8 +1,3 @@
-362492 - SQL Connection Mapping - Deployment of Text File
-I have attached the updated steps document, which now includes the purge configuration steps.
 
-293256 - Investigation of Errors in the Currency Extract Process
-I am currently analyzing the behavior of the Trigger and Control tables when transactions are loaded into EAS. This analysis is taking some time because the data is loaded into EAS multiple times, requiring me to check the query at each instance.
-
-413711 & 413712 - IDTS_FULL_Original and IDTS_PARTIAL_Original Filenames for RRNG.exe
-I have completed unit testing for both jobs and have attached the relevant documents for your reference.
+293256 - Investigate issue with errors in Currency extract process – 
+	Analysis of the table and query is completed for both script. Currently documenting my finding also will schedule a call tomorrow with Aarohi for the discussion on finding.
