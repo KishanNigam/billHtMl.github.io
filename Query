@@ -1,1 +1,10 @@
-I would like to inform you that I will be on planned leave from February 10th to 14th. I will keep my laptop with me and will be available during CST hours for any urgent requirements, except on the 11th and 14th.
+362492 - SQL connection mapping - Deployment of text file
+                I have attached the updated Steps document, which now includes the purge configuration steps.
+
+293256 - Investigate issue with errors in Currency extract process – 
+Currently, I am analysing the behaviour of the Trigger and Control tables when transactions are loaded into EAS. Its take some time to analysis because of there are multiple times to load the data in EAS and Checking query each time.
+
+
+413711 - IDTS_FULL_Original filename to be used when calling RRNG.exe
+413712 - IDTS_PARTIAL_Original filename to be used when calling RRNG.exe
+	I have completed the unit testing both of the job and attached the documents for your reference.
