@@ -3,3 +3,31 @@
 a.	Connected with Bhavani and Document the production deployment steps. Also, we have a call tomorrow for the walkthrough of query deployment through octopus pipeline.
 3.	293256 - Investigation of Errors in the Currency Extract Process
 a.	Connected With Aarohi and discussed on my finding. Now, she wants a process flow diagram how transaction and db behaving when transaction load in EAS.
+
+
+Here’s a corrected version with improved grammar and clarity:
+
+1. Nightly Cash Rearrange and Cancelled Check Job
+
+Verified in NICOEAS10.
+
+
+
+2. 362492 - SQL Connection Mapping - Deployment of Text File
+
+Connected with Bhavani and documented the production deployment steps.
+
+We also have a call tomorrow for a walkthrough of the query deployment process through the Octopus pipeline.
+
+
+
+3. 293256 - Investigation of Errors in the Currency Extract Process
+
+Connected with Aarohi and discussed my findings.
+
+She requested a process flow diagram to illustrate how the transaction and database behave during the transaction load in EAS.
+
+
+
+
+Let me know if you want it to sound more formal or casual!
