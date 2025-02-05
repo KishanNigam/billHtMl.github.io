@@ -1,9 +1,5 @@
-Here’s a corrected and polished version of your status update for your manager:  
-
-**293256 - Investigation of Errors in the Currency Extract Process**  
-The analysis of the table and query has been completed for both scripts. I am currently documenting my findings and will schedule a call with Aarohi tomorrow to discuss them.  
-
-**413711 & 413712 - Using the Original Filename When Calling RRNG.exe**  
-I have completed unit testing for both jobs and have attached the relevant documents for your reference.  
-
-Let me know if you need any further refinements!
+1.	NightlyCashRearrange and Cancelled check Job is verified in NICOEAS10. 
+2.	362492 - SQL connection mapping - Deployment of text file
+a.	Connected with Bhavani and Document the production deployment steps. Also, we have a call tomorrow for the walkthrough of query deployment through octopus pipeline.
+3.	293256 - Investigation of Errors in the Currency Extract Process
+a.	Connected With Aarohi and discussed on my finding. Now, she wants a process flow diagram how transaction and db behaving when transaction load in EAS.
