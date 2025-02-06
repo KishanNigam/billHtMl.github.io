@@ -1,33 +1,16 @@
-1.	NightlyCashRearrange and Cancelled check Job is verified in NICOEAS10. 
-2.	362492 - SQL connection mapping - Deployment of text file
-a.	Connected with Bhavani and Document the production deployment steps. Also, we have a call tomorrow for the walkthrough of query deployment through octopus pipeline.
-3.	293256 - Investigation of Errors in the Currency Extract Process
-a.	Connected With Aarohi and discussed on my finding. Now, she wants a process flow diagram how transaction and db behaving when transaction load in EAS.
-
-
-Here’s a corrected version with improved grammar and clarity:
-
-1. Nightly Cash Rearrange and Cancelled Check Job
-
-Verified in NICOEAS10.
-
-
-
-2. 362492 - SQL Connection Mapping - Deployment of Text File
-
-Connected with Bhavani and documented the production deployment steps.
-
-We also have a call tomorrow for a walkthrough of the query deployment process through the Octopus pipeline.
-
-
-
-3. 293256 - Investigation of Errors in the Currency Extract Process
-
-Connected with Aarohi and discussed my findings.
-
-She requested a process flow diagram to illustrate how the transaction and database behave during the transaction load in EAS.
-
-
-
-
-Let me know if you want it to sound more formal or casual!
+1. Start The script
+2. CurrExtract.TXT file assign in Object variable
+3. Start Select Query
+	a. Select Data from XPORT_GL_TRIGGER (Source Code NOT IN: 'IDTS', 'INVST', 'JE', 'INSM', 'APRUC', 'SRRU', 'PURGE','CORP')
+		(COMPANY: NLFCA).
+	b. Verified data is not present in XPORT_GL_CONTROL table.
+	C. During the Select Data add 0 in REFERENCE_DATA column
+4. Selected Data assigned in Predefined variable and write the data in txt file.
+5. Insert the whole selected data in XPORT_GL_CONTROL Table.
+6. END the Scipt.
+7. Bat file Start
+8. TXT file and SRT file pass and execute cmsort.execute
+	a. In the cmsort.exe data coping txt file to srt file and sort the data based on transaction date.
+9. RRNG.exe execute and pick the srt file and load the dataon the form of JE transaction (JE transaction created NLFCA to NCBUS.)
+10. VALDLOAD call
+11. BAT END.		
