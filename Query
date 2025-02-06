@@ -1,16 +1,23 @@
-1. Start The script
-2. CurrExtract.TXT file assign in Object variable
-3. Start Select Query
-	a. Select Data from XPORT_GL_TRIGGER (Source Code NOT IN: 'IDTS', 'INVST', 'JE', 'INSM', 'APRUC', 'SRRU', 'PURGE','CORP')
-		(COMPANY: NLFCA).
-	b. Verified data is not present in XPORT_GL_CONTROL table.
-	C. During the Select Data add 0 in REFERENCE_DATA column
-4. Selected Data assigned in Predefined variable and write the data in txt file.
-5. Insert the whole selected data in XPORT_GL_CONTROL Table.
-6. END the Scipt.
-7. Bat file Start
-8. TXT file and SRT file pass and execute cmsort.execute
-	a. In the cmsort.exe data coping txt file to srt file and sort the data based on transaction date.
-9. RRNG.exe execute and pick the srt file and load the dataon the form of JE transaction (JE transaction created NLFCA to NCBUS.)
-10. VALDLOAD call
-11. BAT END.		
+Here’s a more formal version with improved structure and clarity:  
+
+---
+
+1. **Start the Script**  
+2. Assign `CurrExtract.TXT` file to the object variable.  
+3. **Start Select Query**  
+   a. Select data from `XPORT_GL_TRIGGER` where `Source Code` is NOT IN ('IDTS', 'INVST', 'JE', 'INSM', 'APRUC', 'SRRU', 'PURGE', 'CORP') for `COMPANY: NLFCA`.  
+   b. Verify that the data is not present in the `XPORT_GL_CONTROL` table.  
+   c. Add `0` to the `REFERENCE_DATA` column during data selection.  
+4. Assign the selected data to a predefined variable and write it to a `.txt` file.  
+5. Insert the selected data into the `XPORT_GL_CONTROL` table.  
+6. **End the Script**  
+7. **Start the Batch File**  
+8. Pass the `.txt` file and `.srt` file to `cmsort.exe` for execution.  
+   a. `cmsort.exe` copies data from the `.txt` file to the `.srt` file and sorts the data based on the transaction date.  
+9. Execute `RRNG.exe`, which picks the `.srt` file and loads the data as a JE transaction (creating a JE transaction from `NLFCA` to `NCBUS`).  
+10. Call `VALDLOAD`.  
+11. **End the Batch File**  
+
+---
+
+Let me know if you want it to be even more technical or simplified!
