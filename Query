@@ -18,6 +18,53 @@ Here’s a more formal version with improved structure and clarity:
 10. Call `VALDLOAD`.  
 11. **End the Batch File**  
 
+
+
+Here’s a detailed explanation of each point:  
+
 ---
 
-Let me know if you want it to be even more technical or simplified!
+1. **Start the Script**  
+   - The process begins by executing the script that handles the extraction and transformation of data. This script is designed to read the necessary input files, process the data, and prepare it for further operations.  
+
+2. **Assign `CurrExtract.TXT` File to Object Variable**  
+   - The `CurrExtract.TXT` file is read and assigned to an object variable. This file contains the data that will be processed and validated in the subsequent steps. The assignment allows the script to access and manipulate the contents of the file.  
+
+3. **Start Select Query**  
+   a. **Select Data from `XPORT_GL_TRIGGER` Table**  
+      - A SQL `SELECT` query is executed to extract data from the `XPORT_GL_TRIGGER` table. The query filters the data based on the `Source Code`, excluding records with values ('IDTS', 'INVST', 'JE', 'INSM', 'APRUC', 'SRRU', 'PURGE', 'CORP') and focusing only on data related to `COMPANY: NLFCA`.  
+   
+   b. **Verify Data in `XPORT_GL_CONTROL` Table**  
+      - After selecting data, a verification step ensures that the same data is not already present in the `XPORT_GL_CONTROL` table to avoid duplication or conflicts during the data insertion step.  
+
+   c. **Add `0` to the `REFERENCE_DATA` Column**  
+      - During the data selection process, a value of `0` is added to the `REFERENCE_DATA` column for each selected record. This step ensures consistency in the data structure and format before it is written to a file.  
+
+4. **Assign Selected Data to Predefined Variable and Write to `.TXT` File**  
+   - The data extracted from the query is stored in a predefined variable. This variable temporarily holds the data, which is then written into a `.txt` file for further processing. This step converts the query results into a flat file format required for subsequent operations.  
+
+5. **Insert Data into `XPORT_GL_CONTROL` Table**  
+   - The data that was selected and processed is inserted into the `XPORT_GL_CONTROL` table. This ensures that the extracted data is now available in the control table for tracking and monitoring purposes.  
+
+6. **End the Script**  
+   - The script completes its execution at this point. All tasks related to data extraction, transformation, and insertion have been performed successfully.  
+
+7. **Start the Batch File**  
+   - A batch file (`.bat`) is executed to initiate the next set of operations, including file sorting and data loading. This batch file automates the steps required to process and organize the data files.  
+
+8. **Execute `cmsort.exe` to Process `.TXT` and `.SRT` Files**  
+   a. The `.txt` file and `.srt` file are passed to `cmsort.exe` for processing.  
+      - `cmsort.exe` copies the contents of the `.txt` file into the `.srt` file and sorts the data based on the transaction date. Sorting ensures that the data is in the correct sequence for loading into the target system.  
+
+9. **Execute `RRNG.exe` to Load Data and Create JE Transactions**  
+   - The sorted `.srt` file is picked up by `RRNG.exe`, which processes the file and loads the data as journal entry (JE) transactions. The JE transactions are created by transferring the data from `NLFCA` to `NCBUS`.  
+
+10. **Call `VALDLOAD`**  
+   - The `VALDLOAD` process is called to perform final validations and load the processed data into the target system. This step ensures that the data meets all required criteria before it is fully integrated.  
+
+11. **End the Batch File**  
+   - The batch file completes its execution. At this point, all operations, including data extraction, sorting, validation, and loading, are finished. The process is successfully closed.  
+
+---
+
+Let me know if you want to expand any specific section further!
