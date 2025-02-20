@@ -1,20 +1,21 @@
-Select 
-BH.REFERENCE_DATA as invoice_number,
-'' as voucher_no,
-RIGHT(BH.REFERENCE_DATA, LEN(REFERENCE_DATA) - 2) as vendor_id,
-'' as vendor_name,
-'' as payment_name,
-CASE WHEN [CHECK_NUMBER]='' THEN EFT_ADVICE_NUM ELSE CHECK_NUMBER END AS payment_number,
-ABH.CHECK_DATE as payment_date,
-ABH.CHECK_AMT as paid_amount,
-'' as discount_taken_amount,
-'' as late_charge_amount,
-'' as notes,
-ABH.PAYMENT_MODE as payment_method,
-'' as vendor_invoice_number,
-'' as payment_id
-
-from BSTRN_HEADER BH 
- Join AP_BSTRN_HEADER ABH on ABH.TRAN_ID = BH.TRAN_ID
-where BH.REFERENCE_DATA = 'INV0000321'
- And BH.TRAN_ID = ABH.TRAN_ID
+SELECT 
+    BH.REFERENCE_DATA AS invoice_number,
+    '' AS voucher_no,
+    RIGHT(BH.REFERENCE_DATA, LEN(BH.REFERENCE_DATA) - 2) AS vendor_id,
+    '' AS vendor_name,
+    '' AS payment_name,
+    CASE 
+        WHEN ABH.CHECK_NUMBER = '' THEN ABH.EFT_ADVICE_NUM 
+        ELSE ABH.CHECK_NUMBER 
+    END AS payment_number,
+    ABH.CHECK_DATE AS payment_date,
+    ABH.CHECK_AMT AS paid_amount,
+    '' AS discount_taken_amount,
+    '' AS late_charge_amount,
+    '' AS notes,
+    ABH.PAYMENT_MODE AS payment_method,
+    '' AS vendor_invoice_number,
+    '' AS payment_id
+FROM BSTRN_HEADER BH 
+JOIN AP_BSTRN_HEADER ABH ON BH.TRAN_ID = ABH.TRAN_ID
+WHERE BH.REFERENCE_DATA = 'INV0000321';
