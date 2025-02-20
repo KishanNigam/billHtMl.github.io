@@ -1,43 +1,20 @@
-f
-PFA document of currency extract process Dev analysis and process flow diagram.
+Select 
+BH.REFERENCE_DATA as invoice_number,
+'' as voucher_no,
+RIGHT(BH.REFERENCE_DATA, LEN(REFERENCE_DATA) - 2) as vendor_id,
+'' as vendor_name,
+'' as payment_name,
+CASE WHEN [CHECK_NUMBER]='' THEN EFT_ADVICE_NUM ELSE CHECK_NUMBER END AS payment_number,
+ABH.CHECK_DATE as payment_date,
+ABH.CHECK_AMT as paid_amount,
+'' as discount_taken_amount,
+'' as late_charge_amount,
+'' as notes,
+ABH.PAYMENT_MODE as payment_method,
+'' as vendor_invoice_number,
+'' as payment_id
 
-Based on last connect with Aarohi we need to update the document based on the meeting inputs.
-1.	Refresh the flow diagram.
-2.	Add more details of the query (BU_CODE, CASES, and tables)
-
-
-This is the first level analysis I will update the document based on the feed back of our last connect.
-
-
-
-Here's a more formal version:
-
-
----
-
-Subject: Currency Extract Process – Dev Analysis and Process Flow Document
-
-Dear [Manager's Name],
-
-Please find attached the Currency Extract Process Dev Analysis and Process Flow Diagram.
-
-Based on the recent discussion with Aarohi, the document requires updates as per the meeting inputs:
-
-1. Refresh the process flow diagram.
-
-
-2. Add more details regarding the query (BU_CODE, CASES, and tables).
-
-
-
-This is the first-level analysis. I will update the document further based on feedback from our last discussion.
-
-Thank you for your support.
-
-Best regards,
-[Your Name]
-
-
----
-
-Let me know if you want it even more formal or concise.
+from BSTRN_HEADER BH 
+ Join AP_BSTRN_HEADER ABH on ABH.TRAN_ID = BH.TRAN_ID
+where BH.REFERENCE_DATA = 'INV0000321'
+ And BH.TRAN_ID = ABH.TRAN_ID
