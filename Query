@@ -1,44 +1,250 @@
-SELECT DISTINCT
-        	HDR.REFERENCE_DATA AS invoice_number, 
-		  '' AS voucher_no, 
- 		  RIGHT(HDR.REFERENCE_DATA, LEN(HDR.REFERENCE_DATA) - 2) AS vendor_id, 
- 		  '' AS vendor_name, 
- 		  '' AS payment_name, 
- 			APSTAT.CHECK_NUMBER AS payment_number, 
- 		  APHDR.CHECK_DATE AS payment_date, 
- 		  APHDR.CHECK_AMT AS paid_amount, 
- 		  '' AS discount_taken_amount, 
- 		  '' AS late_charge_amount, 
- 		  '' AS notes, 
- 		  APHDR.PAYMENT_MODE AS payment_method, 
- 		  '' AS vendor_invoice_number, 
- 		  '' AS payment_id 
-	 FROM [eas].[dbo].[AP_CHECK_STATUS] 	APSTAT
-	 JOIN (SELECT [TRAN_ID] 
-	 			,CASE WHEN [CHECK_NUMBER]='' THEN EFT_ADVICE_NUM ELSE CHECK_NUMBER END AS CHKNO	
-	 			,[COMPANY_CODE] ,[CHECK_RECON_DATE] ,[CHECK_DATE] ,[CHECK_AMT] 
-	 			,[PAYMENT_MODE] ,[BANK] ,[BANK_ACCOUNT] ,[VENDOR_NAME1] 
-	 		FROM [eas].[dbo].[AP_BSTRN_HEADER] 
-	 		WHERE CHECK_RECON_STATUS IN ('O','C','V')) 	AS APHDR 
-	 	ON APHDR.COMPANY_CODE=APSTAT.COMPANY_CODE 
-	 	AND APHDR.BANK=APSTAT.BANK 
-	 	AND APHDR.BANK_ACCOUNT=APSTAT.BANK_ACCOUNT 
-	 	AND APHDR.CHKNO = APSTAT.CHECK_NUMBER 
-	 JOIN BSTRN_HEADER 	HDR 
-	 	ON HDR.TRAN_ID = APHDR.TRAN_ID 
-	 	AND HDR.SOURCE_CODE IN ('APRRG')	
-		AND APHDR.COMPANY_CODE = 'NICO' 
-		AND APHDR.PAYMENT_MODE = 'E' 
-		AND APHDR.VENDOR_NAME1 <> '' 
-		AND HDR.REFERENCE_DATA like 'INV%' 
-	 LEFT JOIN XPORT_AP_TRIGGER 	T 
-	 	ON T.BANK = APSTAT.BANK	
-	 	AND T.BANK_ACCOUNT = APSTAT.BANK_ACCOUNT 
-	 	AND T.CHECK_NUMBER = APSTAT.CHECK_NUMBER 
-	 	AND T.CHECK_RECON_STATUS = APSTAT.CHECK_RECON_STATUS 
-	 WHERE T.XPORT_AP_ID NOT IN 
-	 	(SELECT T.XPORT_AP_ID FROM XPORT_AP_TRIGGER T 
-	 		JOIN XPORT_AP_CONTROL C	
-	 		ON C.XPORT_AP_ID = T.XPORT_AP_ID 
-	 		AND C.EXPORT_PROCESS = 'APRRGCHK') 
-  
+Dim db, rs, db2, rs2
+
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+NUMCKS = 0
+AMTCKS = 0
+TOTCKS = 0
+TOTAMT = 0
+NUMISS = 0
+NUMVD = 0
+NUMCL = 0
+NUMMS = 0
+AMTISS = 0
+AMTVD = 0
+AMTCL = 0
+AMTMS = 0
+
+'Added the logic to read the parameter to get the server and executing environment
+  IF WScript.Arguments.Count = 0 then
+      WScript.Echo "Missing parameters"
+      WScript.Quit
+  END IF
+  Execserver = Wscript.Arguments.Item(0)
+  VersionKey = Wscript.Arguments.Item(1)
+'Added the logic to read the parameter to get the server and executing environment
+
+
+
+    LOGFilePath = "D:\eas\server\custom\log\VNDLYEXPORTS\" & YYEAR & "\" & YYEAR & monthno & "\VNDLY_EXPORTS_VBS_" & sDate & ".LOG"
+   set objLOG = createobject("Scripting.FileSystemObject")
+   set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+   objLOGFile.WriteLine("VNDLY EXPORTS REPORT      RUN DATE: " & DATE & "  " & TIME)
+   objLOGFile.WriteLine("   ")
+      DATAFilePath = "\\" & Execserver & "\Server\EXPORTS\VNDLYEXPORTS\vt_9f3808fd_1269_423c_a745_879be1f28416_inv_payments_" & sDate & ".txt"   
+      set objDATA = createobject("Scripting.FileSystemObject")
+      set objDATAFile = objDATA.CreateTextfile(DATAFilePath)
+objLOGFile.WriteLine("Test1   ")
+ 'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   Const ForReading = 1
+   Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   Set keyValues = CreateObject("Scripting.Dictionary")
+   Do Until objFileReg.AtEndOfStream
+   line =objFileReg.ReadLine
+   parts = Split(line,"=")
+   If UBound(parts) = 1 Then
+      key = Trim(parts(0))
+      value = Trim(parts(1))
+      keyValues(key) = value
+   End If
+   Loop
+   objFileReg.Close
+   Val=keyValues(VersionKey)
+   DBDetails = Split(Val,",")
+   If UBound(DBDetails) >= 0 Then
+      DBServerVal = DBDetails(0)
+      DBDBVal=DBDetails(1)
+      DBUserVal=DBDetails(2)
+      DBPassVal=DBDetails(3)
+      DBServer = ReadReg(DBServerVal)
+      DBDB = ReadReg(DBDBVal)
+      DBUser = ReadReg(DBUserVal)
+      DBPass = ReadReg(DBPassVal)
+   Else
+      WScript.Echo "No values in the file to match the upgrade version"
+   End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+
+   sConnect = "Driver={ODBC Driver 17 for SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";ColumnEncryption=Enabled;"
+
+
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect 
+objLOGFile.WriteLine("Test2   ")
+
+sQuery="SELECT DISTINCT" _
+        & "	HDR.REFERENCE_DATA AS invoice_number, " _
+		& "  '' AS voucher_no, " _
+ 		& "  RIGHT(HDR.REFERENCE_DATA, LEN(HDR.REFERENCE_DATA) - 2) AS vendor_id, " _
+ 		& "  '' AS vendor_name, " _
+ 		& "  '' AS payment_name, " _
+ 		& "	APSTAT.CHECK_NUMBER AS payment_number, " _
+ 		& "  APHDR.CHECK_DATE AS payment_date, " _
+ 		& "  APHDR.CHECK_AMT AS paid_amount, " _
+ 		& "  '' AS discount_taken_amount, " _
+ 		& "  '' AS late_charge_amount, " _
+ 		& "  '' AS notes, " _
+ 		& "  APHDR.PAYMENT_MODE AS payment_method, " _
+ 		& "  '' AS vendor_invoice_number, " _
+ 		& "  '' AS payment_id " _
+	& " FROM [eas].[dbo].[AP_CHECK_STATUS] 	APSTAT" _
+	& " JOIN (SELECT [TRAN_ID] " _
+	& " 			,CASE WHEN [CHECK_NUMBER]='' THEN EFT_ADVICE_NUM ELSE CHECK_NUMBER END AS CHKNO	" _
+	& " 			,[COMPANY_CODE] ,[CHECK_RECON_DATE] ,[CHECK_DATE] ,[CHECK_AMT] " _
+	& " 			,[PAYMENT_MODE] ,[BANK] ,[BANK_ACCOUNT] ,[VENDOR_NAME1] " _
+	& " 		FROM [eas].[dbo].[AP_BSTRN_HEADER] " _
+	& " 		WHERE CHECK_RECON_STATUS IN ('O','C','V')) 	AS APHDR " _
+	& " 	ON APHDR.COMPANY_CODE=APSTAT.COMPANY_CODE " _
+	& " 	AND APHDR.BANK=APSTAT.BANK " _
+	& " 	AND APHDR.BANK_ACCOUNT=APSTAT.BANK_ACCOUNT " _
+	& " 	AND APHDR.CHKNO = APSTAT.CHECK_NUMBER " _
+	& " JOIN BSTRN_HEADER 	HDR " _
+	& " 	ON HDR.TRAN_ID = APHDR.TRAN_ID " _
+	& " 	AND HDR.SOURCE_CODE IN ('APRRG')	" _
+	& "	AND APHDR.COMPANY_CODE = 'NICO' " _
+	& "	AND APHDR.PAYMENT_MODE = 'E' " _
+	& "	AND APHDR.VENDOR_NAME1 <> '' " _
+	& "	AND HDR.REFERENCE_DATA like 'INV%' " _
+	& " LEFT JOIN XPORT_AP_TRIGGER 	T " _
+	& " 	ON T.BANK = APSTAT.BANK	" _
+	& " 	AND T.BANK_ACCOUNT = APSTAT.BANK_ACCOUNT " _
+	& " 	AND T.CHECK_NUMBER = APSTAT.CHECK_NUMBER " _
+	& " 	AND T.CHECK_RECON_STATUS = APSTAT.CHECK_RECON_STATUS " _
+	& " WHERE T.XPORT_AP_ID NOT IN " _
+	& " 	(SELECT T.XPORT_AP_ID FROM XPORT_AP_TRIGGER T " _
+	& " 		JOIN XPORT_AP_CONTROL C	" _
+	& " 		ON C.XPORT_AP_ID = T.XPORT_AP_ID " _
+	& " 		AND C.EXPORT_PROCESS = 'APRRGCHK')"
+
+
+  'WScript.Echo sQuery
+
+Set rs=db.execute(sQuery)
+objLOGFile.WriteLine(sQuery)
+FIRSTR = "Y"
+PREVBA = "Y"
+objDATAFile.WriteLine(rs.Fields("DATA_FIELD"))
+On Error Resume Next
+rs.MoveFirst
+Do Until rs.EOF    
+   objDATAFile.WriteLine(rs.Fields("DATA_FIELD"))
+   NUMCKS = NUMCKS + 1
+   AMT = mid(rs.Fields("DATA_FIELD"),57,12) 
+   RECSTAT = mid(rs.Fields("DATA_FIELD"),69,9)
+   IF RECSTAT = "ISSUED   " THEN
+      NUMISS = NUMISS + 1
+      AMTISS = AMTISS + AMT
+   ELSE 
+     IF RECSTAT = "CLEARED  " THEN 
+        NUMCL = NUMCL + 1
+        AMTCL = AMTCL + AMT
+     ELSE 
+        IF RECSTAT = "VOIDED   " THEN 
+           NUMVD = NUMVD + 1
+           AMTVD = AMTVD + AMT
+        ELSE 
+           NUMMS = NUMMS + 1
+           AMTMS = AMTMS + AMT
+        END IF
+     END IF
+   END IF
+   AMTCKS = AMTCKS + AMT
+   rs.MoveNext
+Loop
+
+rs.Close
+db.Close
+Set rs = Nothing
+Set db = Nothing
+
+   AMTVD = AMTVD / 100
+   AMTISS = AMTISS / 100
+   AMTCL = AMTCL / 100
+   AMTMS = AMTMS / 100
+   PRTNUM = BLANKFill (NUMISS, 6)
+   PRTAMT = BLANKFill (FORMATNUMBER(AMTISS,2), 15)
+   objLOGFile.WriteLine("NUMBER OF  ISSUED CHECKS = " & PRTNUM & "   CHECK AMOUNT = " & PRTAMT)
+   PRTNUM = BLANKFill (NUMCL, 6)
+   PRTAMT = BLANKFill (FORMATNUMBER(AMTCL,2), 15)
+   objLOGFile.WriteLine("NUMBER OF CLEARED CHECKS = " & PRTNUM & "   CHECK AMOUNT = " & PRTAMT)
+   PRTNUM = BLANKFill (NUMVD, 6)
+   PRTAMT = BLANKFill (FORMATNUMBER(AMTVD,2), 15)
+   objLOGFile.WriteLine("NUMBER OF  VOIDED CHECKS = " & PRTNUM & "   CHECK AMOUNT = " & PRTAMT)
+   objLOGFile.WriteLine("                           ------                  ---------------")
+
+   PRTNUM = BLANKFill (NUMCKS, 6)
+   AMTCKS = AMTCKS / 100
+   PRTAMT = BLANKFill (FORMATNUMBER(AMTCKS,2), 15)
+
+   objLOGFile.WriteLine("  TOTAL NUMBER OF CHECKS = " & PRTNUM & "   CHECK AMOUNT = " & PRTAMT)
+
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect 
+
+
+sQuery="INSERT INTO XPORT_AP_CONTROL (XPORT_AP_ID, EXPORT_PROCESS, EXPORT_DATETIME) " & _
+        "SELECT A.XPORT_AP_ID, 'APRRGCHK',GETDATE() FROM XPORT_AP_TRIGGER A " & _
+         "WHERE NOT EXISTS " & _
+          "( SELECT * FROM XPORT_AP_CONTROL C " & _
+             "WHERE C.XPORT_AP_ID = A.XPORT_AP_ID AND C.EXPORT_PROCESS = 'APRRGCHK') " 
+
+
+Set rs=db.execute(sQuery)
+On Error Resume Next
+
+rs.Close
+db.Close
+Set rs = Nothing
+Set db = Nothing
+
+
+
+   objLOGFile.WriteLine("  ")
+   objLOGFile.WriteLine("VNDLY EXPORT ENDED SUCCESSFULLY")
+
+
+objDATAFile.Close
+objLOGFile.Close
+
+WScript.Quit(0)
+
+
+Function ReadReg(RegPath)
+     Dim objRegistry, Key
+     Set objRegistry = CreateObject("Wscript.shell")
+     Key = objRegistry.RegRead(RegPath)
+     ReadReg = Key
+End Function
+
+Function ZeroFill (ByVal String, ByVal length )
+     ZeroFill = Trim(String)
+     Do While Len(ZeroFill) < length
+         ZeroFill = "0" & ZeroFill
+     Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length )
+     BLANKFill = Trim(String)
+     Do While Len(BLANKFill) < length
+         BLANKFill = " " & BLANKFill
+     Loop
+End Function
+
+
