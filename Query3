@@ -1,54 +1,6 @@
-function Invoke-BlobItems {
-    param (
-        [Parameter(Mandatory)]
-        $URL,
-        $Path = "\\nicoad\nico\Finance\EAS\BiBerk_Feed"
-    )
-    try
-    {
-       
-    
-    $uri = $URL.split('?')[0]
-    $sas = $URL.split('?')[1]
+' Generate timestamp components
+sDate = DatePart("yyyy", Now) & ZeroFill(DatePart("m", Now), 2) & ZeroFill(DatePart("d", Now), 2)
+HoursMinSecond = ZeroFill(DatePart("h", Now), 2) & ZeroFill(DatePart("n", Now), 2) & ZeroFill(DatePart("s", Now), 2)
 
-    $newurl = $uri + "?restype=container&comp=list&" + $sas 
-    
-    #Invoke REST API
-    $body = Invoke-RestMethod -uri $newurl
-
-    #cleanup answer and convert body to XML
-    $xml = [xml]$body.Substring($body.IndexOf('<'))
-
-    #use only the relative Path from the returned objects
-    $files = $xml.ChildNodes.Blobs.Blob.Name
-
-    #create folder structure and download files
-    $files | ForEach-Object { $_; New-Item (Join-Path $Path (Split-Path $_)) -ItemType Directory -ea SilentlyContinue | Out-Null
-        (New-Object System.Net.WebClient).DownloadFile($uri + "/" + $_ + "?" + $sas, (Join-Path $Path $_))
-     }
-
-  foreach($file in $files)
-  {
-      #Write-Output $file
-      $blobUrl = "https://biberkapollopayments.blob.core.windows.net/nicopaymentrequest/{0}?sp=racwdl&st=2024-09-16T13:33:22Z&se=2044-09-16T21:33:22Z&spr=https&sv=2022-11-02&sr=c&sig=euwQ0BSJ%2BXfJXcvgI4mw1QD9C%2FlNJ%2F3t9YnGnz0m7xw%3D" -f $file
-      #Write-Output $blobUrl
-      Invoke-RestMethod -Uri $blobUrl -Method Delete
-  }
-    
-
-     }
-     catch
-     {
-         Write-Output "The files have not been downloaded + $error"
-     }
-}
-
-
-
-
- Invoke-BlobItems "https://biberkapollopayments.blob.core.windows.net/nicopaymentrequest?sp=racwdl&st=2024-09-16T13:33:22Z&se=2044-09-16T21:33:22Z&spr=https&sv=2022-11-02&sr=c&sig=euwQ0BSJ%2BXfJXcvgI4mw1QD9C%2FlNJ%2F3t9YnGnz0m7xw%3D"
-
-
-
-
-The files have not been downloaded + Cannot bind argument to parameter 'Path' because it is null.
+' Construct the CSV file name
+DATAFilePath = "\\" & Execserver & "\Server\EXPORTS\VNDLYEXPORTS\vt_9f3808fd_1269_423c_a745_879be1f28416_inv_payments_" & sDate & "_" & HoursMinSecond & ".csv"
