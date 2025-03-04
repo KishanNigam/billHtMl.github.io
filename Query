@@ -1,14 +1,4 @@
-objDATAFile.WriteLine(rs.Fields("invoice_number") & "," & _
-                      rs.Fields("voucher_no") & "," & _
-                      rs.Fields("vendor_id") & "," & _
-                      rs.Fields("vendor_name") & "," & _
-                      rs.Fields("payment_name") & "," & _
-                      rs.Fields("payment_number") & "," & _
-                      rs.Fields("payment_date") & "," & _
-                      Replace(FormatNumber(rs.Fields("paid_amount"), 2, -1, 0, 0), ",", "") & "," & _
-                      rs.Fields("discount_taken_amount") & "," & _
-                      rs.Fields("late_charge_amount") & "," & _
-                      rs.Fields("notes") & "," & _
-                      rs.Fields("payment_method") & "," & _
-                      rs.Fields("vendor_invoice_number") & "," & _
-                      rs.Fields("payment_id"))
+Maine VC task ka analysis kiya or paya ki Scan 2 task jo ki Database connection failure par EXIT code 99 ko read kar ke error 8 task ko call kar ke mail bhej rha h jisme APPAY.log attach ho kar aa rhe h.
+Parantu jesha ki aap dekh sakte h niche EXIT code 99 ko check karne ke alawa or bhi kai sari condition hai. Agar ham Error 8 Task main se APPAY.log hata kar VC log bas bheje ge to ye dikh rhe sabhi Condition par by default apply hoga or enme se kisi bhi condition ke true hone par mail main kewal VC log hee aye ge. 
+
+Krepa kar ke Condition main hone wale ish impact ko Dekhe or mujhe bataye ki age kya karna chahiye.
