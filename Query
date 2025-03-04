@@ -1,5 +1,45 @@
-I have analyzed the VC task and found that the Scan 2 task, which reads EXIT code 99 on a database connection failure, calls the Error 8 task, which sends an email with the APPAY.log attached.
 
-However, as you can see below, apart from checking EXIT code 99, there are several other conditions as well. If we remove APPAY.log from the Error 8 task and send only the VC log, it will apply by default to all these conditions, and in case any of them are true, the email will contain only the VC log.
 
-Please analyze the impact of these conditions and let me know what should be done next.
+
+
+
+
+
+
+
+
+
+
+
+
+Remarks
+"Based on the techincal analysis I have some question regarding VC 
+changes because VC changes impacted other conditiontion. I have  
+send a detailed mail to Pavan and BA team. "
+"During the Walkthourgh of VNDLY EXPORT job. This is the changes requred
+ in Code.
+
+""The export file is currently not displaying 2 decimal places for the amount fields. The development team will perform a quick fix for this issue, and the QA team will share the testing screenshots with this group for getting sign off on this change"""
+"There is condition when Multiple files came the all the files loaded
+ successfully then VC send a success mail. Currently this condition
+is not working properly. I need quick discussion with Pavan."
+"Brian created the connection and send the public key.
+I have verifed the connection but recived connection error so I asked to Brian
+regrading error so he said that we need to provide the public key to the 
+other end and they need to setup their SFTP server to accept ssh key 
+authentication"
+
+Remarks
+"Aarohi connected and said that lets analysis the technical fesibilty of this 
+user story and we started the RRNG job analysis.
+
+During the Analysis the RRNG job with VC log, Bat log and SSMS.  
+we found some mapping of loaded file. So she wants to schdule a connect with Dev team. "
+
+
+
+
+
+
+
+
