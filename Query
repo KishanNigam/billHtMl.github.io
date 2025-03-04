@@ -13,9 +13,15 @@ sDate = sDate & dayno
 RPTDATE = RPTDATE & "-" & dayno
 hrs = DatePart("h", Now)
 mns = DatePart("n", Now)
+secs = DatePart("s", Now)
 hrno = ZeroFill(hrs,2)
 minno = ZeroFill(mns,2)
-sDate = sDate & hrno & minno
+secno = ZeroFill(secs,2)
+sDate = sDate & "_" & hrno & minno & secno
+
+Dim rowCount
+rowCount = 0
+totalPaidAmount = 0
 
 'Added the logic to read the parameter to get the server and executing environment
   IF WScript.Arguments.Count = 0 then
@@ -36,6 +42,8 @@ sDate = sDate & hrno & minno
       DATAFilePath = "\\" & Execserver & "\Server\EXPORTS\VNDLYEXPORTS\vt_9f3808fd_1269_423c_a745_879be1f28416_inv_payments_" & sDate & ".csv"   
       set objDATA = createobject("Scripting.FileSystemObject")
       set objDATAFile = objDATA.CreateTextfile(DATAFilePath, True)
+
+
 '  'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
    Const ForReading = 1
    Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
@@ -70,7 +78,7 @@ sDate = sDate & hrno & minno
 ' Write CSV Header Row
 objDATAFile.WriteLine("invoice_number,voucher_no,vendor_id,vendor_name,payment_name,payment_number,payment_date,paid_amount,discount_taken_amount,late_charge_amount,notes,payment_method,vendor_invoice_number,payment_id")
 
-
+'Database Connection String
   sConnect = "Driver={ODBC Driver 17 for SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";ColumnEncryption=Enabled;"
 
 
@@ -120,13 +128,12 @@ sQuery="SELECT DISTINCT" _
 	& " 	(SELECT T.XPORT_AP_ID FROM XPORT_AP_TRIGGER T " _
 	& " 		JOIN XPORT_AP_CONTROL C	" _
 	& " 		ON C.XPORT_AP_ID = T.XPORT_AP_ID " _
-	& " 		AND C.EXPORT_PROCESS = 'APRRGCHK')"
+	& " 		AND C.EXPORT_PROCESS = 'VNDLYEXP')"
 
 
   'WScript.Echo sQuery
 
 Set rs=db.execute(sQuery)
-
 
 On Error Resume Next
 rs.MoveFirst
@@ -145,10 +152,22 @@ Do Until rs.EOF
                           rs.Fields("payment_method") & "," & _
                           rs.Fields("vendor_invoice_number") & "," & _
                           rs.Fields("payment_id"))
+    rowCount = rowCount + 1
+	totalPaidAmount = totalPaidAmount + CDbl(rs.Fields("paid_amount"))                      
     rs.MoveNext
 Loop
 
-objLOGFile.WriteLine("Data Written to CSV Successfully.")
+' Check if any records were returnd
+IF rowCount = 0 Then
+	objLOGFile.WriteLine("No Data Present in Database for VNDLY EXPORT.")	
+ELSE
+	objLOGFile.WriteLine("Data Written to CSV Successfully.") 
+	objLOGFile.WriteLine(" ")
+	objLOGFile.WriteLine("Count of Data extracted: " & rowCount)
+	objLOGFile.WriteLine(" ")
+	objLOGFile.WriteLine("Total Paid Amount: " & FORMATNUMBER(totalPaidAmount, 3))	
+End If
+
 rs.Close
 db.Close
 Set rs = Nothing
@@ -161,10 +180,10 @@ db.Open sConnect
 
 
 sQuery="INSERT INTO XPORT_AP_CONTROL (XPORT_AP_ID, EXPORT_PROCESS, EXPORT_DATETIME) " & _
-        "SELECT A.XPORT_AP_ID, 'APRRGCHK',GETDATE() FROM XPORT_AP_TRIGGER A " & _
+        "SELECT A.XPORT_AP_ID, 'VNDLYEXP',GETDATE() FROM XPORT_AP_TRIGGER A " & _
          "WHERE NOT EXISTS " & _
           "( SELECT * FROM XPORT_AP_CONTROL C " & _
-             "WHERE C.XPORT_AP_ID = A.XPORT_AP_ID AND C.EXPORT_PROCESS = 'APRRGCHK') " 
+             "WHERE C.XPORT_AP_ID = A.XPORT_AP_ID AND C.EXPORT_PROCESS = 'VNDLYEXP') " 
 
 
 Set rs=db.execute(sQuery)
