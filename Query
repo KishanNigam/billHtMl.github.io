@@ -1,1 +1,14 @@
- Replace(CStr(Round(rs.Fields("paid_amount"), 2)), ",", "") & "," & _
+objDATAFile.WriteLine(rs.Fields("invoice_number") & "," & _
+                      rs.Fields("voucher_no") & "," & _
+                      rs.Fields("vendor_id") & "," & _
+                      rs.Fields("vendor_name") & "," & _
+                      rs.Fields("payment_name") & "," & _
+                      rs.Fields("payment_number") & "," & _
+                      rs.Fields("payment_date") & "," & _
+                      Replace(FormatNumber(rs.Fields("paid_amount"), 2, -1, 0, 0), ",", "") & "," & _
+                      rs.Fields("discount_taken_amount") & "," & _
+                      rs.Fields("late_charge_amount") & "," & _
+                      rs.Fields("notes") & "," & _
+                      rs.Fields("payment_method") & "," & _
+                      rs.Fields("vendor_invoice_number") & "," & _
+                      rs.Fields("payment_id"))
