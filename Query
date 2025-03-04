@@ -1,1 +1,1 @@
- FormatNumber(rs.Fields("paid_amount"), 2) & "," & _
+ Replace(CStr(Round(rs.Fields("paid_amount"), 2)), ",", "") & "," & _
