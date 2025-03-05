@@ -1,10 +1,10 @@
-This is regarding the automation process for downloading the Cleared Check (Actual Check) file from SFTP to the NICO server. To achieve this, we have created the Associated SFTP BAI2 Download job, which will download the PDBAI file from SFTP and place it on the NICO server.
+As discussed over the call, the job configurations for BHSIEAS11 (test) environment and BHSIEAS10 (prod) environment are different. Therefore, I have made the necessary changes in BHSIEAS12.
 
-Currently, for this VC job, we need to establish an SFTP connection, which Brian has already set up. The next step is to add the attached public key to the SFTP side.
+Changes made:
 
-Kindly review the attached key and add it to the SFTP server.
+Previously, when Scan 2 task was true, it was triggering ERROR 8. I have now updated it to trigger ERROR 2 instead.
+Now, whenever there is a DB connection failure, the VC job email will send the Visual Cron log instead of the APPAY log.
+I have uploaded the Visual Cron changes document to DevOps.
 
-Below are the details:
-[Provide the necessary details here]
-
-Please let me know if you need any further information.
+Kindly review it and let me know so that I can apply the same changes in Production.
+Additionally, please confirm whether I should also fix these changes in the Test job.
