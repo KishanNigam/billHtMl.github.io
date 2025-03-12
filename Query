@@ -1,30 +1,55 @@
+Yeh Ek VB script ka Code hai.
+Code Start:
+IF FILETYPE = "88" THEN
+        IF PREVFTYPE = "16" THEN
+           TRANDEL = INSTR(arr(1),"/CREF/T")
+           TRANLEN = LEN(arr(1))
+           IF TRANDEL > 0 THEN
+              TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANLEN - TRANDEL),0,,,0)
+               CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANLEN - TRANDEL)
+               CUSTREF = TRIM(CUSTREF)
+     '         objLogFile.WriteLine("88 TRANNUM =  " & TRANNUM)
+           ELSE
 
-Remarks
-Based on my technical analysis, I have some questions regarding the VC changes, as they have impacted other conditions. I have sent a detailed email to Pavan and the BA team for further clarification.
-
-2. During the walkthrough of the VNDLY EXPORT job, the following code change was required:
-
-The export file was not displaying two decimal places for the amount fields. The development team has implemented a quick fix for this issue, and the QA team will share the testing screenshots with this group for sign-off.
-The code changes have been completed, and the updated VBScript file has been attached in DevOps.
-
-3. There is a condition where, when multiple files arrive and all files are loaded successfully, VC should send a success email. Currently, this condition is not working as expected.
-
-I need a quick discussion with Pavan to address this issue. Please let me know a suitable time.
-
-
-
-Brian created the connection and sent the public key. I verified the connection but received a connection error. I reached out to Brian regarding the issue, and he mentioned that we need to provide the public key to the other end. They need to configure their SFTP server to accept SSH key authentication.
-
-
-Remarks
-"Aarohi connected with us and suggested analyzing the technical feasibility of this user story. We then began analyzing the RRNG job.
-
-During the analysis, we reviewed the RRNG job using the VC log, BAT log, and SSMS. We identified some mapping of the loaded file. Aarohi now wants to schedule a connect with the development team to discuss further."
-
+              TRANDEL = INSTR(arr(1),"/EREF/T")
+              TRANLEN = LEN(arr(1))
+              TRANEND = INSTR(MID(arr(1),TRANDEL + 7,TRANLEN - (TRANDEL + 6)),"/")
+              IF TRANEND = 0 THEN
+                  TRANCHR = TRANLEN - (TRANDEL + 6)
+              ELSE
+                  TRANCHR = TRANEND - 1
+              END IF
+              IF TRANDEL > 0 THEN
+                 TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR),0,,,0)
+                 CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANCHR)
+                 CUSTREF = TRIM(CUSTREF)
+       '         objLogFile.WriteLine("88 TRANNUM =  " & TRANNUM)
+              ELSE
+                  TRANSDESC = TRANSDESC & " " & TRIM(arr(1))
+              END IF
+           END IF
+        END IF
+     ELSE
+Code END:
 
 
+Jo Niche diye gai file ko read kar rha hai.
+
+Read File start:
+01,022000020,USHBUSGUS630202590,250122,0238,1,80,1,2/                           
+02,USHBUSGUS630202590,BBMEAEAD,1,250121,,,2/                                    
+03,15368012,EUR,010,17202014,,/
+16,409,2279511,,1443211386250121,T124327,T124327          1443211386250121     
+88,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T12432           
+88,7/PAY.DET./PAYEE REF. 0002011/25. RELATING TO DATE OF LOSS. 2024-            
+88,08-16. FOR BHSIC LAIM. LI2408195535.                                         
+Read File END:
+
+So (READ FILE -> 8,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T12432   ) line ko jab code read karta h tab ushe last value 12432 adhi hee milte hai kyuki baki ki value next line main (/) ke phele tak ki h jo eshne nhi pick ki.
+So I want ki (Code main -> TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR),0,,,0)) logic ki baad ek condition logic lagao jo mere niche diye gaye point ko fill kare.
+Point 1. Agar TRANNUM ki value  6 se kam hai to code next line ki 88, ko chor kar agle (/) khatam hone tak ki value ko pick kare or TRANNUM main add kar de. 
+Point 2. dhyan rakhan next line se jab value pick kare to start ki 3 length tak yani (88,) ko chor de fir (/) ane tak sabhi value ko pick kar ke TRANNUM main add kare.
 
 
-
-
+NOTE: Most importent Code main koi changes nhi karna sirf di gaye code line ke niche logic add karna.
 
