@@ -10,8 +10,8 @@ WScript.Echo "Initial CUSTREF: " & CUSTREF
 IF LEN(TRANNUM) < 6 THEN
     WScript.Echo "TRANNUM length is less than 6, checking next line..."
 
-    ' Read next line manually from file or array
-    IF NOT objFile.AtEndOfStream THEN
+    ' Keep reading next lines until "/" is found
+    DO WHILE NOT objFile.AtEndOfStream
         nextLine = objFile.ReadLine ' Read the next line
         WScript.Echo "Next Line Read: " & nextLine
 
@@ -20,7 +20,7 @@ IF LEN(TRANNUM) < 6 THEN
             WScript.Echo "Next line starts with 88, processing..."
 
             nextValueStart = 4 ' Skipping "88,"
-            nextValueEnd = INSTR(nextLine, "/") - 1 ' Find position of "/"
+            nextValueEnd = INSTR(nextLine, "/") ' Find position of "/"
             WScript.Echo "Position of '/': " & nextValueEnd
 
             IF nextValueEnd > nextValueStart THEN
@@ -39,8 +39,9 @@ IF LEN(TRANNUM) < 6 THEN
         ELSE
             WScript.Echo "Next line does not start with 88, skipping..."
         END IF
-    ELSE
-        WScript.Echo "End of file reached, no next line to read."
-    END IF
+
+        ' If "/" is found, stop reading more lines
+        IF nextValueEnd > 0 THEN EXIT DO
+    LOOP
 END IF
 ' New Logic Ends Here
