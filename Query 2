@@ -1,3 +1,3 @@
-Based on my analysis, the first loop (Code line no: 187) is picking up only a single line while reading the file. Due to this, the logic I implemented is not getting the next lines.
+During the daily call with Aarohi, she mentioned that we have some options to replicate the same issue that occurred in production in the test environment for unit testing. She asked to connect with Pavan and Divya for this.  
 
-We need to discuss this further.
+Because of this, I haven’t reached out to the DB team today. First, I want to connect with Divya and Pavan to discuss the issue.
