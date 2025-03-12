@@ -1,17 +1,24 @@
+' Existing Code
+TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR),0,,,0)
+CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANCHR)
+CUSTREF = TRIM(CUSTREF)
+
+' New Logic Starts Here
 IF LEN(TRANNUM) < 6 THEN
-    ' अगली लाइन चेक करने के लिए इंडेक्स बढ़ाएं
+    ' Check if next line exists and starts with "88,"
     IF UBOUND(arr) > 1 THEN
-        NEXTLINE = arr(2) ' अगली लाइन लोड करो
-        IF LEFT(TRIM(NEXTLINE), 3) = "88," THEN
-            ' अगली लाइन से 88, को हटाकर केवल / से पहले तक का डेटा लो
-            NEXTDATA = MID(NEXTLINE, 4) ' 88, हटाया
-            ENDIDX = INSTR(NEXTDATA, "/") ' / का स्थान खोजें
-            IF ENDIDX > 0 THEN
-                NEXTDATA = LEFT(NEXTDATA, ENDIDX - 1) ' / से पहले का डेटा लो
+        nextLine = arr(2) ' Assuming arr(2) is the next line
+        IF LEFT(nextLine, 3) = "88," THEN
+            nextValueStart = 4 ' Skipping "88,"
+            nextValueEnd = INSTR(nextLine, "/") - 1 ' Find position of "/"
+            
+            IF nextValueEnd > nextValueStart THEN
+                additionalValue = MID(nextLine, nextValueStart, nextValueEnd - nextValueStart)
+                TRANNUM = TRANNUM & additionalValue
+                CUSTREF = "T" & TRANNUM
+                CUSTREF = TRIM(CUSTREF)
             END IF
-            ' नया डेटा जोड़ें
-            TRANNUM = TRANNUM & NEXTDATA
-            CUSTREF = CUSTREF & NEXTDATA
         END IF
     END IF
 END IF
+' New Logic Ends Here
