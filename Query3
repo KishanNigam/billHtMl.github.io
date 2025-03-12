@@ -1,1 +1,11 @@
-During the 10:30 AM call, Aarohi connected with me and inquired about the status of my assigned User Story. She also asked me to check a few points with the Day Team, which I have already mentioned above.
+IF LEN(TRANNUM) < 6 THEN
+    NEXTLINE = arr(2) 
+    IF LEFT(NEXTLINE, 3) = "88," THEN
+        TRANEXT = MID(NEXTLINE, 4) 
+        TRANEND = INSTR(TRANEXT, "/") 
+        IF TRANEND > 0 THEN
+            TRANEXT = LEFT(TRANEXT, TRANEND - 1) 
+        END IF
+        TRANNUM = TRANNUM & TRANEXT 
+    END IF
+END IF
