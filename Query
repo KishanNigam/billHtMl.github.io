@@ -50,6 +50,17 @@ So I want ki (Code main -> TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR
 Point 1. Agar TRANNUM ki value  6 se kam hai to code next line ki 88, ko chor kar agle (/) khatam hone tak ki value ko pick kare or TRANNUM main add kar de. 
 Point 2. dhyan rakhan next line se jab value pick kare to start ki 3 length tak yani (88,) ko chor de fir (/) ane tak sabhi value ko pick kar ke TRANNUM main add kare.
 
+Excpected Output:
+Example 1: Agar di gye read file main phele line main 12432 bas ho to next main bachi hui sabhi value (88,) ke baad or (/) ke phele sabhi value ki pick kare or add kar de jesha ki yha pe h 12432 add 7 = 124327
+(88,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T12432           
+88,7/PAY.DET./PAYEE REF. 0002011/25. RELATING TO DATE OF LOSS. 2024-   )
+
+Example 2: Agar di gye read file main phele line main 1243 bas ho to next main bachi hui sabhi value (88,) ke baad or (/) ke phele sabhi value ki pick kare or add kar de jesha ki yha pe h 1243 add 27 = 124327
+(88,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T1243          
+88,27/PAY.DET./PAYEE REF. 0002011/25. RELATING TO DATE OF LOSS. 2024-   )
+
+Example 3: Eshe hee kar ke phele line main agar 6 se value kam h wo kitne bhi ho sakte h 1 - 2- 3 ya 4 or 5 to ushe pura karne ke liye next line main(88,) ko chor kar (/) se phele sabhi value ko pick kar ke ushe add kar do
+
 
 NOTE: Most importent Code main koi changes nhi karna sirf di gaye code line ke niche logic add karna.
 
