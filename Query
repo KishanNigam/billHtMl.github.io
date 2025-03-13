@@ -1,66 +1,17 @@
-Yeh Ek VB script ka Code hai.
-Code Start:
-IF FILETYPE = "88" THEN
-        IF PREVFTYPE = "16" THEN
-           TRANDEL = INSTR(arr(1),"/CREF/T")
-           TRANLEN = LEN(arr(1))
-           IF TRANDEL > 0 THEN
-              TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANLEN - TRANDEL),0,,,0)
-               CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANLEN - TRANDEL)
-               CUSTREF = TRIM(CUSTREF)
-     '         objLogFile.WriteLine("88 TRANNUM =  " & TRANNUM)
-           ELSE
+Hi Brian ,
 
-              TRANDEL = INSTR(arr(1),"/EREF/T")
-              TRANLEN = LEN(arr(1))
-              TRANEND = INSTR(MID(arr(1),TRANDEL + 7,TRANLEN - (TRANDEL + 6)),"/")
-              IF TRANEND = 0 THEN
-                  TRANCHR = TRANLEN - (TRANDEL + 6)
-              ELSE
-                  TRANCHR = TRANEND - 1
-              END IF
-              IF TRANDEL > 0 THEN
-                 TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR),0,,,0)
-                 CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANCHR)
-                 CUSTREF = TRIM(CUSTREF)
-       '         objLogFile.WriteLine("88 TRANNUM =  " & TRANNUM)
-              ELSE
-                  TRANSDESC = TRANSDESC & " " & TRIM(arr(1))
-              END IF
-           END IF
-        END IF
-     ELSE
-Code END:
+This is regarding the service request raised by Kishan for creating an Associated PROD SFTP connection on Visual Cron “REQ0098064” which you have completed and gave the public key so that the vendor can place at their end.
+
+Upon checking with Vendor , they are setting up new credentials and will discard the existing SFTP credentials .So , we can’t proceed with the connection created and the user story is put on hold.
+
+So, Vendor have asked the below information which will help them to setup a new credential .
+
+Information Request
+•	For whitelisting purposes, we will need all IP address(es) that will be connecting to host address from your organization.
+•	Identify if you will connect using Host addresses or IP addresses . 
+•	Be able to confirm file name(s) sent to or received from Associated Bank-     (PDBAI*.txt) – the filename(s) starting with text “PDBAI“.
 
 
-Jo Niche diye gai file ko read kar rha hai.
+Please can you provide the above information ( I have provided the 3rd information) , so that we can send it to Associated bank(vendor) and they have informed us that once they get the above information , they will create the new credentials and send it to us .
 
-Read File start:
-01,022000020,USHBUSGUS630202590,250122,0238,1,80,1,2/                           
-02,USHBUSGUS630202590,BBMEAEAD,1,250121,,,2/                                    
-03,15368012,EUR,010,17202014,,/
-16,409,2279511,,1443211386250121,T124327,T124327          1443211386250121     
-88,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T12432           
-88,7/PAY.DET./PAYEE REF. 0002011/25. RELATING TO DATE OF LOSS. 2024-            
-88,08-16. FOR BHSIC LAIM. LI2408195535.                                         
-Read File END:
-
-So (READ FILE -> 8,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T12432   ) line ko jab code read karta h tab ushe last value 12432 adhi hee milte hai kyuki baki ki value next line main (/) ke phele tak ki h jo eshne nhi pick ki.
-So I want ki (Code main -> TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR),0,,,0)) logic ki baad ek condition logic lagao jo mere niche diye gaye point ko fill kare.
-Point 1. Agar TRANNUM ki value  6 se kam hai to code next line ki 88, ko chor kar agle (/) khatam hone tak ki value ko pick kare or TRANNUM main add kar de. 
-Point 2. dhyan rakhan next line se jab value pick kare to start ki 3 length tak yani (88,) ko chor de fir (/) ane tak sabhi value ko pick kar ke TRANNUM main add kare.
-
-Excpected Output:
-Example 1: Agar di gye read file main phele line main 12432 bas ho to next main bachi hui sabhi value (88,) ke baad or (/) ke phele sabhi value ki pick kare or add kar de jesha ki yha pe h 12432 add 7 = 124327
-(88,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T12432           
-88,7/PAY.DET./PAYEE REF. 0002011/25. RELATING TO DATE OF LOSS. 2024-   )
-
-Example 2: Agar di gye read file main phele line main 1243 bas ho to next main bachi hui sabhi value (88,) ke baad or (/) ke phele sabhi value ki pick kare or add kar de jesha ki yha pe h 1243 add 27 = 124327
-(88,/BNF/SERNETZ SCHAFER RECHTSANWALTE PARTN ERSCHAFT MBB/EREF/T1243          
-88,27/PAY.DET./PAYEE REF. 0002011/25. RELATING TO DATE OF LOSS. 2024-   )
-
-Example 3: Eshe hee kar ke phele line main agar 6 se value kam h wo kitne bhi ho sakte h 1 - 2- 3 ya 4 or 5 to ushe pura karne ke liye next line main(88,) ko chor kar (/) se phele sabhi value ko pick kar ke ushe add kar do
-
-
-NOTE: Most importent Code main koi changes nhi karna sirf di gaye code line ke niche logic add karna.
-
+So , just to clarify ,  after the vendor sends the new credential you would be creating a new Associated PROD SFTP Visual Cron connection, and a new service request has to be raised from our end to do it and after creating the connection on VC ,you would be sending a new public key which we need to send it to Vendor .. Is my understanding correct ? or am I missing something ? Please Let me know.
