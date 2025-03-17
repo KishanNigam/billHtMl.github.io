@@ -1,9 +1,5 @@
-I have completed the technical analysis of the script code.
+As per the discussion with Aarohi, she mentioned that if only the VC logs are attached regarding the DB timeout connection issue, then Pavan should add a comment on DevOps covering the following two points:
 
-Based on the source and requirements provided in the CIA, I have updated the code in the script. As a result, the XML will now display the beneficiary bank account number in place of the IBAN code.
-
-However, when I ran the code locally for unit testing, I found that no bank account value was appearing in place of the IBAN in the XML. Upon debugging and executing the script in SSMS, I discovered that the beneficiary bank account field is encrypted, which is why the bank account number is not being displayed.
-
-As the next step, I sought approval from Aarohi to deploy the script in the Test environment. However, I was only able to deploy it in the DEV environment since I do not have access to deploy it in Test.
-
-Currently, all script code changes have been completed as per the CIA. I can proceed with unit testing only after the deployment in the Test environment.
+Business Justification – It should state that the changes made in VC will not impact the business.
+Post-Deployment Monitoring – We will continue to observe the job after the changes are made in Production to ensure there is no impact.
+In that case, we can proceed with closing the US after the changes are implemented in Production.
