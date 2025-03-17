@@ -1,21 +1,9 @@
-IF LEN(TRANNUM) < 6 THEN
-    NEXTLINE = arr(2) 
-    IF LEFT(NEXTLINE, 3) = "88," THEN
-        TRANEXT = MID(NEXTLINE, 4) 
-        TRANEND = INSTR(TRANEXT, "/") 
-        IF TRANEND > 0 THEN
-            TRANEXT = LEFT(TRANEXT, TRANEND - 1) 
-        END IF
-        TRANNUM = TRANNUM & TRANEXT 
-    END IF
-END IF
+I have completed the technical analysis of the script code.
 
+Based on the source and requirements provided in the CIA, I have updated the code in the script. As a result, the XML will now display the beneficiary bank account number in place of the IBAN code.
 
+However, when I ran the code locally for unit testing, I found that no bank account value was appearing in place of the IBAN in the XML. Upon debugging and executing the script in SSMS, I discovered that the beneficiary bank account field is encrypted, which is why the bank account number is not being displayed.
 
-IF LEN(TRANNUM) < 6 THEN
-    NEXTLINE = arr(2) 
-    IF LEFT(NEXTLINE, 3) = "88," THEN
-        TRANEXT = MID(NEXTLINE, 4, INSTR(NEXTLINE, "/") - 4) 
-        TRANNUM = TRANNUM & TRANEXT 
-    END IF
-END IF
+As the next step, I sought approval from Aarohi to deploy the script in the Test environment. However, I was only able to deploy it in the DEV environment since I do not have access to deploy it in Test.
+
+Currently, all script code changes have been completed as per the CIA. I can proceed with unit testing only after the deployment in the Test environment.
