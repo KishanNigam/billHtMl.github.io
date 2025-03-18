@@ -1,17 +1,2315 @@
-Hi Brian ,
+Dim db, rs, db2, rs2
+Dim objStream
 
-This is regarding the service request raised by Kishan for creating an Associated PROD SFTP connection on Visual Cron “REQ0098064” which you have completed and gave the public key so that the vendor can place at their end.
+sDate = DatePart("yyyy", Now)
+CR8DATE = sDate
+YYEAR= DatePart("yyyy", Now)
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno
+CR8DATE = CR8DATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno
+CR8DATE = CR8DATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+sec = DatePart("S", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+secno = ZeroFill(sec,2)
+sDate = sDate & hrno & minno & secno
+CR8DATE = CR8DATE & "T" & hrno & ":" & minno & ":" & secno
 
-Upon checking with Vendor , they are setting up new credentials and will discard the existing SFTP credentials .So , we can’t proceed with the connection created and the user story is put on hold.
+   fDate = sDate
 
-So, Vendor have asked the below information which will help them to setup a new credential .
+currDate = DateAdd("d",1,Now)
+curr2Date = DateAdd("d",2,Now)
+curr3Date = DateAdd("d",3,Now)
+prevDate = DateAdd("d",-1,Now)
 
-Information Request
-•	For whitelisting purposes, we will need all IP address(es) that will be connecting to host address from your organization.
-•	Identify if you will connect using Host addresses or IP addresses . 
-•	Be able to confirm file name(s) sent to or received from Associated Bank-     (PDBAI*.txt) – the filename(s) starting with text “PDBAI“.
+ ' WScript.Echo "Weekday(currDate) = " & Weekday(currDate)
+
+If Weekday(currDate) = 7 Then
+   currDate = DateAdd("d",2,currDate)
+   curr2Date = DateAdd("d",2,curr2Date)
+   curr3Date = DateAdd("d",2,curr3Date)
+End If
+
+If Weekday(curr2Date) = 7 Then
+   curr2Date = DateAdd("d",2,curr2Date)
+   curr3Date = DateAdd("d",2,curr3Date)
+End If
+
+If Weekday(curr3Date) = 7 Then
+   curr3Date = DateAdd("d",2,curr3Date)
+End If
+
+' currDate = DateAdd("d",1,Now)
+
+sDate = DatePart("yyyy", currDate)
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", currDate)
+mmno = DatePart("m", currDate)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", currDate)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", currDate)
+mns = DatePart("n", currDate)
+sec = DatePart("S", currDate)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+secno = ZeroFill(sec,2)
+sDate = sDate & hrno & minno
+RPTDATE = RPTDATE & "T" & hrno & ":" & minno & ":" & secno
+NUMCKS = 0
+AMTCKS = 0.00
+AMTACH = 0.00
+AMTWIRE = 0.00
+NUMACH = 0
+NUMWIRE = 0
+NUMTOT = 0
+TOTAMT = 0
+PRTAMT = 0.00
+
+' dtTemp = CDate(mid(RPTDATE,1,10))
 
 
-Please can you provide the above information ( I have provided the 3rd information) , so that we can send it to Associated bank(vendor) and they have informed us that once they get the above information , they will create the new credentials and send it to us .
+      YYEAR= DatePart("yyyy", prevDate)
+      REQDATE = YYEAR
+      mmno = DatePart("m", prevDate)
+      monthno = ZeroFill(mmno,2)
+      REQDATE = REQDATE & "-" & monthno
+      ddno = DatePart("d", prevDate)
+      dayno = ZeroFill(ddno,2)
+      REQDATE = REQDATE & "-" & dayno
 
-So , just to clarify ,  after the vendor sends the new credential you would be creating a new Associated PROD SFTP Visual Cron connection, and a new service request has to be raised from our end to do it and after creating the connection on VC ,you would be sending a new public key which we need to send it to Vendor .. Is my understanding correct ? or am I missing something ? Please Let me know.
+
+      sDate = DatePart("yyyy", currDate)
+      ERPTDATE = sDate
+      YYEAR= DatePart("yyyy", currDate)
+      mmno = DatePart("m", currDate)
+      monthno = ZeroFill(mmno,2)
+      sDate = sDate & monthno
+      ERPTDATE = ERPTDATE & "-" & monthno
+      ddno = DatePart("d", currDate)
+      dayno = ZeroFill(ddno,2)
+      sDate = sDate & dayno
+      EXCTNDATE = ERPTDATE & "-" & dayno
+
+      sDate = DatePart("yyyy", curr2Date)
+      EFTEXDATE = sDate
+      YYEAR= DatePart("yyyy", curr2Date)
+      mmno = DatePart("m", curr2Date)
+      monthno = ZeroFill(mmno,2)
+      sDate = sDate & monthno
+      EFTEXDATE = EFTEXDATE & "-" & monthno
+      ddno = DatePart("d", curr2Date)
+      dayno = ZeroFill(ddno,2)
+      sDate = sDate & dayno
+      EFTEXDATE = EFTEXDATE & "-" & dayno
+
+IF hrno = "11" THEN
+   IF minno > "14" THEN
+      sDate = DatePart("yyyy", curr3Date)
+      ERPTDATE = sDate
+      YYEAR= DatePart("yyyy", curr3Date)
+      mmno = DatePart("m", curr3Date)
+      monthno = ZeroFill(mmno,2)
+      sDate = sDate & monthno
+      ERPTDATE = ERPTDATE & "-" & monthno
+      ddno = DatePart("d", curr3Date)
+      dayno = ZeroFill(ddno,2)
+      sDate = sDate & dayno
+      HKEFTDATE = ERPTDATE & "-" & dayno
+   ELSE
+      HKEFTDATE = mid(EFTEXDATE,1,10)
+   END IF
+ELSE
+   IF hrno > "11" THEN
+      sDate = DatePart("yyyy", curr3Date)
+      ERPTDATE = sDate
+      YYEAR= DatePart("yyyy", curr3Date)
+      mmno = DatePart("m", curr3Date)
+      monthno = ZeroFill(mmno,2)
+      sDate = sDate & monthno
+      ERPTDATE = ERPTDATE & "-" & monthno
+      ddno = DatePart("d", curr3Date)
+      dayno = ZeroFill(ddno,2)
+      sDate = sDate & dayno
+      HKEFTDATE = ERPTDATE & "-" & dayno
+   ELSE
+      HKEFTDATE = mid(EFTEXDATE,1,10)
+   END IF
+END IF
+
+
+'Added the logic to read the parameter to get the executing environment
+  IF WScript.Arguments.Count = 0 then
+      WScript.Echo "Missing parameters"
+      WScript.Quit
+  END IF
+  Execserver = Wscript.Arguments.Item(0)
+  Environment = Wscript.Arguments.Item(1)
+  VersionKey = Wscript.Arguments.Item(2)
+   'Added the logic to read the parameter to get the executing environment
+
+   'variable declaration
+   Dim LOGFilePath
+   'Registry Variable Declaration 
+   Dim DBServer
+   Dim DBDB
+   Dim DBUser
+   Dim DBPass
+
+   Select Case UCase(Environment)
+   Case "PROD"
+   AuthenticationTag = "FDET"
+   Case "TEST"
+   AuthenticationTag = "AUTH"
+   Case "UAT"
+   AuthenticationTag = "AUTH"
+   Case Else
+	WScript.Echo "UNKNOWN SERVER"
+   WScript.Quit
+End Select
+
+   LOGFilePath = "\\" & Execserver & "\Server\log\HSBC_PAYMENTS_" & fDate & ".LOG"
+   set objLOG = createobject("Scripting.FileSystemObject")
+   set objLOGFile = objLOG.CreateTextfile(LOGFilePath)
+   objLOGFile.WriteLine("EURO_HSBC_PAYMENTS REPORT      RUN DATE: " & DATE & "  " & TIME)
+   objLOGFile.WriteLine("   ")
+
+       'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   Const ForReading = 1
+   Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   Set keyValues = CreateObject("Scripting.Dictionary")
+   Do Until objFileReg.AtEndOfStream
+   line =objFileReg.ReadLine
+   parts = Split(line,"=")
+   If UBound(parts) = 1 Then
+      key = Trim(parts(0))
+      value = Trim(parts(1))
+      keyValues(key) = value
+   End If
+   Loop
+   objFileReg.Close
+   Val=keyValues(VersionKey)
+   DBDetails = Split(Val,",")
+   If UBound(DBDetails) >= 0 Then
+      DBServerVal = DBDetails(0)
+      DBDBVal=DBDetails(1)
+      DBUserVal=DBDetails(2)
+      DBPassVal=DBDetails(3)
+      DBServer = ReadReg(DBServerVal)
+      DBDB = ReadReg(DBDBVal)
+      DBUser = ReadReg(DBUserVal)
+      DBPass = ReadReg(DBPassVal)
+   Else
+      WScript.Echo "No values in the file to match the upgrade version"
+   End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+ sConnect = "Driver={ODBC Driver 17 for SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";ColumnEncryption=Enabled;"
+
+  'WScript.Echo sConnect
+
+Set db = CreateObject("ADODB.Connection")
+db.CommandTimeout = 0
+db.Open sConnect
+
+sQuery="SELECT CONVERT(CHAR(11),CAST('" & mid(RPTDATE,1,10) & "' AS DATE),113) AS RDATE "
+
+  'WScript.Echo sQuery
+
+Set rs=db.execute(sQuery)
+
+On Error Resume Next
+rs.MoveFirst
+   RDATE =  rs.Fields("RDATE")
+    If Err.number <> 0 Then
+       objLOGFile.WriteLine("ERROR: " & Err.Description & " " & Err.Source & " " & CStr(Err.Number))
+       WScript.quit(2)
+    End If
+
+rs.Close
+Set rs = Nothing
+
+
+sQuery="SELECT NEXT_ID AS NEXT_ID " & _
+         "FROM EAS_IDENTITY " & _
+        "WHERE TABLE_NAME = 'HSBCPAY' " & _
+          "AND COLUMN_NAME = 'BATCH_NUMBER' "
+
+ ' WScript.Echo sQuery
+
+NEXTID = 0
+
+Set rs=db.execute(sQuery)
+
+On Error Resume Next
+rs.MoveFirst
+   NEXTID =  rs.Fields("NEXT_ID")
+    If Err.number <> 0 Then
+       objLOGFile.WriteLine("ERROR: " & Err.Description & " " & Err.Source & " " & CStr(Err.Number))
+       WScript.quit(2)
+    End If
+
+rs.Close
+Set rs = Nothing
+
+'Company have been added for APCNC and APTRV in COMPANY_CODE- AKM
+sQuery="SELECT A.COMPANY_CODE, COUNT(DISTINCT A.CHECK_NUMBER) AS PM_CNT, " & _
+              "PAYMENT_MODE AS PAY_MODE, " & _
+              "STR(SUM(C.INVOICE_AMT),15,2) AS PAY_AMT " & _
+         "FROM XPORT_AP_TRIGGER A, AP_CHECK_STATUS B, AP_BSTRN_HEADER C, BSTRN_HEADER D, COMPANY E, AP_DESCRIPTION G " & _
+        "WHERE A.CHECK_RECON_STATUS IN ('C') " & _
+          "AND A.CHECK_NUMBER        = C.EFT_ADVICE_NUM " & _
+          "AND C.PAYMENT_MODE        IN ('W','E') " & _
+          "AND LEFT(A.COMPANY_CODE,1) IN ('I','E','C') " & _
+          "AND A.BANK                = B.BANK " & _
+          "AND B.BANK                = C.BANK " & _
+          "AND C.TRAN_ID             = D.TRAN_ID " & _
+          "AND A.COMPANY_CODE        = E.COMPANY_CODE " & _
+          "AND A.COMPANY_CODE IN ('EDEEU','EDEUS','EESEU','EESUS','EFREU','EFRUS','EGBEU','EGBGB','EGBUS','EIEEU','EIEGB','EIEUS','IDEEU','IGBEU','IGBGB','IGBUS','ICHCH','ICHEU','ICHUS','EBEEU','EBEUS','ESESE','EITEU','EIEEU','EGBGB','IGBGB','EFREU','EBEEU','EDEEU','IDEEU','EESEU','EITEU','ESESE','ICHCH','CIEEU','CIEGB','CIEUS','CGBGB','CGBEU','CGBUS') " & _
+          "AND B.CHECK_NUMBER        = A.CHECK_NUMBER " & _
+          "AND B.CHECK_RECON_STATUS  = A.CHECK_RECON_STATUS " & _
+          "AND B.BANK_ACCOUNT        = C.BANK_ACCOUNT " & _
+          "AND B.BANK_ACCOUNT        = A.BANK_ACCOUNT " & _
+          "AND B.CHECK_RECON_STATUS  = C.CHECK_RECON_STATUS " & _
+          "AND C.TRAN_ID             = G.TRAN_ID  " & _
+          "AND G.NOTES_SEQ_NO        = 1 " & _
+          "AND G.CHECK_NOTES_TYP = 'C' " & _
+          "AND CHARINDEX('//',G.CHECK_NOTES) > 0 " & _
+          "AND MEMO_CHECK_IND = ' ' " & _
+          "AND NOT EXISTS " & _
+          "( SELECT * FROM XPORT_AP_CONTROL D " & _
+             "WHERE D.XPORT_AP_ID    = A.XPORT_AP_ID " & _
+               "AND D.EXPORT_PROCESS = 'EUROHSBCPAY') " & _
+        "GROUP BY A.COMPANY_CODE, PAYMENT_MODE " & _
+        "ORDER BY A.COMPANY_CODE, PAYMENT_MODE "
+
+Set rs=db.execute(sQuery)
+If Not rsData.EOF Then aData = rs.GetRows()
+
+rs.Close
+Set rs = Nothing
+
+If IsArray(aData) Then
+    For x = lBound(aData,2) to uBound(aData,2) 'loops through the rows
+        ROWNUMBER = aData(0,x)
+        CO = aData(1,x)
+        CNT = aData(2,x)
+        PAYMODE = aData(3,x)
+        AMT = formatnumber(aData(4,x),2)
+  '     objLOGFile.WriteLine("ARRAY: " & ROWNUMBER & " " & CO & " " & CNT & " " & PAYMODE & " " & AMT)
+      IF aData(2,x) = "W" THEN
+         AMTWIRE = AMTWIRE + formatnumber(aData(3,x),2)
+      ELSE
+         AMTACH = AMTACH + formatnumber(aData(3,x),2)
+      END IF
+    Next
+End If
+
+
+sQuery="SELECT REPLACE(A.BANK_ACCOUNT,'-','') AS BK_ACCT, " & _
+              "A.CHECK_NUMBER AS CK_NUM, " & _
+              "A.COMPANY_CODE AS PAYCO, " & _
+              "SOURCE_CODE AS SRC, " & _
+			  "STR(CHECK_AMT,15,2) AS CK_AMT, " & _
+			  "STR(ST.AMT,15,2) AS ORGAMT," & _    
+              "COALESCE(ST.OPCURR,' ') AS CRNCY_CODE, " & _
+              "STR(C.TRAN_ID) AS TR_ID, " & _
+              "DFLT_FUNCT_CRNCY AS FUNCT_CURR, " & _
+              "REPLACE(CONVERT(CHAR(10),C.CHECK_DATE,111),'/','-') AS CK_DATE, " & _
+              "PAYMENT_MODE AS PAY_MODE, " & _
+              "RTRIM(REPLACE(C.VENDOR_NAME1,'&','&amp;')) AS VEND_NAME, " & _
+              "CASE C.PAYMENT_MODE " & _
+                   "WHEN 'C' THEN COALESCE(H.REMIT_GEN_NAME2 ,' ') " & _
+                   "ELSE COALESCE(Q.BU_CODE,' ') " & _
+              "END AS VEND_NAME2, " & _
+              "RTRIM(C.PO_NUMBER) AS PONUM, " & _
+              "COALESCE(UPPER(H.REMIT_GEN_NAME3),' ') AS MAILNAME, " & _
+              "G.CHECK_NOTES AS CK_NOTE1, " & _
+              "COALESCE(RTRIM(REPLACE(I.CHECK_NOTES,CHAR(34),'')),' ') AS REMIT_INFO1, " & _
+              "COALESCE(RTRIM(REPLACE(J.CHECK_NOTES,CHAR(34),'')),' ') AS REMIT_INFO2, " & _
+              "COALESCE(RTRIM(REPLACE(K.CHECK_NOTES,CHAR(34),'')),' ') AS REMIT_INFO3, " & _
+              "COALESCE(RTRIM(REPLACE(L.CHECK_NOTES,CHAR(34),'')),' ') AS STUB_INFO1, " & _
+              "COALESCE(RTRIM(REPLACE(M.CHECK_NOTES,CHAR(34),'')),' ') AS STUB_INFO2, " & _
+              "COALESCE(RTRIM(REPLACE(N.CHECK_NOTES,CHAR(34),'')),' ') AS STUB_INFO3, " & _
+              "COALESCE(RTRIM(REPLACE(O.CHECK_NOTES,CHAR(34),'')),' ') AS STUB_INFO4, " & _
+              "RTRIM(REFERENCE_DATA) AS REF_ID, " & _
+              "COALESCE(H.REMIT_ADDRESS1,' ') AS ADDR1, " & _
+              "COALESCE(H.REMIT_ADDRESS2,' ') AS ADDR2, " & _
+              "COALESCE(H.REMIT_ADDRESS3,' ') AS ADDR3, " & _
+              "COALESCE(H.REMIT_CITY,' ') AS CITY, " & _
+              "COALESCE(P.BU_CODE,' ') AS CNTRY, " & _
+              "CASE WHEN REMIT_ADDRESS3 > ' '  THEN " & _
+              "LTRIM(COALESCE(REVERSE(SUBSTRING(REVERSE(RTRIM(CAST(REMIT_ADDRESS3 AS CHAR(60)))), 1,CAST(charindex(' ,', REVERSE(REMIT_ADDRESS3)) AS INT))),' ')) " & _
+              "ELSE ' ' END AS ZIP, " & _
+              "CASE WHEN charindex(' ,', REVERSE(REMIT_ADDRESS3)) > 0  THEN " & _
+               "substring(REMIT_ADDRESS3,1,len(REMIT_ADDRESS3) - (charindex(' ,', REVERSE(REMIT_ADDRESS3)) +1)) " & _
+              "else REMIT_ADDRESS3 END AS NEW_ADDR3, " & _
+              "COALESCE(R.RDFI_BANK_COUNTRY_CODE,' ') AS BENE_BANK_CNTRY, " & _
+              "COALESCE(R.RDFI_BENEFICIARY_BANK_CURRENCY,' ') AS BENE_BANK_CURR, " & _
+              "CAST(R.RDFI_BENEFICIARY_BANK_ACCOUNT AS varchar(35)) AS BENE_BKACCT, " & _
+              "COALESCE(R.RDFI_IBAN_CODE,' ') AS BENE_IBAN, " & _
+			  "COALESCE(R.RDFI_SWIFT_CODE,' ') AS BENE_SWIFT_CODE  " & _
+         "FROM XPORT_AP_TRIGGER A " & _
+              "INNER JOIN AP_CHECK_STATUS B ON A.BANK = B.BANK AND B.CHECK_RECON_STATUS  = A.CHECK_RECON_STATUS AND " & _
+                                              "B.BANK_ACCOUNT = A.BANK_ACCOUNT AND B.CHECK_NUMBER = A.CHECK_NUMBER " & _
+              "INNER JOIN AP_BSTRN_HEADER C ON B.BANK = C.BANK AND B.CHECK_RECON_STATUS = C.CHECK_RECON_STATUS AND " & _
+                                              "B.BANK_ACCOUNT = C.BANK_ACCOUNT " & _
+              "INNER JOIN BSTRN_HEADER D ON C.TRAN_ID = D.TRAN_ID " & _
+              "INNER JOIN COMPANY E ON A.COMPANY_CODE = E.COMPANY_CODE " & _
+              "INNER JOIN AP_DESCRIPTION G ON C.TRAN_ID = G.TRAN_ID AND G.NOTES_SEQ_NO = 1 AND " & _
+                                             "CHARINDEX('//',G.CHECK_NOTES) > 0 AND G.CHECK_NOTES_TYP = 'C' " & _
+              "LEFT OUTER JOIN AP_REMIT_ADDR H ON C.TRAN_ID = H.TRAN_ID " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION I ON C.TRAN_ID = I.TRAN_ID AND I.NOTES_SEQ_NO = 2 AND I.CHECK_NOTES_TYP = 'C' " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION J ON C.TRAN_ID = J.TRAN_ID AND J.NOTES_SEQ_NO = 3 AND J.CHECK_NOTES_TYP = 'C' " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION K ON C.TRAN_ID = K.TRAN_ID AND K.NOTES_SEQ_NO = 4 AND K.CHECK_NOTES_TYP = 'C' " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION L ON C.TRAN_ID = L.TRAN_ID AND L.NOTES_SEQ_NO = 1 AND L.CHECK_NOTES_TYP = 'S' " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION M ON C.TRAN_ID = M.TRAN_ID AND M.NOTES_SEQ_NO = 2 AND M.CHECK_NOTES_TYP = 'S' " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION N ON C.TRAN_ID = N.TRAN_ID AND N.NOTES_SEQ_NO = 3 AND N.CHECK_NOTES_TYP = 'S' " & _
+              "LEFT OUTER JOIN AP_DESCRIPTION O ON C.TRAN_ID = O.TRAN_ID AND O.NOTES_SEQ_NO = 4 AND O.CHECK_NOTES_TYP = 'S' " & _
+              "LEFT OUTER JOIN BUSINESS_UNIT P ON UPPER(P.DESCRIPTION) = UPPER(H.REMIT_CITY) AND P.BU_TYPE_CODE = 'CNTRY' " & _
+              "LEFT OUTER JOIN BUSINESS_UNIT Q ON UPPER(Q.DESCRIPTION) = UPPER(H.REMIT_GEN_NAME2) AND Q.BU_TYPE_CODE = 'CNTRY' " & _
+              "LEFT OUTER JOIN AP_BSTRN_INTERNATIONAL R ON C.TRAN_ID = R.TRAN_ID " & _
+			  "LEFT OUTER JOIN ( SELECT SUM ( ORIGINAL_AMOUNT) AS AMT,T.OPER_CRNCY_CODE as OPCURR, SA.TRAN_ID FROM AP_BSTRN_HEADER SA " & _
+              "JOIN BSTRN_HEADER SB ON SB.TRAN_ID = SA.TRAN_ID " & _
+              "LEFT OUTER JOIN BSTRN_DETAIL S ON SA.TRAN_ID = S.TRAN_ID " & _  
+              "LEFT OUTER JOIN BSTRN_DTL_CRNCY T ON S.TRAN_DETAIL_ID = T.TRAN_DETAIL_ID " & _  
+              "WHERE ENTRYGEN_IND <> 'P' AND SOURCE_CODE IN ('AP','APCNC','CLM-A','CLM-D','APMTR','APTRV') " & _
+              "GROUP BY SA.TRAN_ID,T.OPER_CRNCY_CODE) AS ST ON ST.TRAN_ID = D.TRAN_ID " & _
+        "WHERE A.CHECK_RECON_STATUS IN ('C') " & _
+          "AND A.CHECK_NUMBER        = C.EFT_ADVICE_NUM " & _
+          "AND C.PAYMENT_MODE        IN ('W','E') " & _
+          "AND LEFT(A.COMPANY_CODE,1) IN ('I','E','C') " & _
+          "AND MEMO_CHECK_IND        = ' ' " & _
+          "AND A.COMPANY_CODE IN ('EDEEU','EDEUS','EESEU','EESUS','EFREU','EFRUS','EGBEU','EGBGB','EGBUS','EIEEU','EIEGB','EIEUS','IDEEU','IGBEU','IGBGB','IGBUS','ICHCH','ICHEU','ICHUS','EBEEU','EBEUS','ESESE','EITEU','CIEEU','CIEGB','CIEUS','CGBGB','CGBEU','CGBUS') " & _
+          "AND NOT EXISTS " & _
+          "( SELECT * FROM XPORT_AP_CONTROL D " & _
+             "WHERE D.XPORT_AP_ID    = A.XPORT_AP_ID " & _
+               "AND D.EXPORT_PROCESS = 'EUROHSBCPAY') " & _
+        "ORDER BY PAYMENT_MODE, A.COMPANY_CODE, A.BANK_ACCOUNT, A.CHECK_NUMBER "
+
+
+Set rs=db.execute(sQuery)
+
+PREVBA = "Y"
+PREVMODE = "Y"
+PREVCO = "Y"
+
+On Error Resume Next
+rs.MoveFirst
+Do Until rs.EOF
+   PAYMODE = rs.Fields("PAY_MODE")
+   PAYCO = RTRIM(rs.Fields("PAYCO"))
+   PONUM = RTRIM(rs.Fields("PONUM"))
+   SRC = RTRIM(rs.Fields("SRC"))
+   CKAMT = rs.Fields("CK_AMT")
+   'START - Original Amount is the sum of all NON-AP Records for APCNC and APTRV -AKM
+   ORGAMT = rs.Fields("ORGAMT")
+   ORGAMT = FORMATNUMBER(ORGAMT,2,,,0)
+   CRNCY_CODE = rs.Fields("CRNCY_CODE")
+   TRANID = rs.Fields("TR_ID")
+   REFID = rs.Fields("REF_ID")
+   CKNUM = rs.Fields("CK_NUM")
+   CKDATE = rs.Fields("CK_DATE")
+   BKACCT = rs.Fields("BK_ACCT")
+   FCURR = rs.Fields("FUNCT_CURR")
+   VNAME = rs.Fields("VEND_NAME")
+   VNAME2 = rs.Fields("VEND_NAME2")
+   MAILNAME = rs.Fields("MAILNAME")
+   MAILDEL = INSTR(MAILNAME,"@BHSPECIALTY.COM")
+   IF MAILDEL > 1 THEN
+      MAILNAME = ""
+   END IF
+
+   CKNOTE1 = rs.Fields("CK_NOTE1")
+   RINFO1 = rs.Fields("REMIT_INFO1")
+   RINFO2 = rs.Fields("REMIT_INFO2")
+   RINFO3 = rs.Fields("REMIT_INFO3")
+   SINFO1 = rs.Fields("STUB_INFO1")
+   SINFO2 = rs.Fields("STUB_INFO2")
+   SINFO3 = rs.Fields("STUB_INFO3")
+   SINFO4 = rs.Fields("STUB_INFO4")
+   ADDR1 = RTRIM(rs.Fields("ADDR1"))
+   ADDR2 = RTRIM(rs.Fields("ADDR2"))
+   ADDR3 = RTRIM(rs.Fields("ADDR3"))
+   NEWADDR3 = RTRIM(rs.Fields("NEW_ADDR3"))
+   IF ADDR3 > " " THEN
+      IF ADDR2 > " " THEN
+         STNUM = ADDR1 & " " & ADDR2
+      ELSE
+         STNUM = ADDR1
+      END IF
+      TWNNMPOS = InStrRev(ADDR3, " ")
+      TWNNM = MID(ADDR3,1,TWNNMPOS)
+   ELSE
+      STNUM = ADDR1
+      TWNNM = ADDR2
+   END IF
+
+   CITY = rs.Fields("CITY")
+   CNTRY = rs.Fields("CNTRY")
+   ZIP = rs.Fields("ZIP")
+   BENEBANKCNTRY = RTRIM(rs.Fields("BENE_BANK_CNTRY"))
+   BENEBANKCURR = RTRIM(rs.Fields("BENE_BANK_CURR"))
+
+   IF ISNULL(RTRIM(rs.Fields("BENE_BKACCT"))) THEN
+      BENEBKACCT = ""
+   ELSE
+      BENEBKACCT = RTRIM(rs.Fields("BENE_BKACCT"))
+   END IF
+
+   BENEIBAN = RTRIM(rs.Fields("BENE_IBAN"))
+   IF ISNULL(RTRIM(rs.Fields("BENE_SWIFT_CODE"))) THEN
+     BENESWIFTCODE = ""
+   ELSE
+     BENESWIFTCODE = RTRIM(rs.Fields("BENE_SWIFT_CODE"))
+   END IF
+   IF PAYCO <> PREVCO THEN
+      IF PREVBA <> "Y" THEN
+         objDATA.WriteText("  </PmtInf>")
+      END IF
+      PREVBA = "Y"
+      PREVCO = PAYCO
+      IF PREVMODE <> "Y" THEN
+         objDATA.WriteText(" </CstmrCdtTrfInitn>")
+         objDATA.WriteText("</Document>")
+    '     objDATAFile.Close
+         objDATA.SaveToFile DATAFilePath, 2
+      END IF
+      IF PAYMODE = "W" THEN
+         DATAFilePath = "D:\EAS\Server\EXPORTS\EURO_HSBC_Payments_Export\EUROHSBC_WIRE_PAYMENTS_" & PAYCO & "_" & fDate & ".XML"
+      END IF
+      IF PAYMODE = "E" THEN
+         DATAFilePath = "D:\EAS\Server\EXPORTS\EURO_HSBC_Payments_Export\EUROHSBC_ACH_PAYMENTS_" & PAYCO & "_" & fDate & ".XML"
+      END IF
+       Set objDATA = CreateObject("ADODB.Stream")
+       objDATA.CharSet = "utf-8"
+       objDATA.Open
+      objDATA.WriteText("<?xml version=" & chr(34) & "1.0" & chr(34) & " encoding=" & chr(34) & "utf-8" & chr(34) & "?>")
+      objDATA.WriteText("<Document xmlns=" & chr(34) & "urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" & chr(34) & " xmlns:xsi=" & chr(34) & "https://urldefense.com/v3/__http://www.w3.org/2001/XMLSchema-instance__;!!Ph-vUwwL!-_oW3zstxkO2J95MSkop9EyXHJKBgJdcFBN7AO5Yr6JX-ap7dmKfeVW2BT8umM02qHm_6A$ " & chr(34) & ">")
+      objDATA.WriteText(" <CstmrCdtTrfInitn>")
+      objDATA.WriteText("  <GrpHdr>")
+      objDATA.WriteText("   <MsgId>" & NEXTID & "</MsgId>")
+      objDATA.WriteText("   <CreDtTm>" & CR8DATE & "</CreDtTm>")
+      objDATA.WriteText("   <Authstn>")
+      objDATA.WriteText("    <Cd>" & AuthenticationTag & "</Cd>")
+      objDATA.WriteText("   </Authstn>")
+      CNT = 0
+      If IsArray(aData) Then
+         For x = lBound(aData,2) to uBound(aData,2) 'loops through the rows
+            ARRCO = RTRIM(aData(0,x))
+            ARRMODE = aData(2,x)
+            IF PAYMODE = ARRMODE AND PAYCO = ARRCO THEN
+               CNT = aData(1,x)
+           END IF
+         Next
+      End If
+      objDATA.WriteText("   <NbOfTxs>" & CNT & "</NbOfTxs>")
+      objDATA.WriteText("   <InitgPty>")
+      IF PAYMODE = "W" THEN
+         objDATA.WriteText("    <Id>")
+         objDATA.WriteText("    <OrgId>")
+         objDATA.WriteText("     <Othr>")
+         objDATA.WriteText("     <Id>ABC83777001</Id>")
+         objDATA.WriteText("     </Othr>")
+         objDATA.WriteText("    </OrgId>")
+         objDATA.WriteText("    </Id>")
+         objDATA.WriteText("   </InitgPty>")
+         objDATA.WriteText("  </GrpHdr>")
+      END IF
+      IF PAYMODE = "E" THEN
+         objDATA.WriteText("    <Id>")
+         objDATA.WriteText("    <OrgId>")
+         objDATA.WriteText("     <Othr>")
+         objDATA.WriteText("     <Id>ABC83777001</Id>")
+         objDATA.WriteText("     </Othr>")
+         objDATA.WriteText("    </OrgId>")
+         objDATA.WriteText("    </Id>")
+         objDATA.WriteText("   </InitgPty>")
+         objDATA.WriteText("  </GrpHdr>")
+      END IF
+      PREVMODE = PAYMODE
+   END IF
+
+   IF PAYMODE <> PREVMODE THEN
+      IF PREVBA <> "Y" THEN
+         objDATA.WriteText("  </PmtInf>")
+      END IF
+      IF PREVMODE <> "Y" THEN
+         objDATA.WriteText(" </CstmrCdtTrfInitn>")
+         objDATA.WriteText("</Document>")
+    '     objDATAFile.Close
+         objDATA.SaveToFile DATAFilePath, 2
+      END IF
+      PREVBA = "Y"
+      IF PAYMODE = "W" THEN
+         DATAFilePath = "D:\EAS\Server\EXPORTS\EURO_HSBC_Payments_Export\EUROHSBC_WIRE_PAYMENTS_" & PAYCO & "_" & fDate & ".XML"
+      END IF
+
+      IF PAYMODE = "E" THEN
+         DATAFilePath = "D:\EAS\Server\EXPORTS\EURO_HSBC_Payments_Export\EUROHSBC_ACH_PAYMENTS_" & PAYCO & "_" & fDate & ".XML"
+      END IF
+
+       Set objDATA = CreateObject("ADODB.Stream")
+       objDATA.CharSet = "utf-8"
+       objDATA.Open
+      objDATA.WriteText("<?xml version=" & chr(34) & "1.0" & chr(34) & " encoding=" & chr(34) & "utf-8" & chr(34) & "?>")
+      objDATA.WriteText("<Document xmlns=" & chr(34) & "urn:iso:std:iso:20022:tech:xsd:pain.001.001.03" & chr(34) & " xmlns:xsi=" & chr(34) & "https://urldefense.com/v3/__http://www.w3.org/2001/XMLSchema-instance__;!!Ph-vUwwL!-_oW3zstxkO2J95MSkop9EyXHJKBgJdcFBN7AO5Yr6JX-ap7dmKfeVW2BT8umM02qHm_6A$ " & chr(34) & ">")
+      objDATA.WriteText(" <CstmrCdtTrfInitn>")
+      objDATA.WriteText("  <GrpHdr>")
+      objDATA.WriteText("   <MsgId>" & NEXTID & "</MsgId>")
+      objDATA.WriteText("   <CreDtTm>" & CR8DATE & "</CreDtTm>")
+      objDATA.WriteText("   <Authstn>")
+      objDATA.WriteText("    <Cd>" & AuthenticationTag & "</Cd>")
+      objDATA.WriteText("   </Authstn>")
+      CNT = 0
+      If IsArray(aData) Then
+         For x = lBound(aData,2) to uBound(aData,2) 'loops through the rows
+            ARRCO = RTRIM(aData(0,x))
+            ARRMODE = aData(2,x)
+            IF PAYMODE = ARRMODE AND PAYCO = ARRCO THEN
+               CNT = aData(1,x)
+           END IF
+         Next
+      End If
+      objDATA.WriteText("   <NbOfTxs>" & CNT & "</NbOfTxs>")
+      objDATA.WriteText("   <InitgPty>")
+      IF PAYMODE = "W" THEN
+         objDATA.WriteText("    <Id>")
+         objDATA.WriteText("    <OrgId>")
+         objDATA.WriteText("     <Othr>")
+         objDATA.WriteText("     <Id>ABC83777001</Id>")
+         objDATA.WriteText("     </Othr>")
+         objDATA.WriteText("    </OrgId>")
+         objDATA.WriteText("    </Id>")
+         objDATA.WriteText("   </InitgPty>")
+         objDATA.WriteText("  </GrpHdr>")
+      END IF
+      IF PAYMODE = "E" THEN
+         objDATA.WriteText("    <Id>")
+         objDATA.WriteText("    <OrgId>")
+         objDATA.WriteText("     <Othr>")
+         objDATA.WriteText("     <Id>ABC83777001</Id>")
+         objDATA.WriteText("     </Othr>")
+         objDATA.WriteText("    </OrgId>")
+         objDATA.WriteText("    </Id>")
+         objDATA.WriteText("   </InitgPty>")
+         objDATA.WriteText("  </GrpHdr>")
+      END IF
+      IF PAYMODE = "C" THEN
+         objDATA.WriteText("    <Id>")
+         objDATA.WriteText("    <OrgId>")
+         objDATA.WriteText("     <Othr>")
+         objDATA.WriteText("     <Id>ABC83777001</Id>")
+         objDATA.WriteText("     </Othr>")
+         objDATA.WriteText("    </OrgId>")
+         objDATA.WriteText("    </Id>")
+         objDATA.WriteText("   </InitgPty>")
+         objDATA.WriteText("  </GrpHdr>")
+      END IF
+      PREVBA = "Y"
+      PREVMODE = PAYMODE
+   END IF
+
+
+   IF PAYMODE = "E" THEN
+      BKDEL = INSTR(CKNOTE1,"//")
+      OPERCURRDEL = INSTR(BKDEL + 1,CKNOTE1,"//")
+      OPERAMTDEL = INSTR(OPERCURRDEL + 1,CKNOTE1,"//")
+      CKNOTELEN = LEN(CKNOTE1)
+      SGDEL = INSTR(OPERAMTDEL + 1,CKNOTE1,"//")
+      BICNUM = MID(CKNOTE1,1,BKDEL - 1)
+      BKACCTNEW = replace(MID(CKNOTE1,BKDEL + 2,OPERCURRDEL - BKDEL - 2),"-","")
+	 'Added for APCNC and APTRV - AKM
+		If SRC="APCNC" OR SRC="APTRV" THEN
+			OPERAMT = ORGAMT
+			OPERCURR = CRNCY_CODE
+			BICNUM=BENESWIFTCODE
+			BKACCTNEW = BENEBKACCT 
+		ELSE
+			OPERAMT = MID(CKNOTE1,OPERAMTDEL + 2,CKNOTELEN - (OPERAMTDEL + 1))
+			OPERCURR = MID(CKNOTE1,OPERCURRDEL + 2,3)
+			BICNUM = MID(CKNOTE1,1,BKDEL - 1)
+            BKACCTNEW = replace(MID(CKNOTE1,BKDEL + 2,OPERCURRDEL - BKDEL - 2),"-","")
+		END IF	
+   END IF
+
+   IF PAYMODE = "W" THEN
+      BKACCTDEL = INSTR(CKNOTE1,"//")
+      OPERCURRDEL = INSTR(BKACCTDEL + 1,CKNOTE1,"//")
+      OPERAMTDEL = INSTR(OPERCURRDEL + 1,CKNOTE1,"//")
+      CKNOTELEN = LEN(CKNOTE1)
+      'Added for APCNC and APTRV - AKM
+		If SRC="APCNC" OR SRC="APTRV" THEN
+			OPERAMT = ORGAMT
+			OPERCURR = CRNCY_CODE
+			BICNUM=BENESWIFTCODE
+			BKACCTNEW = BENEBKACCT 
+		ELSE
+			OPERAMT = MID(CKNOTE1,OPERAMTDEL + 2,CKNOTELEN - (OPERAMTDEL + 1))
+			OPERCURR = MID(CKNOTE1,OPERCURRDEL + 2,3)
+			BICNUM = MID(CKNOTE1,1,BKACCTDEL - 1)
+            BKACCTNEW = replace(MID(CKNOTE1,BKACCTDEL + 2,OPERCURRDEL - BKACCTDEL - 2),"-","")
+		END IF
+   END IF
+
+      CLMDEL = INSTR(RINFO3,"//")
+      CKNOTELEN = LEN(RINFO3)
+      CLMNO = MID(RINFO3,1,CLMDEL - 1)
+      POLNODEL = INSTR(CLMDEL + 2,RINFO3,"//")
+      POLNO = MID(RINFO3,CLMDEL + 2,POLNODEL - (CLMDEL + 2))
+      LOSSDEL = INSTR(POLNODEL + 2,RINFO3,"//")
+      LOSSDATE = MID(RINFO3,POLNODEL + 2,LOSSDEL - (POLNODEL + 2))
+      INVNODEL = INSTR(LOSSDEL + 2,RINFO3,"//")
+      IF LOSSDEL = 0 THEN
+         INVNO = "  "
+      ELSE
+         INVNO = MID(RINFO3,LOSSDEL + 2,CKNOTELEN - (INVNODEL + 1))
+      END IF
+
+   IF PAYMODE = "W" THEN
+      NUMWIRE = NUMWIRE + 1
+   ELSE
+      NUMACH = NUMACH + 1
+   END IF
+   NUMTOT = NUMTOT + 1
+
+   IF PAYMODE = "W" THEN
+      IF PREVBA <> BKACCT THEN
+         IF PREVBA <> "Y" THEN
+            objDATA.WriteText("  </PmtInf>")
+         END IF
+         objDATA.WriteText("  <PmtInf>")
+         objDATA.WriteText("   <PmtInfId>" & mid(RPTDATE,1,10) & "HVP"  & NEXTID & "</PmtInfId>")
+         objDATA.WriteText("   <PmtMtd>TRF</PmtMtd>")
+         objDATA.WriteText("   <PmtTpInf>")
+         objDATA.WriteText("    <SvcLvl>")
+         objDATA.WriteText("     <Cd>URGP</Cd>")
+         objDATA.WriteText("    </SvcLvl>")
+         objDATA.WriteText("   </PmtTpInf>")
+         objDATA.WriteText("   <ReqdExctnDt>" & REQDATE & "</ReqdExctnDt>")
+         objDATA.WriteText("   <Dbtr>")
+         IF PAYCO = "EIEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EIEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EIEGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EESEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Plaza Manuel Gomez Morena 2, Planta 19</StrtNm>")
+            objDATA.WriteText("      <PstCd>28020</PstCd>")
+            objDATA.WriteText("      <TwnNm>Madrid</TwnNm>")
+            objDATA.WriteText("      <Ctry>ES</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EFREU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>60, Avenue Charles de Gaulle</StrtNm>")
+            objDATA.WriteText("      <PstCd>92200</PstCd>")
+            objDATA.WriteText("      <TwnNm>Neuilly-sur-Seine</TwnNm>")
+            objDATA.WriteText("      <Ctry>FR</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EDEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Cacilienstrasse 30</StrtNm>")
+            objDATA.WriteText("      <PstCd>D-50667</PstCd>")
+            objDATA.WriteText("      <TwnNm>Cologne</TwnNm>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EGBEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EGBGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EGBUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EESUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Plaza Manuel Gomez Morena 2, Planta 19</StrtNm>")
+            objDATA.WriteText("      <PstCd>28020</PstCd>")
+            objDATA.WriteText("      <TwnNm>Madrid</TwnNm>")
+            objDATA.WriteText("      <Ctry>ES</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EDEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Cacilienstrasse 30</StrtNm>")
+            objDATA.WriteText("      <PstCd>D-50667</PstCd>")
+            objDATA.WriteText("      <TwnNm>Cologne</TwnNm>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EFRUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>60, Avenue Charles de Gaulle</StrtNm>")
+            objDATA.WriteText("      <PstCd>92200</PstCd>")
+            objDATA.WriteText("      <TwnNm>Neuilly-sur-Seine</TwnNm>")
+            objDATA.WriteText("      <Ctry>FR</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IGBEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IGBGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IGBUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IDEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Cacilienstrasse 30</StrtNm>")
+            objDATA.WriteText("      <PstCd>D-50667</PstCd>")
+            objDATA.WriteText("      <TwnNm>Cologne</TwnNm>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "ICHCH" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Fraumuensterstr. 16</StrtNm>")
+            objDATA.WriteText("      <PstCd>8001</PstCd>")
+            objDATA.WriteText("      <TwnNm>Zurich</TwnNm>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "ICHEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Fraumuensterstr. 16</StrtNm>")
+            objDATA.WriteText("      <PstCd>8001</PstCd>")
+            objDATA.WriteText("      <TwnNm>Zurich</TwnNm>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "ICHUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Fraumuensterstr. 16</StrtNm>")
+            objDATA.WriteText("      <PstCd>8001</PstCd>")
+            objDATA.WriteText("      <TwnNm>Zurich</TwnNm>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EBEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Avenue Hermann, Debroux 54</StrtNm>")
+            objDATA.WriteText("      <PstCd>1160</PstCd>")
+            objDATA.WriteText("      <TwnNm>Brussels</TwnNm>")
+            objDATA.WriteText("      <Ctry>BE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EBEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Avenue Hermann, Debroux 54</StrtNm>")
+            objDATA.WriteText("      <PstCd>1160</PstCd>")
+            objDATA.WriteText("      <TwnNm>Brussels</TwnNm>")
+            objDATA.WriteText("      <Ctry>BE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+		 IF PAYCO = "ESESE" THEN
+            objDATA.WriteText("    <Nm>BHEI BHSI CLAIMS SEK</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>c/o TMF Sweden AB, Vasagatan 38</StrtNm>")
+            objDATA.WriteText("      <PstCd>111 20</PstCd>")
+            objDATA.WriteText("      <TwnNm>Stockholm</TwnNm>")
+            objDATA.WriteText("      <Ctry>SE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+		 IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("    <Nm>BERKSHIRE HATHAWAY EUROPEAN INSURANCE DESIGNATED ACTIVITY COMPANY</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Corso Italia, 13</StrtNm>")
+            objDATA.WriteText("      <PstCd>20122</PstCd>")
+            objDATA.WriteText("      <TwnNm>Milan</TwnNm>")
+            objDATA.WriteText("      <Ctry>IT</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+		 'Added BHEI - AKM
+                 IF PAYCO = "CIEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CIEGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CIEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CGBGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CGBEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CGBUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                
+                 'END
+         objDATA.WriteText("   </Dbtr>")
+         objDATA.WriteText("   <DbtrAcct>")
+         objDATA.WriteText("   <Id>")
+objDATA.WriteText("     <Othr>")
+        IF (SRC="CLM-A" OR SRC="CLM-D") THEN 
+            IF PAYCO = "EFREU" THEN
+               objDATA.WriteText("      <Id>FR7630056000060006007859407</Id>")
+            ELSE
+            IF PAYCO = "EIEEU" THEN
+               objDATA.WriteText("      <Id>411021066001</Id>")
+            ELSE
+            IF PAYCO = "EIEUS" THEN
+               objDATA.WriteText("      <Id>411021066102</Id>")
+            ELSE
+            IF PAYCO = "EIEGB" THEN
+               objDATA.WriteText("      <Id>411021066104</Id>")
+            ELSE
+            IF PAYCO = "EESEU" THEN
+               objDATA.WriteText("      <Id>001087048002</Id>")
+            ELSE
+            IF PAYCO = "EDEEU" THEN
+               objDATA.WriteText("      <Id>0015368012</Id>")
+            ELSE
+            IF PAYCO = "EGBEU" THEN
+               objDATA.WriteText("      <Id>40051586065593</Id>")
+            ELSE
+            IF PAYCO = "EGBGB" THEN
+               objDATA.WriteText("      <Id>40417060016217</Id>")
+            ELSE
+            IF PAYCO = "EGBUS" THEN
+               objDATA.WriteText("      <Id>40051586065636</Id>")
+            ELSE
+            IF PAYCO = "EESUS" THEN
+               objDATA.WriteText("      <Id>001087048011</Id>")
+            ELSE
+            IF PAYCO = "EFRUS" THEN
+               objDATA.WriteText("      <Id>FR7630056000060006008781101</Id>")
+            ELSE
+            IF PAYCO = "EDEUS" THEN
+               objDATA.WriteText("      <Id>4015368026</Id>")
+            ELSE
+            IF PAYCO = "IGBEU" THEN
+               objDATA.WriteText("      <Id>40051577591845</Id>")
+            ELSE
+            IF PAYCO = "IGBGB" THEN
+               objDATA.WriteText("      <Id>40025041415042</Id>")
+            ELSE
+            IF PAYCO = "IGBUS" THEN
+               objDATA.WriteText("      <Id>40051577591861</Id>")
+            ELSE
+            IF PAYCO = "IDEEU" THEN
+               objDATA.WriteText("      <Id>1888641013</Id>")
+            ELSE
+            IF PAYCO = "ICHCH" THEN
+               objDATA.WriteText("      <Id>CH1808701001010909002</Id>")
+            ELSE
+            IF PAYCO = "ICHEU" THEN
+               objDATA.WriteText("      <Id>CH3408701001010909102</Id>")
+            ELSE
+            IF PAYCO = "ICHUS" THEN
+               objDATA.WriteText("      <Id>CH2308701001010909106</Id>")
+            ELSE
+            IF PAYCO = "EBEEU" THEN
+               objDATA.WriteText("      <Id>401011721002</Id>")
+            ELSE
+            IF PAYCO = "EBEUS" THEN
+               objDATA.WriteText("      <Id>401011721102</Id>")
+			ELSE
+			IF PAYCO = "ESESE" THEN
+               objDATA.WriteText("      <Id>411021066108</Id>")
+			ELSE
+			IF PAYCO = "EITEU" THEN
+               objDATA.WriteText("      <Id>007025968021</Id>")
+			END IF
+			END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+            END IF
+	END IF
+	'Id have been added for APCNC and APTRV, it's hard coded as per user story - AKM
+			IF PAYCO = "EIEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>411021066002</Id>")
+            ELSEIF PAYCO = "EGBGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>40417060016225</Id>")
+			ELSEIF PAYCO = "IGBGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>40025031415069</Id>")
+			ELSEIF PAYCO = "EFREU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>FR7630056000060006007860571</Id>")
+			ELSEIF PAYCO = "EBEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>401011721003</Id>")
+			ELSEIF PAYCO = "EDEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>0015368039</Id>")
+			ELSEIF PAYCO = "IDEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>1888641021</Id>")
+			ELSEIF PAYCO = "EESEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>001087048003</Id>")
+			ELSEIF PAYCO = "EITEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>007025968022</Id>")
+			ELSEIF PAYCO = "ESESE" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>411021066109</Id>")
+			ELSEIF PAYCO = "ICHCH" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <Id>CH8808701001010909003</Id>")	
+			'Added BHEI - By AKM
+                        
+			ELSEIF PAYCO = "CIEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+					objDATA.WriteText("      <Id>411021066004</Id>")
+			ELSEIF PAYCO = "CIEGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+					objDATA.WriteText("      <Id>411021066105</Id>")
+			ELSEIF PAYCO = "CIEUS" AND (SRC="APCNC" OR SRC="APTRV") THEN
+					objDATA.WriteText("      <Id>411021066106</Id>")
+			ELSEIF PAYCO = "CGBGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+					objDATA.WriteText("      <Id>40417040040576</Id>")
+			ELSEIF PAYCO = "CGBEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+					objDATA.WriteText("      <Id>40051586058780</Id>")
+			ELSEIF PAYCO = "CGBUS" AND (SRC="APCNC" OR SRC="APTRV") THEN
+					objDATA.WriteText("      <Id>40051590058528</Id>")        
+        'END 		
+            End IF
+            objDATA.WriteText("     </Othr>")
+            objDATA.WriteText("     </Id>")
+         'END IF
+         objDATA.WriteText("    <Ccy>" & RTRIM(FCURR) & "</Ccy>")
+         objDATA.WriteText("   </DbtrAcct>")
+         objDATA.WriteText("   <DbtrAgt>")
+         objDATA.WriteText("    <FinInstnId>")
+         IF PAYCO = "EIEEU" OR PAYCO = "EIEUS" OR PAYCO = "EIEGB" THEN
+            objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+         ELSE
+         IF PAYCO = "EESEU" OR PAYCO = "EESUS" THEN
+            objDATA.WriteText("     <BIC>MIDLESMM</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>ES</Ctry>")
+         ELSE
+         IF PAYCO = "EFREU" OR PAYCO = "EFRUS" THEN
+            objDATA.WriteText("     <BIC>CCFRFRPP</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>FR</Ctry>")
+         ELSE
+         IF PAYCO = "EDEEU" OR PAYCO = "EDEUS" OR PAYCO = "IDEEU" THEN
+            objDATA.WriteText("     <BIC>TUBDDEDD</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+         ELSE
+         IF PAYCO = "EGBEU" OR PAYCO = "EGBUS" OR PAYCO = "EGBGB" OR PAYCO = "IGBEU" OR PAYCO = "IGBUS" OR PAYCO = "IGBGB" THEN
+            objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+         ELSE
+         IF PAYCO = "ICHCH" OR PAYCO = "ICHEU" OR PAYCO = "ICHUS" THEN
+            objDATA.WriteText("     <BIC>HSBCCHZZ</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+         ELSE
+         IF PAYCO = "EBEEU" OR PAYCO = "EBEUS" THEN
+            objDATA.WriteText("     <BIC>HSBCBEBB</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>BE</Ctry>")
+		 ELSE
+		 IF PAYCO = "ESESE" THEN
+            objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+         ELSE
+		 IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("     <BIC>MIDLITMX</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IT</Ctry>")
+		ELSE
+        'Added
+                 IF PAYCO = "CIEEU" THEN
+                        objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+                 ELSE
+                 IF PAYCO = "CIEGB" THEN
+                        objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+                 ELSE
+                 IF PAYCO = "CIEUS" THEN
+                        objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+                 ELSE
+                 IF PAYCO = "CGBGB" THEN
+                        objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>UK</Ctry>")
+                 ELSE
+                 IF PAYCO = "CGBEU" THEN
+                        objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>UK</Ctry>")
+                 ELSE
+                 IF PAYCO = "CGBUS" THEN
+                        objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>UK</Ctry>")
+                 END IF
+                 END IF
+                 END IF        
+                 END IF	
+		
+			
+		 END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         END IF
+		 END IF
+		 END IF
+         objDATA.WriteText("     </PstlAdr>")
+         objDATA.WriteText("    </FinInstnId>")
+         objDATA.WriteText("   </DbtrAgt>")
+         PREVBA = BKACCT
+      END IF
+' heres the beginning of individual payments
+      objDATA.WriteText("   <CdtTrfTxInf>")
+      objDATA.WriteText("     <PmtId>")
+      objDATA.WriteText("     <InstrId>" & "T" & LTRIM(TRANID) & "</InstrId>")
+      objDATA.WriteText("     <EndToEndId>" & "T" & LTRIM(TRANID) & "</EndToEndId>")
+      objDATA.WriteText("     </PmtId>")
+      objDATA.WriteText("     <Amt>")
+      objDATA.WriteText("      <InstdAmt Ccy=" & chr(34) & RTRIM(OPERCURR) & chr(34) & ">" & LTRIM(OPERAMT) & "</InstdAmt>")
+      objDATA.WriteText("     </Amt>")
+      objDATA.WriteText("     <ChrgBr>DEBT</ChrgBr>")
+      objDATA.WriteText("     <CdtrAgt>")
+      objDATA.WriteText("      <FinInstnId>")
+	  'Added logic for BIC for APCNC or APTRV - By AKM
+      objDATA.WriteText("        <BIC>" & BICNUM & "</BIC>")
+      objDATA.WriteText("     <PstlAdr>")
+        'Added logic for Ctry for APCNC or APTRV - By AKM	  
+    IF SRC="APCNC" OR SRC="APTRV" THEN
+  objDATA.WriteText("      <Ctry>" & RTRIM(BENEBANKCNTRY) & "</Ctry>")       
+	ELSE		
+         IF VNAME2 = " " THEN
+            objDATA.WriteText("      <Ctry>" & RTRIM(CNTRY) & "</Ctry>")
+         ELSE
+            objDATA.WriteText("      <Ctry>" & RTRIM(VNAME2) & "</Ctry>")
+         END IF
+	END IF
+         objDATA.WriteText("     </PstlAdr>")
+      objDATA.WriteText("      </FinInstnId>")
+      objDATA.WriteText("     </CdtrAgt>")
+      objDATA.WriteText("     <Cdtr>")
+      objDATA.WriteText("      <Nm>" & RTRIM(VNAME) & "</Nm>")
+      objDATA.WriteText("    <PstlAdr>")
+      IF RTRIM(CNTRY) = "HK" OR RTRIM(CNTRY) = "MO" THEN
+         IF ADDR1 > " " THEN
+            objDATA.WriteText("      <StrtNm>" & RTRIM(ADDR1) & "</StrtNm>")
+         END IF
+         IF ADDR2 > " " THEN
+            objDATA.WriteText("      <TwnNm>" & RTRIM(ADDR2) & "</TwnNm>")
+         END IF
+         IF NEWADDR3 <> "" THEN
+            objDATA.WriteText("      <CtrySubDvsn>" & RTRIM(NEWADDR3) & "</CtrySubDvsn>")
+         END IF
+         objDATA.WriteText("      <Ctry>" & RTRIM(CNTRY) & "</Ctry>")
+      ELSE
+         IF ADDR1 > " " THEN
+            objDATA.WriteText("      <StrtNm>" & RTRIM(ADDR1) & "</StrtNm>")
+         END IF
+         IF ZIP > " " THEN
+            objDATA.WriteText("      <PstCd>" & RTRIM(ZIP) & "</PstCd>")
+         END IF
+         IF ADDR2 > " " THEN
+            objDATA.WriteText("      <TwnNm>" & RTRIM(ADDR2) & "</TwnNm>")
+         END IF
+         IF NEWADDR3 <> "" THEN
+            objDATA.WriteText("      <CtrySubDvsn>" & RTRIM(NEWADDR3) & "</CtrySubDvsn>")
+         END IF
+         objDATA.WriteText("      <Ctry>" & RTRIM(CNTRY) & "</Ctry>")
+      END IF
+      objDATA.WriteText("    </PstlAdr>")
+      objDATA.WriteText("     </Cdtr>")
+      objDATA.WriteText("     <CdtrAcct>")
+      objDATA.WriteText("      <Id>")
+      IF BENEIBAN > " " THEN
+         objDATA.WriteText("        <IBAN>" & BENEIBAN & "</IBAN>")
+      ELSE
+         objDATA.WriteText("       <Othr>")
+         objDATA.WriteText("        <Id>" & BKACCTNEW & "</Id>")
+         objDATA.WriteText("       </Othr>")
+      END IF
+      objDATA.WriteText("      </Id>")
+      objDATA.WriteText("     </CdtrAcct>")
+      IF (SRC="CLM-A" OR SRC="CLM-D") THEN
+      IF MAILNAME > " " THEN
+         objDATA.WriteText("     <RltdRmtInf>")
+         objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+         objDATA.WriteText("      <RmtLctnElctrncAdr>" & MAILNAME & "</RmtLctnElctrncAdr>")
+         objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      END IF
+	  IF(SRC="CLM-A" OR SRC="CLM-D") THEN
+      IF PAYCO = "EIEEU" OR PAYCO = "EIEUS" OR PAYCO = "EIEGB" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesIreland@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EESEU" OR PAYCO = "EESUS" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesSpain@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EFREU" OR PAYCO = "EFRUS" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesFrance@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EDEEU" OR PAYCO = "EDEUS" OR PAYCO = "IDEEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesGermany@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EGBEU" OR PAYCO = "EGBUS" OR PAYCO = "EGBGB" OR PAYCO = "IGBUS" OR PAYCO = "IGBGB" OR PAYCO = "IGBEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesUK@bhspecialty.com </RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "ICHCH" OR PAYCO = "ICHEU" OR PAYCO = "ICHUS" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesSwitz@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EBEEU" OR PAYCO = "EBEUS" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesBelgi@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+	  IF PAYCO = "ESESE" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesSweden@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+	  IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesItaly@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+   END IF
+	 'Added RmtLctnElctrncAdr for APCNC and APTRV  - AKM
+	  IF SRC="APCNC" OR SRC="APTRV" THEN
+		  IF PAYCO = "EIEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EGBGB" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "IGBGB" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EFREU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EBEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EDEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "IDEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>Treasury@ResoluteManagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EESEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EITEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "ESESE" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "ICHCH" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>Treasury@ResoluteManagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  
+		   '--Added for BHEI - By AKM
+                  IF PAYCO = "CIEEU" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CIEGB" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CIEUS" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CGBGB" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CGBEU" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CGBUS" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  'End
+	  END IF
+	  'End
+      objDATA.WriteText("      <RmtInf>")
+  ' wires
+
+'  Need to change the OBI portion of the STUBLINE to contain the invoice number and make it 140 characters.  SA 3/9/2022
+'      STUBLINE = "The amount of " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " will be remitted for Claim " & CLMNO & " with the "
+'      STUBLINE = STUBLINE & "Date of Loss as " & LOSSDATE
+
+      STUBLINE = "Payee Ref: " & INVNO & ". Relating to date of loss: " & LOSSDATE & ". For BHSI CLAIM: " & CLMNO & "."
+      OBILEN = LEN(STUBLINE)
+      IF OBILEN < 140 THEN
+           OBISPACES = 140 - OBILEN
+           STUBLINE = STUBLINE & SPACE(OBISPACES)
+      END IF
+'Added RmtInf for APCNC and APTRV - AKM	  
+	IF SRC="APCNC" OR SRC="APTRV" THEN
+			STUBLINE = "Dear Sir/Madam,/NEWL//NEWL/We have remitted"
+            IF PAYCO="EIEEU" OR PAYCO="EGBGB" OR PAYCO="EFREU" OR PAYCO="EBEEU" OR PAYCO="EDEEU" OR PAYCO="EESEU" OR PAYCO="EITEU" OR PAYCO="ESESE" THEN
+				STUBLINE = STUBLINE & " " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " for " & LTRIM(RINFO1) & " to your bank account. If you have any questions, please feel free to contact us at BHEI-Treasury@resolutemanagement.com"
+            ELSEIF PAYCO="CIEEU" OR PAYCO="CIEGB" OR PAYCO="CIEUS" OR PAYCO="CGBGB" OR PAYCO="CGBEU" OR PAYCO="CGBUS" THEN
+                STUBLINE = STUBLINE & " " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " for " & LTRIM(RINFO1) & " to your bank account. If you have any questions, please feel free to contact us at BHEI-Treasury@resolutemanagement.com"
+			ELSE
+				STUBLINE = STUBLINE & " " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " for " & LTRIM(RINFO1) & " to your bank account. If you have any questions, please feel free to contact us at Treasury@ResoluteManagement.com"
+			END IF
+            STUBLINE = STUBLINE &". This is a computer generated letter and does not require a signature."
+            objDATA.WriteText("       <Ustrd>" & STUBLINE & "</Ustrd>")
+	ELSE	
+            STUBLINE = STUBLINE & "/NEWL//NEWL/Dear Sir/Madam,/NEWL//NEWL/This is to advise that we will shortly be releasing the sum "
+            STUBLINE = STUBLINE & "of " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " to be in your above account within the next 2 to 3 "
+            STUBLINE = STUBLINE & "days. Further remittance details are set out below. /NEWL//NEWL/If you have any questions or concerns, "
+            STUBLINE = STUBLINE & "please do not hesitate to contact our claims team at ClaimsNoticeEurope@bhspecialty.com./NEWL//NEWL/This "
+            STUBLINE = STUBLINE & "is a computer generated letter and does not require a signature."
+	END IF 
+    IF SRC="CLM-A" OR SRC="CLM-D" THEN
+      objDATA.WriteText("       <Ustrd>" & STUBLINE & "</Ustrd>")
+      objDATA.WriteText("       <Strd>")
+      objDATA.WriteText("       <RfrdDocInf>")
+      objDATA.WriteText("         <Nb>" & RTRIM(CLMNO) & "</Nb>")
+      objDATA.WriteText("         <RltdDt>" & LOSSDATE & "</RltdDt>")
+      objDATA.WriteText("       </RfrdDocInf>")
+      objDATA.WriteText("       <RfrdDocAmt>")
+      objDATA.WriteText("        <DuePyblAmt Ccy=" & chr(34) & RTRIM(OPERCURR) & chr(34) & ">" & LTRIM(OPERAMT) & "</DuePyblAmt>")
+      objDATA.WriteText("       </RfrdDocAmt>")
+      objDATA.WriteText("       <CdtrRefInf>")
+      objDATA.WriteText("        <Tp>")
+      objDATA.WriteText("         <CdOrPrtry>")
+      objDATA.WriteText("           <Prtry>/DCDT/" & RTRIM(MID(RINFO2,1,25)) & "</Prtry>")
+      objDATA.WriteText("         </CdOrPrtry>")
+      objDATA.WriteText("        </Tp>")
+      objDATA.WriteText("        <Ref>/NARR/" & RTRIM(INVNO) & "</Ref>")
+      objDATA.WriteText("       </CdtrRefInf>")
+      objDATA.WriteText("       <AddtlRmtInf>/DESC/" & RTRIM(SINFO1) & RTRIM(SINFO2) & RTRIM(mid(SINFO3,1,14)) & "</AddtlRmtInf>")
+      objDATA.WriteText("       </Strd>")
+      END IF
+      objDATA.WriteText("      </RmtInf>")
+      objDATA.WriteText("   </CdtTrfTxInf>")
+      NEXTID = NEXTID + 1
+   END IF
+
+' paymode E
+' EFT's can only be issued from EUR accounts, so not adding the 3 new USD companies of EESUS, EDEUS or EFRUS for EFT logic
+   IF PAYMODE = "E" THEN
+      IF PREVBA <> BKACCT THEN
+         IF PREVBA <> "Y" THEN
+            objDATA.WriteText("  </PmtInf>")
+         END IF
+         objDATA.WriteText("  <PmtInf>")
+         objDATA.WriteText("   <PmtInfId>" & NEXTID & "</PmtInfId>")
+         objDATA.WriteText("   <PmtMtd>TRF</PmtMtd>")
+         objDATA.WriteText("   <PmtTpInf>")
+         objDATA.WriteText("    <SvcLvl>")
+         objDATA.WriteText("     <Cd>SEPA</Cd>")
+         objDATA.WriteText("    </SvcLvl>")
+         objDATA.WriteText("   </PmtTpInf>")
+         objDATA.WriteText("   <ReqdExctnDt>" & REQDATE & "</ReqdExctnDt>")
+         objDATA.WriteText("   <Dbtr>")
+         IF PAYCO = "EIEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EIEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EIEGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+           objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EESEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Plaza Manuel Gomez Morena 2, Planta 19</StrtNm>")
+            objDATA.WriteText("      <PstCd>28020</PstCd>")
+            objDATA.WriteText("      <TwnNm>Madrid</TwnNm>")
+            objDATA.WriteText("      <Ctry>ES</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EFREU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>60, Avenue Charles de Gaulle</StrtNm>")
+            objDATA.WriteText("      <PstCd>92200</PstCd>")
+            objDATA.WriteText("      <TwnNm>Neuilly-sur-Seine</TwnNm>")
+            objDATA.WriteText("      <Ctry>FR</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EDEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Cacilienstrasse 30</StrtNm>")
+            objDATA.WriteText("      <PstCd>D-50667</PstCd>")
+            objDATA.WriteText("      <TwnNm>Cologne</TwnNm>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EGBEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EGBGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EGBUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IGBEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IGBGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IGBUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "IDEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Cacilienstrasse 30</StrtNm>")
+            objDATA.WriteText("      <PstCd>D-50667</PstCd>")
+            objDATA.WriteText("      <TwnNm>Cologne</TwnNm>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "ICHCH" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Fraumuensterstr. 16</StrtNm>")
+            objDATA.WriteText("      <PstCd>8001</PstCd>")
+            objDATA.WriteText("      <TwnNm>Zurich</TwnNm>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "ICHEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Fraumuensterstr. 16</StrtNm>")
+            objDATA.WriteText("      <PstCd>8001</PstCd>")
+            objDATA.WriteText("      <TwnNm>Zurich</TwnNm>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "ICHUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway International Insurance Limited</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Fraumuensterstr. 16</StrtNm>")
+            objDATA.WriteText("      <PstCd>8001</PstCd>")
+            objDATA.WriteText("      <TwnNm>Zurich</TwnNm>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+         IF PAYCO = "EBEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Avenue Hermann, Debroux 54</StrtNm>")
+            objDATA.WriteText("      <PstCd>1160</PstCd>")
+            objDATA.WriteText("      <TwnNm>Brussels</TwnNm>")
+            objDATA.WriteText("      <Ctry>BE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+          IF PAYCO = "EBEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Avenue Hermann, Debroux 54</StrtNm>")
+            objDATA.WriteText("      <PstCd>1160</PstCd>")
+            objDATA.WriteText("      <TwnNm>Brussels</TwnNm>")
+            objDATA.WriteText("      <Ctry>BE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+		 IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("    <Nm>BERKSHIRE HATHAWAY EUROPEAN INSURANCE DESIGNATED ACTIVITY COMPANY</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>Corso Italia, 13</StrtNm>")
+            objDATA.WriteText("      <PstCd>20122</PstCd>")
+            objDATA.WriteText("      <TwnNm>Milan</TwnNm>")
+            objDATA.WriteText("      <Ctry>IT</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+		  'Added BHEI - AKM
+         IF PAYCO = "CIEEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CIEGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CIEUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>7 Grand Canal Street Lower, 2nd Floor</StrtNm>")
+            objDATA.WriteText("      <PstCd>D02KW81</PstCd>")
+            objDATA.WriteText("      <TwnNm>Dublin</TwnNm>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CGBGB" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CGBEU" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                 IF PAYCO = "CGBUS" THEN
+            objDATA.WriteText("    <Nm>Berkshire Hathaway European Insurance DAC</Nm>")
+            objDATA.WriteText("    <PstlAdr>")
+            objDATA.WriteText("      <StrtNm>4TH Floor, 8 Fenchurch Place</StrtNm>")
+            objDATA.WriteText("      <PstCd>EC3M 4AJ</PstCd>")
+            objDATA.WriteText("      <TwnNm>London</TwnNm>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+            objDATA.WriteText("    </PstlAdr>")
+         END IF
+                
+                 'END
+
+		 
+         objDATA.WriteText("   </Dbtr>")
+         objDATA.WriteText("   <DbtrAcct>")
+         objDATA.WriteText("    <Id>")
+    IF (SRC="CLM-A" OR SRC="CLM-D") THEN
+         IF PAYCO = "IDEEU" THEN
+            objDATA.WriteText("      <IBAN>DE40300308801888641013</IBAN>")
+         END IF
+         IF PAYCO = "IGBEU" THEN
+            objDATA.WriteText("      <IBAN>GB91MIDL40051577591845</IBAN>")
+         END IF
+         IF PAYCO = "EIEEU" THEN
+            objDATA.WriteText("      <IBAN>IE57HSBC99023136214441</IBAN>")
+         END IF
+         IF PAYCO = "EESEU" THEN
+            objDATA.WriteText("      <IBAN>ES0501620001280087048002</IBAN>")
+         END IF
+         IF PAYCO = "EFREU" THEN
+            objDATA.WriteText("      <IBAN>FR7630056000060006007859407</IBAN>")
+         END IF
+         IF PAYCO = "EDEEU" THEN
+            objDATA.WriteText("      <IBAN>DE82300308800015368012</IBAN>")
+         END IF
+         IF PAYCO = "EGBEU" THEN
+            objDATA.WriteText("      <IBAN>GB79MIDL40051586065593</IBAN>")
+         END IF
+         IF PAYCO = "ICHEU" THEN
+            objDATA.WriteText("      <IBAN>CH3408701001010909102</IBAN>")
+         END IF
+         IF PAYCO = "EBEEU" THEN
+            objDATA.WriteText("      <IBAN>BE74949117210207</IBAN>")
+         END IF
+         IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("      <IBAN>IT11Q0302101600007025968021</IBAN>")
+         END IF
+	END IF
+	     'IBAN have been added for APCNC and APTRV, it's hard coded as per user story - AKM
+			IF PAYCO = "EIEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>IE82HSBC99023136214476</IBAN>")
+            ELSEIF PAYCO = "EGBGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+            	objDATA.WriteText("      <IBAN>GB74MIDL40417060016225</IBAN>")
+			ELSEIF PAYCO = "IGBGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>GB13MIDL40025031415069</IBAN>")
+			ELSEIF PAYCO = "EFREU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>FR7630056000060006007860571</IBAN>")
+			ELSEIF PAYCO = "EBEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>BE63949117210308</IBAN>")
+			ELSEIF PAYCO = "EDEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>DE32300308800015368039</IBAN>")
+			ELSEIF PAYCO = "IDEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>DE18300308801888641021</IBAN>")
+			ELSEIF PAYCO = "EESEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>ES5901620001220087048003</IBAN>")
+			ELSEIF PAYCO = "EITEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>IT85R0302101600007025968022</IBAN>")
+			ELSEIF PAYCO = "ESESE" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>IE47HSBC99023137004104</IBAN>")
+			ELSEIF PAYCO = "ICHCH" AND (SRC="APCNC" OR SRC="APTRV") THEN
+				objDATA.WriteText("      <IBAN>CH8808701001010909003</IBAN>")
+			'Added for BHEI
+                        ELSEIF PAYCO = "CIEEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+                                objDATA.WriteText("      <IBAN>IE77HSBC99023136214857</IBAN>")
+                        ELSEIF PAYCO = "CIEGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+                                objDATA.WriteText("      <IBAN>IE17HSBC99023137003092</IBAN>")
+                        ELSEIF PAYCO = "CIEUS" AND (SRC="APCNC" OR SRC="APTRV") THEN
+                                objDATA.WriteText("      <IBAN>IE87HSBC99023137003093</IBAN>")
+                        ELSEIF PAYCO = "CGBGB" AND (SRC="APCNC" OR SRC="APTRV") THEN
+                                objDATA.WriteText("      <IBAN>GB93MIDL40417040040576</IBAN>")
+                        ELSEIF PAYCO = "CGBEU" AND (SRC="APCNC" OR SRC="APTRV") THEN
+                                objDATA.WriteText("      <IBAN>GB21MIDL40051586058780</IBAN>")
+                        ELSEIF PAYCO = "CGBUS" AND (SRC="APCNC" OR SRC="APTRV") THEN
+                                objDATA.WriteText("      <IBAN>GB29MIDL40051590058528</IBAN>")                
+'END  		
+            End IF
+         objDATA.WriteText("    </Id>")
+         objDATA.WriteText("    <Ccy>" & RTRIM(FCURR) & "</Ccy>")
+         objDATA.WriteText("   </DbtrAcct>")
+         objDATA.WriteText("   <DbtrAgt>")
+         objDATA.WriteText("    <FinInstnId>")
+         IF PAYCO = "EIEEU" OR PAYCO = "EIEUS" OR PAYCO = "EIEGB" THEN
+            objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+         ELSE
+         IF PAYCO = "EESEU" THEN
+            objDATA.WriteText("     <BIC>MIDLESMM</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>ES</Ctry>")
+         ELSE
+         IF PAYCO = "EFREU" THEN
+            objDATA.WriteText("     <BIC>CCFRFRPP</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>FR</Ctry>")
+         ELSE
+         IF PAYCO = "EDEEU" OR PAYCO = "IDEEU" THEN
+            objDATA.WriteText("     <BIC>TUBDDEDD</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>DE</Ctry>")
+         ELSE
+         IF PAYCO = "EGBEU" OR PAYCO = "EGBUS" OR PAYCO = "EGBGB" OR PAYCO = "IGBEU" OR PAYCO = "IGBUS" OR PAYCO = "IGBGB" THEN
+            objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>GB</Ctry>")
+         ELSE
+         IF PAYCO = "ICHCH" OR PAYCO = "ICHEU" OR PAYCO = "ICHUS" THEN
+            objDATA.WriteText("     <BIC>HSBCCHZZ</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>CH</Ctry>")
+         ELSE
+         IF PAYCO = "EBEEU" OR PAYCO = "EBEUS" THEN
+            objDATA.WriteText("     <BIC>HSBCBEBB</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>BE</Ctry>")
+		 ELSE
+         IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("     <BIC>MIDLITMX</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IT</Ctry>")
+		
+		ELSE        
+                 IF PAYCO = "CIEEU" THEN
+                        objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+                 ELSE
+                 IF PAYCO = "CIEGB" THEN
+                        objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+                 ELSE
+                 IF PAYCO = "CIEUS" THEN
+                        objDATA.WriteText("     <BIC>HSBCIE2D</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>IE</Ctry>")
+                 ELSE
+                 IF PAYCO = "CGBGB" THEN
+                        objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>UK</Ctry>")
+                 ELSE
+                 IF PAYCO = "CGBEU" THEN
+                        objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>UK</Ctry>")
+                 ELSE
+                 IF PAYCO = "CGBUS" THEN
+                        objDATA.WriteText("     <BIC>MIDLGB22</BIC>")
+            objDATA.WriteText("     <PstlAdr>")
+            objDATA.WriteText("      <Ctry>UK</Ctry>")	
+		 END IF
+         END IF
+		 END IF
+		 END IF
+		 END IF
+		 END IF
+		 END IF        
+		 END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         END IF
+         objDATA.WriteText("     </PstlAdr>")
+         objDATA.WriteText("    </FinInstnId>")
+         objDATA.WriteText("   </DbtrAgt>")
+         PREVBA = BKACCT
+      END IF
+' heres the beginning of individual payments
+      objDATA.WriteText("   <CdtTrfTxInf>")
+      objDATA.WriteText("     <PmtId>")
+      objDATA.WriteText("     <InstrId>" & "T" & LTRIM(TRANID) & "</InstrId>")
+      objDATA.WriteText("     <EndToEndId>" & "T" & LTRIM(TRANID) & "</EndToEndId>")
+      objDATA.WriteText("     </PmtId>")
+      objDATA.WriteText("     <Amt>")
+      objDATA.WriteText("      <InstdAmt Ccy=" & chr(34) & RTRIM(OPERCURR) & chr(34) & ">" & LTRIM(OPERAMT) & "</InstdAmt>")
+      objDATA.WriteText("     </Amt>")
+      objDATA.WriteText("   <ChrgBr>SLEV</ChrgBr>")
+      objDATA.WriteText("     <CdtrAgt>")
+      objDATA.WriteText("      <FinInstnId>")
+  	  'BENESWIFTCODE
+      'Added logic for BIC for APCNC or APTRV - By AKM	  
+		IF SRC="APCNC" OR SRC="APTRV" THEN
+		 objDATA.WriteText("       <BIC>" & BENESWIFTCODE & "</BIC>") 		
+		ELSE	
+         objDATA.WriteText("       <BIC>" & BICNUM & "</BIC>")
+		END IF
+         objDATA.WriteText("     <PstlAdr>")
+         'Added logic for Ctry for APCNC or APTRV - By AKM
+	IF SRC="APCNC" OR SRC="APTRV" THEN
+            objDATA.WriteText("      <Ctry>" & RTRIM(BENEBANKCNTRY) & "</Ctry>")
+	ELSE		
+         IF VNAME2 = " " THEN
+            objDATA.WriteText("      <Ctry>" & RTRIM(CNTRY) & "</Ctry>")
+         ELSE
+            objDATA.WriteText("      <Ctry>" & RTRIM(VNAME2) & "</Ctry>")
+         END IF
+	END IF	
+         objDATA.WriteText("     </PstlAdr>")
+         objDATA.WriteText("    </FinInstnId>")
+  '    END IF
+      objDATA.WriteText("     </CdtrAgt>")
+      objDATA.WriteText("     <Cdtr>")
+      objDATA.WriteText("      <Nm>" & RTRIM(VNAME) & "</Nm>")
+
+      objDATA.WriteText("      <PstlAdr>")
+      IF RTRIM(CNTRY) = "HK" OR RTRIM(CNTRY) = "MO" THEN
+         IF ADDR1 > " " THEN
+            objDATA.WriteText("      <StrtNm>" & RTRIM(ADDR1) & "</StrtNm>")
+         END IF
+         IF ADDR2 > " " THEN
+            objDATA.WriteText("      <TwnNm>" & RTRIM(ADDR2) & "</TwnNm>")
+         END IF
+         IF NEWADDR3 <> "" THEN
+            objDATA.WriteText("      <CtrySubDvsn>" & RTRIM(NEWADDR3) & "</CtrySubDvsn>")
+         END IF
+         objDATA.WriteText("      <Ctry>" & RTRIM(CNTRY) & "</Ctry>")
+      ELSE
+         IF ADDR1 > " " THEN
+            objDATA.WriteText("      <StrtNm>" & RTRIM(ADDR1) & "</StrtNm>")
+         END IF
+         IF ZIP > " " THEN
+            objDATA.WriteText("      <PstCd>" & RTRIM(ZIP) & "</PstCd>")
+         END IF
+         IF ADDR2 > " " THEN
+            objDATA.WriteText("      <TwnNm>" & RTRIM(ADDR2) & "</TwnNm>")
+         END IF
+         IF NEWADDR3 <> "" THEN
+            objDATA.WriteText("      <CtrySubDvsn>" & RTRIM(NEWADDR3) & "</CtrySubDvsn>")
+         END IF
+         objDATA.WriteText("      <Ctry>" & RTRIM(CNTRY) & "</Ctry>")
+      END IF
+      objDATA.WriteText("      </PstlAdr>")
+      objDATA.WriteText("     </Cdtr>")
+      objDATA.WriteText("     <CdtrAcct>")
+      objDATA.WriteText("      <Id>")
+      objDATA.WriteText("        <IBAN>" & BENEIBAN & "</IBAN>")
+      objDATA.WriteText("      </Id>")
+      objDATA.WriteText("     </CdtrAcct>")
+      IF (SRC="CLM-A" OR SRC="CLM-D") THEN
+      IF MAILNAME > " " THEN
+         objDATA.WriteText("     <RltdRmtInf>")
+         objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+         objDATA.WriteText("      <RmtLctnElctrncAdr>" & MAILNAME & "</RmtLctnElctrncAdr>")
+         objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      END IF
+	  IF (SRC="CLM-A" OR SRC="CLM-D") THEN 
+      IF PAYCO = "EIEEU" OR PAYCO = "EIEUS" OR PAYCO = "EIEGB" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesIreland@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EESEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesSpain@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EFREU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesFrance@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EDEEU" OR PAYCO = "IDEEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesGermany@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EGBEU" OR PAYCO = "EGBUS" OR PAYCO = "EGBGB" OR PAYCO = "IGBUS" OR PAYCO = "IGBGB" OR PAYCO = "IGBEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesUK@bhspecialty.com </RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "ICHCH" OR PAYCO = "ICHEU" OR PAYCO = "ICHUS" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesSwitz@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+      IF PAYCO = "EBEEU" OR PAYCO = "EBEUS" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesBelgi@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+	  IF PAYCO = "EITEU" THEN
+            objDATA.WriteText("     <RltdRmtInf>")
+            objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+            objDATA.WriteText("      <RmtLctnElctrncAdr>PaymentAdvicesItaly@bhspecialty.com</RmtLctnElctrncAdr>")
+            objDATA.WriteText("     </RltdRmtInf>")
+      END IF
+	END IF  
+	  'Added RmtLctnElctrncAdr for APCNC and APTRV  - AKM
+	  IF SRC="APCNC" OR SRC="APTRV" THEN
+		  IF PAYCO = "EIEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EGBGB" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "IGBGB" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>Treasury@ResoluteManagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EFREU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EBEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EDEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "IDEEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>Treasury@ResoluteManagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EESEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "EITEU" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "ESESE" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  IF PAYCO = "ICHCH" THEN
+				objDATA.WriteText("     <RltdRmtInf>")
+				objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+				objDATA.WriteText("      <RmtLctnElctrncAdr>Treasury@ResoluteManagement.com</RmtLctnElctrncAdr>")
+				objDATA.WriteText("     </RltdRmtInf>")
+		  END IF
+		  'Added for BHEL - By AKM
+                  IF PAYCO = "CIEEU" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CIEGB" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CIEUS" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CGBGB" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CGBEU" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  IF PAYCO = "CGBUS" THEN
+                                objDATA.WriteText("     <RltdRmtInf>")
+                                objDATA.WriteText("      <RmtLctnMtd>EMAL</RmtLctnMtd>")
+                                objDATA.WriteText("      <RmtLctnElctrncAdr>BHEI-Treasury@resolutemanagement.com</RmtLctnElctrncAdr>")
+                                objDATA.WriteText("     </RltdRmtInf>")
+                  END IF
+                  'End
+		  
+	  END IF
+	  'End
+      objDATA.WriteText("      <RmtInf>")
+  ' EFTS
+'  Need to change the OBI portion of the STUBLINE to contain the invoice number and make it 140 characters.  SA 3/9/2022
+
+'      STUBLINE = "The amount of " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " will be remitted for Claim " & CLMNO & " with the "
+'      STUBLINE = STUBLINE & "Date of Loss as " & LOSSDATE
+
+      STUBLINE = "Payee Ref: " & INVNO & ". Relating to date of loss: " & LOSSDATE & ". For BHSI CLAIM: " & CLMNO & "."
+      OBILEN = LEN(STUBLINE)
+      IF OBILEN < 140 THEN
+           OBISPACES = 140 - OBILEN
+           STUBLINE = STUBLINE & SPACE(OBISPACES)
+      END IF
+
+      ' Added RmtInf for APCNC and APTRV - AKM	
+	IF SRC="APCNC" OR SRC="APTRV" THEN
+			STUBLINE = "Dear Sir/Madam,/NEWL//NEWL/We have remitted"
+            IF PAYCO="EIEEU" OR PAYCO="EGBGB" OR PAYCO="EFREU" OR PAYCO="EBEEU" OR PAYCO="EDEEU" OR PAYCO="EESEU" OR PAYCO="EITEU" OR PAYCO="ESESE" THEN
+	        STUBLINE = STUBLINE & " " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " for " & LTRIM(RINFO1) & " to your bank account. If you have any questions, please feel free to contact us at BHEI-Treasury@resolutemanagement.com"
+        ELSEIF PAYCO="CIEEU" OR PAYCO="CIEGB" OR PAYCO="CIEUS" OR PAYCO="CGBGB" OR PAYCO="CGBEU" OR PAYCO="CGBUS" THEN
+                                STUBLINE = STUBLINE & " " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " for " & LTRIM(RINFO1) & " to your bank account. If you have any questions, please feel free to contact us at BHEI-Treasury@resolutemanagement.com"
+		ELSE
+	        STUBLINE = STUBLINE & " " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " for " & LTRIM(RINFO1) & " to your bank account. If you have any questions, please feel free to contact us at Treasury@ResoluteManagement.com"
+        END IF
+            STUBLINE = STUBLINE &". This is a computer generated letter and does not require a signature."
+			objDATA.WriteText("       <Ustrd>" & STUBLINE & "</Ustrd>")
+	ELSE	
+      'STUBLINE = STUBLINE & "/NEWL//NEWL/Dear Sir/Madam,/NEWL//NEWL/This is to advise that we will shortly be releasing the sum "
+      'STUBLINE = STUBLINE & "of " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " to be in your above account within the next 2 to 3 "
+      'STUBLINE = STUBLINE & "days. Further remittance details are set out below. /NEWL//NEWL/If you have any questions or concerns, "
+      'STUBLINE = STUBLINE & "please do not hesitate to contact our claims team at ClaimsNoticeEurope@bhspecialty.com./NEWL//NEWL/This "
+      'STUBLINE = STUBLINE & "is a computer generated letter and does not require a signature."
+	  STUBLINE = STUBLINE & "/NEWL//NEWL/Dear Sir/Madam,/NEWL//NEWL/This is to advise that we will shortly be releasing the sum "
+      STUBLINE = STUBLINE & "of " & RTRIM(OPERCURR) & " " & LTRIM(OPERAMT) & " to be in your above account within the next 2 to 3 "
+    '  STUBLINE = STUBLINE & "days. Further remittance details are set out below. /NEWL//NEWL/If you have any questions or concerns, "
+      STUBLINE = STUBLINE & "days. /NEWL//NEWL/If you have any questions or concerns, "
+      STUBLINE = STUBLINE & "please do not hesitate to contact our claims team at ClaimsNoticeEurope@bhspecialty.com./NEWL//NEWL/This "
+      STUBLINE = STUBLINE & "is a computer generated letter and does not require a signature."
+      objDATA.WriteText("       <Ustrd>" & STUBLINE & "</Ustrd>")
+	
+' Want to exclude the Structured Sections for Companies IDEEU and EDEEU (Germany) for SEPA/EFT payments - Added slalbracht 11/1/2021
+
+      IF NOT (PAYCO = "EDEEU" OR PAYCO = "IDEEU") AND (SRC="CLM-A" OR SRC="CLM-D")  THEN
+         objDATA.WriteText("       <Strd>")
+         objDATA.WriteText("       <RfrdDocInf>")
+         objDATA.WriteText("         <Nb>" & RTRIM(CLMNO) & "</Nb>")
+         objDATA.WriteText("         <RltdDt>" & LOSSDATE & "</RltdDt>")
+         objDATA.WriteText("       </RfrdDocInf>")
+         objDATA.WriteText("       <RfrdDocAmt>")
+         objDATA.WriteText("        <DuePyblAmt Ccy=" & chr(34) & RTRIM(OPERCURR) & chr(34) & ">" & LTRIM(OPERAMT) & "</DuePyblAmt>")
+         objDATA.WriteText("       </RfrdDocAmt>")
+         objDATA.WriteText("       <CdtrRefInf>")
+         objDATA.WriteText("        <Tp>")
+         objDATA.WriteText("         <CdOrPrtry>")
+         objDATA.WriteText("           <Prtry>/DCDT/" & RTRIM(MID(RINFO2,1,25)) & "</Prtry>")
+         objDATA.WriteText("         </CdOrPrtry>")
+         objDATA.WriteText("        </Tp>")
+         objDATA.WriteText("        <Ref>/NARR/" & RTRIM(INVNO) & "</Ref>")
+         objDATA.WriteText("       </CdtrRefInf>")
+         objDATA.WriteText("       <AddtlRmtInf>/DESC/" & RTRIM(SINFO1) & RTRIM(SINFO2) & RTRIM(mid(SINFO3,1,14)) & "</AddtlRmtInf>")
+         objDATA.WriteText("       </Strd>")
+
+      END IF
+      END IF
+      objDATA.WriteText("      </RmtInf>")
+      objDATA.WriteText("   </CdtTrfTxInf>")
+      NEXTID = NEXTID + 1
+   END IF
+
+   rs.MoveNext
+Loop
+
+rs.Close
+Set rs = Nothing
+
+      IF PREVBA <> "Y" THEN
+         objDATA.WriteText("  </PmtInf>")
+      END IF
+
+      objDATA.WriteText(" </CstmrCdtTrfInitn>")
+      objDATA.WriteText("</Document>")
+
+
+   PRTNUM = BLANKFill (NUMWIRE,10)
+   objLOGFile.WriteLine("PAY TYPE   NUMBER           AMOUNT")
+   objLOGFile.WriteLine(" WIRES " & PRTNUM & "           " & AMTWIRE)
+
+   PRTNUM = BLANKFill (NUMACH,10)
+   objLOGFile.WriteLine(" ACH   " & PRTNUM & "           " & AMTACH)
+
+   objLOGFile.WriteLine("--------   ------           ---------")
+
+   PRTNUM = BLANKFill (NUMTOT,10)
+   PRTAMT = PRTAMT + AMTWIRE + AMTACH
+   objLOGFile.WriteLine(" TOTAL " & PRTNUM & "           " & PRTAMT)
+
+
+sQuery="UPDATE EAS_IDENTITY " & _
+         "SET NEXT_ID = " & NEXTID & _
+        " WHERE TABLE_NAME = 'HSBCPAY' " & _
+          "AND COLUMN_NAME = 'BATCH_NUMBER' "
+
+Set rs=db.execute(sQuery)
+
+
+On Error Resume Next
+
+rs.Close
+Set rs = Nothing
+
+
+sQuery="INSERT INTO XPORT_AP_CONTROL (XPORT_AP_ID, EXPORT_PROCESS, EXPORT_DATETIME) " & _
+        "SELECT A.XPORT_AP_ID, 'EUROHSBCPAY',GETDATE() FROM XPORT_AP_TRIGGER A " & _
+         "WHERE NOT EXISTS " & _
+          "( SELECT * FROM XPORT_AP_CONTROL C " & _
+             "WHERE C.XPORT_AP_ID = A.XPORT_AP_ID AND C.EXPORT_PROCESS = 'EUROHSBCPAY') "
+
+
+Set rs=db.execute(sQuery)
+On Error Resume Next
+
+rs.Close
+db.Close
+Set rs = Nothing
+Set db = Nothing
+
+
+   
+   objLOGFile.WriteLine("HSBC_PAYMENTS ENDED SUCCESSFULLY AT: " & DATE & "  " & TIME)
+
+
+ ' objDATAFile.Close
+objDATA.SaveToFile DATAFilePath, 2
+objLOGFile.Close
+
+WScript.Quit(0)
+
+
+Function ReadReg(RegPath)
+     Dim objRegistry, Key
+     Set objRegistry = CreateObject("Wscript.shell")
+     Key = objRegistry.RegRead(RegPath)
+     ReadReg = Key
+End Function
+
+Function ZeroFill (ByVal String, ByVal length )
+     ZeroFill = Trim(String)
+     Do While Len(ZeroFill) < length
+         ZeroFill = "0" & ZeroFill
+     Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length )
+     BLANKFill = Trim(String)
+     Do While Len(BLANKFill) < length
+         BLANKFill = " " & BLANKFill
+     Loop
+End Function
