@@ -1,9 +1,3 @@
-I have completed the analysis of the **BAI2 script file** and explained the entire logic to Aarohi.  
+I have completed the technical analysis and also verified the folder path access mentioned in the CIA, which is accessible.
 
-Additionally, she has more questions that she wants clarity on, such as:  
-1. **What is the role of queries in the script?**  
-2. **How is the output file being written?**  
-
-After discussing with her, I am continuing to work on the **script analysis**.  
-
-Since this analysis will take considerable time, I will also start working on the **Sprint 26 user story** from tomorrow. I will be handling both tasks in parallel.
+However, I have some doubts regarding the SFTP upload connection, for which I need to discuss with Pavan. This is the reason I have not yet raised a ticket for creating the connection.
