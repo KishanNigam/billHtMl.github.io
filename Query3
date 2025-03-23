@@ -1,3 +1,5 @@
-Rebecca has updated the **SFTP connection** by adding it to the **Associated Bank** side and has shared the **site information along with the password** with us.  
+Rebecca has updated the SFTP connection by adding it to the Associated Bank side and has shared the site information along with the password with us. We are using this site information to verify the connection.
 
-We are now using this **site information** to verify the connection.
+@Pavan: I tried verifying the connection in VC, but I am facing some issues. I am forwarding you the SFTP site information and password shared by Rebecca via email.
+
+Kindly assist me in troubleshooting this issue. This is a high-priority task.
