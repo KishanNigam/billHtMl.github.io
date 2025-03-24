@@ -1,9 +1,8 @@
-We had a discussion with Desiree regarding the RRNG archive path, and she mentioned that we need to follow the updated path structure.
+We have created a new job to upload the VNDLY export file to the SFTP location.
 
-Previously, we were using the "RRNG" folder name, but now we should use:
+Could you please check as per the details below and confirm whether the file has been successfully uploaded?
 
-"RRNG_NICO"
+Looking forward to your confirmation.
 
-"RRNG_BHSI"
 
-as the new folder names.
+We have also sent an email to Alex to verify whether the file has been successfully uploaded to the SFTP location.
