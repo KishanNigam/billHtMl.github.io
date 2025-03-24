@@ -1,5 +1,3 @@
-Rebecca has updated the SFTP connection by adding it to the Associated Bank side and has shared the site information along with the password with us. We are using this site information to verify the connection.
+As per the discussion, I have **added the .NET task to the job** and configured the code within it. After setting up the job flow, I placed the file in the **import location** for unit testing.  
 
-@Pavan: I tried verifying the connection in VC, but I am facing some issues. I am forwarding you the SFTP site information and password shared by Rebecca via email.
-
-Kindly assist me in troubleshooting this issue. This is a high-priority task.
+However, while the **RRNG job is loading the source file**, it is **not triggering all tasks in the complete flow**. I am currently debugging this issue and will try to **resolve it by tomorrow**.
