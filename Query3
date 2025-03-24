@@ -1,3 +1,9 @@
-As per the discussion, I have **added the .NET task to the job** and configured the code within it. After setting up the job flow, I placed the file in the **import location** for unit testing.  
+We had a discussion with Desiree regarding the RRNG archive path, and she mentioned that we need to follow the updated path structure.
 
-However, while the **RRNG job is loading the source file**, it is **not triggering all tasks in the complete flow**. I am currently debugging this issue and will try to **resolve it by tomorrow**.
+Previously, we were using the "RRNG" folder name, but now we should use:
+
+"RRNG_NICO"
+
+"RRNG_BHSI"
+
+as the new folder names.
