@@ -1,3 +1,1067 @@
-This is regarding the VNDLY payment file upload to the SFTP location.
+WScript.Echo "Starting BKSTMT_IMPORT.vbs"
 
-Could we have a quick 5-minute call whenever you are available? Please let me know a suitable time.
+Dim db, rs, db2, rs2
+
+sDate = DatePart("yyyy", Now) 
+RPTDATE = sDate
+YYEAR= DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+RPTDATE = RPTDATE & "-" & monthno
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno  
+RPTDATE = RPTDATE & "-" & dayno
+hrs = DatePart("h", Now)
+mns = DatePart("n", Now)
+hrno = ZeroFill(hrs,2)
+minno = ZeroFill(mns,2)
+sDate = sDate & hrno & minno
+
+  '   WScript.Echo "STARTING "  
+
+'Added the logic to read the parameter to get the server and executing environment
+'   IF WScript.Arguments.Count = 0 then
+'       WScript.Echo "Missing parameters"
+'       WScript.Quit
+'   END IF
+'   Execserver = Wscript.Arguments.Item(0)
+  Environment = "TEST"
+'   VersionKey = Wscript.Arguments.Item(2)
+'Added the logic to read the parameter to get the server and executing environment
+'Registry Variable Declaration 
+Dim DBServer
+Dim DBDB
+Dim DBUser
+Dim DBPass
+
+  EASFilePath = "C:\Backup\421634_BAI\HSBC_BAI2\HSBC_BAI2.TXT"
+  LOGFilePath = "C:\Backup\421634_BAI\HSBC_BAI2\" & YYEAR & "\" & YYEAR & monthno & "\BKSTMT_" & sDate & ".LOG"
+  RRNGFilePath = "C:\Backup\421634_BAI\HSBC_BAI2\HSBC_RRNG.TXT"
+  DCFilePath = "C:\Backup\421634_BAI\HSBC_BAI2\POSTED_HSBC_PAYMENTS_" & sDate & ".CSV"
+  OUTFilePath = "C:\Backup\421634_BAI\HSBC_BAI2\OUTSTANDING_HSBC_PAYMENTS_" & sDate & ".CSV"
+
+set objFSO = createobject("Scripting.FileSystemObject")
+set objFSOL = createobject("Scripting.FileSystemObject")
+set objFSOR = createobject("Scripting.FileSystemObject")
+set objFSOD = createobject("Scripting.FileSystemObject")
+set objFSOO = createobject("Scripting.FileSystemObject")
+
+sDate = DatePart("yyyy", Now)  
+mmno = DatePart("m", Now)
+monthno = ZeroFill(mmno,2)
+sDate = sDate & monthno   
+ddno = DatePart("d", Now)
+dayno = ZeroFill(ddno,2)
+sDate = sDate & dayno    
+sDate = sDate & DatePart("h", Now) & DatePart("n", Now)
+
+ 'Start Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+   ' Const ForReading = 1
+   ' Set objFSOReg = CreateObject( "Scripting.FileSystemObject" )
+   ' Set objFileReg = objFSOReg.OpenTextFile( "\\" & Execserver & "\Server\Custom\bin\RegistryDtls.txt", ForReading)
+   ' Set keyValues = CreateObject("Scripting.Dictionary")
+   ' Do Until objFileReg.AtEndOfStream
+   ' line =objFileReg.ReadLine
+   ' parts = Split(line,"=")
+   ' If UBound(parts) = 1 Then
+   '    key = Trim(parts(0))
+   '    value = Trim(parts(1))
+   '    keyValues(key) = value
+   ' End If
+   ' Loop
+   ' objFileReg.Close
+   ' Val=keyValues(VersionKey)
+   ' DBDetails = Split(Val,",")
+   ' If UBound(DBDetails) >= 0 Then
+   '    DBServerVal = DBDetails(0)
+   '    DBDBVal=DBDetails(1)
+   '    DBUserVal=DBDetails(2)
+   '    DBPassVal=DBDetails(3)
+   '    DBServer = ReadReg(DBServerVal)
+   '    DBDB = ReadReg(DBDBVal)
+   '    DBUser = ReadReg(DBUserVal)
+   '    DBPass = ReadReg(DBPassVal)
+   ' Else
+   '    WScript.Echo "No values in the file to match the upgrade version"
+   ' End If
+'End Block - Registry value picked according to the current upgrade version from RegistryDtls text file
+
+'EAS 2022 Q1 Upgrade Changes
+  
+   ' sConnect = "Driver={ODBC Driver 17 for SQL Server};Server="&DBServer&";Database="&DBDB&";Uid="&DBUser&";Pwd="&DBPass&";"
+    sConnect = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=NICOSQL108\BHSIEAS_TEST;UID=SYSTEM;Trusted_Connection=yes;DATABASE=eas;"
+
+
+
+On Error Resume Next
+
+set objLogFile = objFSOL.CreateTextfile(LOGFilePath)
+set objDCFile = objFSOD.CreateTextfile(DCFilePath)
+set objOUTFile = objFSOO.CreateTextfile(OUTFilePath)
+set objRRNGFile = objFSOR.CreateTextfile(RRNGFilePath)
+
+Select Case UCase(Environment)
+	Case "PROD"
+		objLogFile.WriteLine("BANK STATEMENT IMPORT REPORT " & "   RUN ON " & DATE & "  " & TIME)
+		objLogFile.WriteLine("  ")
+		objDCFile.WriteLine("BANK STATEMENT REPORT," & "RUN ON," & DATE & "," & TIME)
+		objDCFile.WriteLine("  ")
+		objDCFile.WriteLine("COMPANY,SOURCE,TRANS DATE,CUST REF,ORIG EAS REF,ORIG TRANDT,BANK REF,FUNCT AMOUNT,ORIG AMOUNT,CURRENCY,PAYEE NAME,POLICY #,CLAIM #")
+		objDCFile.WriteLine("  ")
+		objOUTFile.WriteLine("EAS, OUTSTANDING REPORT," & "RUN ON," & DATE & "," & TIME)
+		objOUTFile.WriteLine("SOURCE,TRAN DATE,EAS REF ID,COMPANY,CHECK NUM,CHECK DATE,FUNCT AMOUNT,ORIG AMOUNT,CURRENCY,POLICY #,CLAIM #,TRAN ID")
+
+	Case "TEST"
+		objLogFile.WriteLine("BANK STATEMENT IMPORT REPORT (TEST) " & "   RUN ON " & DATE & "  " & TIME)
+		objLogFile.WriteLine("  ")
+		objDCFile.WriteLine("BANK STATEMENT REPORT (TEST)," & "RUN ON," & DATE & "," & TIME)
+		objDCFile.WriteLine("  ")
+		objDCFile.WriteLine("COMPANY,SOURCE,TRANS DATE,CUST REF,ORIG EAS REF,ORIG TRANDT,BANK REF,FUNCT AMOUNT,ORIG AMOUNT,CURRENCY,PAYEE NAME,POLICY #,CLAIM #")
+		objDCFile.WriteLine("  ")
+		objOUTFile.WriteLine("EAS (TEST), OUTSTANDING REPORT," & "RUN ON," & DATE & "," & TIME)
+		objOUTFile.WriteLine("SOURCE,TRAN DATE,EAS REF ID,COMPANY,CHECK NUM,CHECK DATE,FUNCT AMOUNT,ORIG AMOUNT,CURRENCY,POLICY #,CLAIM #,TRAN ID")
+		
+	Case "UAT"
+		objLogFile.WriteLine("BANK STATEMENT IMPORT REPORT " & "   RUN ON " & DATE & "  " & TIME)
+		objLogFile.WriteLine("  ")
+		objDCFile.WriteLine("BANK STATEMENT REPORT," & "RUN ON," & DATE & "," & TIME)
+		objDCFile.WriteLine("  ")
+		objDCFile.WriteLine("COMPANY,SOURCE,TRANS DATE,CUST REF,ORIG EAS REF,ORIG TRANDT,BANK REF,FUNCT AMOUNT,ORIG AMOUNT,CURRENCY,PAYEE NAME,POLICY #,CLAIM #")
+		objDCFile.WriteLine("  ")
+		objOUTFile.WriteLine("EAS, OUTSTANDING REPORT," & "RUN ON," & DATE & "," & TIME)
+		objOUTFile.WriteLine("SOURCE,TRAN DATE,EAS REF ID,COMPANY,CHECK NUM,CHECK DATE,FUNCT AMOUNT,ORIG AMOUNT,CURRENCY,POLICY #,CLAIM #,TRAN ID")
+	Case Else
+		WScript.Echo "UNKNOWN SERVER"
+		WScript.Quit
+  End Select
+
+IF objFSO.FileExists(EASFilePath) = FALSE THEN
+   objLogFile.WriteLine("PROCESS TERMINATED DUE TO NO BANK FILE FOUND  ")
+   objLOGFile.Close
+   WScript.quit(0)
+END IF
+
+Set objFile = objFSO.GetFile(EASFilePath)
+
+IF objFile.Size = 0 THEN 
+   objLogFile.WriteLine("PROCESS TERMINATED DUE TO BANK FILE IS EMPTY  ")
+   objLOGFile.Close
+   WScript.quit(0)
+END IF
+
+set objEASFile = objFSO.opentextfile(EASFilePath)
+
+AMT = 0
+PREVCO = " " 
+PREVSRC = " "
+NUMTRANS = 0
+NUMHDR = 0
+DBAMT = 0
+CRAMT = 0
+TOTDBAMT = 0
+TOTCRAMT = 0
+TOTTRANS = 0
+F16REC = 0
+PREVFTYPE = " "
+PREVTCODE = " "
+FIRSTEFF = "Y"
+
+
+do until objEASFile.AtEndOfStream
+        arr = Split(objEASFile.ReadLine, ",")
+        FILETYPE = arr(0)
+ WScript.Echo " FILETYPE Entry Line no 175: " & FILETYPE
+ WScript.Echo " F16REC Entry Line no 175: " & F16REC
+WScript.Echo " F16REC 177: " & F16REC
+     IF FILETYPE = "16" AND F16REC > 0 THEN
+     WScript.Echo " FILETYPE 16: Line no 178: " & FILETYPE
+        IF TYPECODE = "475" OR TYPECODE = "452" OR TYPECODE = "409" OR TYPECODE = "466" OR TYPECODE = "487" OR TYPECODE = "514" OR TYPECODE = "495" OR TYPECODE = "469" THEN
+           DTLSW = "N"
+           TOTAMT = 0
+           TOTORIGAMT = 0
+           Set db = CreateObject("ADODB.Connection")
+           db.CommandTimeout = 0
+           db.Open sConnect 
+           WScript.Echo " CUSTREF: Line no 187: " & CUSTREF
+           sQuery="SELECT COUNT(*) AS DATA_COUNT FROM BSTRN_HEADER " & _
+                  "WHERE REFERENCE_DATA = '" & CUSTREF & "'" 
+           On Error Resume Next
+           Set rs=db.execute(sQuery)
+           rs.MoveFirst  
+           CNTR = formatnumber(rs.Fields("DATA_COUNT"),0,,,0) 
+           rs.Close
+           Set rs = Nothing
+           WScript.Echo " CNTR: Line no 196: " & CNTR
+           IF CNTR = 0 THEN
+            WScript.Echo " TRANNUM: Line no 198: " & TRANNUM
+           sQuery="SELECT A.SOURCE_CODE AS SRCCODE, A.REFERENCE_DATA AS REFDATA, B.COMPANY_CODE AS COCODE, F.ACCOUNT_NUMBER AS CASHACCT, " & _
+                      "CONVERT(CHAR(10),A.EFFECTIVE_DATE,101) AS BHTRANDATE, DEBIT_CREDIT_IND AS DCIND, CAL_ACCTG_PERIOD AS CALPER, B.CONVERTED_AMOUNT AS EASAMT, " & _
+                      "COALESCE(CU.ORIGINAL_AMOUNT,B.CONVERTED_AMOUNT) AS ORIGAMT, COALESCE(CU.OPER_CRNCY_CODE, D.DFLT_FUNCT_CRNCY) AS CURRCODE, " & _
+                      "COALESCE(CU.EXCHG_RATE,1) AS EXCHRATE, " & _
+                      "CONVERT(CHAR(11),A.EFFECTIVE_DATE,106) AS PRTEFFDATE, ACCTG_BASIS_CODE AS BASIS,  E.DFLT_CASH_ACCT AS PAYACCT, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'BILL'),'') AS BILL, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'ACCYR'),'') AS ACCYR, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'ASLOC'),'') AS ASLOC, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'AGENT'),'') AS AGENT, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'BCLAS'),'') AS BCLAS, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'CLASS'),'') AS BUCLASS, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'DEPT'),'') AS DEPT, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'EXPG'),'') AS EXPG, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'FXSRC'),'') AS FXSRC, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'GLCOV'),'') AS GLCOV, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'OTYPE'),'') AS OTYPE, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'POLYR'),'') AS POLYR, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'REINS'),'') AS REINS, " & _
+                      "COALESCE((SELECT RTRIM(LOCATION_CODE) FROM BSTRN_DTL_LOC WHERE TRAN_DETAIL_ID = B.TRAN_DETAIL_ID AND LOCATION_TYPE_CODE = 'POLNO'),'') AS POLNO, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'SEG'),'') AS SEG, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'BLOB'),'') AS BLOB, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'PSLOC'),'') AS PSLOC, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'LSLOC'),'') AS LSLOC, " & _
+                      "COALESCE((SELECT RTRIM(LOCATION_CODE) FROM BSTRN_DTL_LOC WHERE TRAN_DETAIL_ID = B.TRAN_DETAIL_ID AND LOCATION_TYPE_CODE = 'CLMNO'),'') AS CLMNO, " & _
+                      "COALESCE((SELECT RTRIM(LOCATION_CODE) FROM BSTRN_DTL_LOC WHERE TRAN_DETAIL_ID = B.TRAN_DETAIL_ID AND LOCATION_TYPE_CODE = 'CTRCT'),'') AS CTRCT, " & _
+                      "SUBSTRING(REPLACE(C.VENDOR_NAME1,',',''),1,35) AS VNAME " & _
+                 "FROM BSTRN_HEADER A " & _
+                      "INNER JOIN BSTRN_DETAIL B ON A.TRAN_ID = B.TRAN_ID " & _
+                      "INNER JOIN AP_BSTRN_HEADER C ON A.TRAN_ID = C.TRAN_ID " & _
+                      "INNER JOIN COMPANY D ON B.COMPANY_CODE = D.COMPANY_CODE " & _
+                      "INNER JOIN COMPANY_SOURCE E ON B.COMPANY_CODE = E.COMPANY_CODE AND " & _
+                                                     "A.SOURCE_CODE = E.SOURCE_CODE " & _
+                      "INNER JOIN ABC_ACCOUNT F ON B.COMPANY_CODE = F.ABC_COMPANY_CODE AND " & _ 
+                                 "F.ABC_ACCOUNT_NUMBER = 'B2' + RTRIM(E.DFLT_CASH_ACCT) + A.SOURCE_CODE " & _   
+                      "LEFT OUTER JOIN BSTRN_DTL_CRNCY CU ON B.TRAN_DETAIL_ID = CU.TRAN_DETAIL_ID " & _            
+                 "WHERE A.TRAN_ID = " & TRANNUM & _            
+                 "AND A.STATUS_CODE = 'A' " & _            
+                 "AND E.DFLT_CASH_ACCT <> B.ACCOUNT_NUMBER " & _  
+                 "ORDER BY B.ACCOUNT_NUMBER "
+
+
+           Set rs=db.execute(sQuery)
+           On Error Resume Next
+           rs.MoveFirst  
+           Do Until rs.EOF 
+              VNAME =  RTRIM(rs.Fields("VNAME"))
+              BILL =  RTRIM(rs.Fields("BILL"))
+              ACCYR =  RTRIM(rs.Fields("ACCYR"))
+              ASLOC =  RTRIM(rs.Fields("ASLOC"))
+              AGENT =  RTRIM(rs.Fields("AGENT"))
+              BCLAS =  RTRIM(rs.Fields("BCLAS"))
+              BUCLASS =  RTRIM(rs.Fields("BUCLASS"))
+              DEPT =  RTRIM(rs.Fields("DEPT"))
+              EXPG =  RTRIM(rs.Fields("EXPG"))
+              FXSRC =  RTRIM(rs.Fields("FXSRC"))
+              GLCOV =  RTRIM(rs.Fields("GLCOV"))
+              OTYPE =  RTRIM(rs.Fields("OTYPE"))
+              POLYR =  RTRIM(rs.Fields("POLYR"))
+              SEG =  RTRIM(rs.Fields("SEG"))
+              POLNO =  RTRIM(rs.Fields("POLNO"))
+              BLOB =  RTRIM(rs.Fields("BLOB"))
+              REINS =  RTRIM(rs.Fields("REINS"))
+              PSLOC =  RTRIM(rs.Fields("PSLOC"))
+              LSLOC =  RTRIM(rs.Fields("LSLOC"))
+              SRC =  RTRIM(rs.Fields("SRCCODE"))
+              REFDATA =  RTRIM(rs.Fields("REFDATA"))
+              BHTRANDATE =  RTRIM(rs.Fields("BHTRANDATE"))
+              PRTEFFDATE =  RTRIM(rs.Fields("PRTEFFDATE"))
+              CO =  RTRIM(rs.Fields("COCODE"))
+              CURRCODE =  RTRIM(rs.Fields("CURRCODE"))
+              CLMNO =  RTRIM(rs.Fields("CLMNO"))
+              CTRCT =  RTRIM(rs.Fields("CTRCT"))
+              PAYACCT =  RTRIM(rs.Fields("PAYACCT"))
+              CASHACCT =  RTRIM(rs.Fields("CASHACCT"))
+              EASAMT =  FORMATNUMBER(rs.Fields("EASAMT"),2,,,0)
+              TOTAMT = TOTAMT + EASAMT
+              ORIGAMT =  FORMATNUMBER(rs.Fields("ORIGAMT"),2,,,0)
+              EXCHRATE =  FORMATNUMBER(rs.Fields("EXCHRATE"),9,,,0)
+              TOTORIGAMT = TOTORIGAMT + ORIGAMT
+              DB =  RTRIM(rs.Fields("DCIND"))
+              PER =  RTRIM(rs.Fields("CALPER"))
+              PERYR = MID(PER,1,4)
+              PERMO = MID(PER,6,2)
+              BAS =  RTRIM(rs.Fields("BASIS")) 
+              REFNUM = MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL) & "RECL01"
+                 DTLSW = "Y"
+              rs.MoveNext
+           Loop
+           rs.Close
+           Set rs = Nothing
+           db.Close
+           Set db = Nothing
+           DIFFAMT = FORMATNUMBER(AMT - TOTAMT,2,,,0)
+           IF DIFFAMT < 0 THEN
+              DC = "C"
+              DIFFAMT = FORMATNUMBER(DIFFAMT * -1,2,,,0)
+           ELSE
+              DC = "D"
+           END IF
+
+           ' Update the CLASS (variable is BUCLASS) and BCLAS values based upon the Source - added SA 9/21/2022
+           IF SRC = "AP" THEN
+              BUCLASS = "OPEX"
+              BCLAS = "OPEX"
+           END IF
+           IF SRC = "CLM-D" or SRC = "CLM-A" THEN
+              BUCLASS = "CLAIM"
+              BCLAS = "CLAIM"
+           END IF
+
+           IF DTLSW = "Y" THEN
+              RRNGAMT = FORMATNUMBER(TOTAMT,2,,,0)
+              RRNGORIGAMT = FORMATNUMBER(TOTORIGAMT,2,,,0)           
+             
+              objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & PAYACCT & "," & "D" & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & RRNGAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & "," & CURRCODE & "," & EXCHRATE)
+              objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & CASHACCT & "," & "C" & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & AMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & _
+                                    "," & ",")
+
+              IF DIFFAMT <> 0 THEN
+
+                 objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
+                                    "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
+                                    "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
+                                    "," & PSLOC & "," & LSLOC & "," & "," )
+
+                 NUMTRANS = NUMTRANS + 1
+              END IF
+              NUMTRANS = NUMTRANS + 2
+              NUMHDR = NUMHDR + 1
+              BAMT = BLANKFill (AMT, 15)
+              POAMT = FORMATNUMBER(TOTORIGAMT,2,,,0)
+              BORIGAMT = BLANKFill (POAMT, 15)
+              BPOLNO = BLANKFill (POLNO, 15)
+              BCO = BLANKFill (CO, 5)
+              BCURRCODE = BLANKFill (CURRCODE,5)
+              BSRC = BLANKFill (SRC, 5)
+              BCLMNO = BLANKFill (CLMNO, 15)
+              BBKREF = BLANKFill (BKREF, 20)
+              BREFDATA = BLANKFill (REFDATA, 20)
+              BCUSTREF = BLANKFill (CUSTREF, 15)
+              IF MID(EFFDATE,1,2) = "01" THEN 
+                 EFFMON = "JAN" 
+              ELSE  
+              IF MID(EFFDATE,1,2) = "02" THEN 
+                 EFFMON = "FEB" 
+              ELSE  
+              IF MID(EFFDATE,1,2) = "03" THEN 
+                 EFFMON = "MAR"   
+              ELSE   
+              IF MID(EFFDATE,1,2) = "04" THEN 
+                 EFFMON = "APR"   
+              ELSE  
+              IF MID(EFFDATE,1,2) = "05" THEN 
+                 EFFMON = "MAY"
+              ELSE   
+              IF MID(EFFDATE,1,2) = "06" THEN 
+                 EFFMON = "JUN" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "07" THEN 
+                 EFFMON = "JUL" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "08" THEN 
+                 EFFMON = "AUG" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "09" THEN 
+                 EFFMON = "SEP" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "10" THEN 
+                 EFFMON = "OCT" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "11" THEN 
+                 EFFMON = "NOV" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "12" THEN 
+                 EFFMON = "DEC" 
+              ELSE  
+                 EFFMON = "   "
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+         
+              BEFFDATE = MID(EFFDATE,3,2) & " " & EFFMON & " " & MID(EFFDATE,5,4) 
+       
+              objDCFile.WriteLine(CO & "," & SRC & "," & BEFFDATE & "," & CUSTREF & "," & REFDATA & "," & PRTEFFDATE & "," & BKREF & "," & AMT & "," & POAMT & "," & CURRCODE & "," & VNAME & "," & POLNO & "," & CLMNO)     
+      
+           END IF
+           END IF
+           END IF
+         END IF
+
+     IF FILETYPE = "02" THEN
+     WScript.Echo " FILETYPE 02: " & FILETYPE
+        EFFDATE = MID(arr(4),3,2) & MID(arr(4),5,2) & "20" & MID(arr(4),1,2)
+        BKACCT = arr(2)
+        PREVFTYPE = " "
+     ELSE
+     IF FILETYPE = "16" THEN
+     WScript.Echo " FILETYPE 16 line 408: " & FILETYPE
+        TRANNUM = 0
+        TYPECODE = arr(1)
+        IF TYPECODE = "475" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        ELSE
+        IF TYPECODE = "452" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        ELSE
+        IF TYPECODE = "409" THEN
+        WScript.Echo " FILETYPE 16>409>line455: " & FILETYPE
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+   
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        ELSE
+        IF TYPECODE = "466" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        ELSE
+        IF TYPECODE = "487" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        ELSE
+        IF TYPECODE = "514" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        ELSE
+
+        IF TYPECODE = "495" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+		 ELSE
+
+        IF TYPECODE = "469" THEN
+           AMT = FORMATNUMBER(arr(2) / 100,2,,,0)
+           REJSW = arr(3)
+           IF REJSW = "V" THEN
+              CUSTREF = arr(7)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+
+              END IF
+           ELSE
+              CUSTREF = arr(5)
+              TRANDEL = INSTR(CUSTREF,"T")
+              TRANLEN = LEN(CUSTREF)
+              IF TRANDEL = 1 THEN
+                 TRANNUM = FORMATNUMBER(MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL),0,,,0)
+              END IF
+           END IF
+           BKREF = arr(4)
+           TRANSDESC = arr(6)
+        END IF		   
+        END IF
+        END IF
+        END IF
+        END IF
+        END IF
+        END IF
+        END IF
+        PREVFTYPE = FILETYPE
+        F16REC = F16REC + 1
+         WScript.Echo " F16REC >line 602 : " & F16REC
+         
+     ELSE
+
+     IF FILETYPE = "88" THEN
+      WScript.Echo " FILETYPE 88> Line 607: " & FILETYPE
+        IF PREVFTYPE = "16" THEN
+         WScript.Echo " PREVFTYPE >line 609 : " & PREVFTYPE
+           TRANDEL = INSTR(arr(1),"/CREF/T")
+          WScript.Echo " TRANDEL >line 611 : " & TRANDEL
+           TRANLEN = LEN(arr(1))
+               WScript.Echo " TRANLEN >line 613 : " & TRANLEN
+           IF TRANDEL > 0 THEN
+               WScript.Echo " TRANDEL >line 615 : " & TRANDEL
+              TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANLEN - TRANDEL),0,,,0)
+               WScript.Echo " TRANNUM >line 617 : " & TRANNUM
+               CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANLEN - TRANDEL)
+               WScript.Echo " CUSTREF >line 619 : " & CUSTREF
+               CUSTREF = TRIM(CUSTREF)
+              
+         ' Wscript.echo "IF end"
+           ELSE
+         Wscript.echo "ELSE Start"
+              TRANDEL = INSTR(arr(1),"/EREF/T")
+              WScript.Echo " TRANDEL >line 626 : " & TRANDEL
+              TRANLEN = LEN(arr(1))
+              WScript.Echo " TRANLEN >line 628 : " & TRANLEN
+              TRANEND = INSTR(MID(arr(1),TRANDEL + 7,TRANLEN - (TRANDEL + 6)),"/")
+              WScript.Echo " TRANEND >line 630 : " & TRANEND
+              IF TRANEND = 0 THEN
+                  TRANCHR = TRANLEN - (TRANDEL + 6)
+                WScript.Echo " TRANCHR >line 633 : " & TRANCHR 
+              ELSE
+                  TRANCHR = TRANEND - 1
+                   
+              END IF
+              IF TRANDEL > 0 THEN
+         
+                 TRANNUM = FORMATNUMBER(MID(arr(1),TRANDEL + 7,TRANCHR),0,,,0)
+
+  
+                
+                 CUSTREF = "T" & MID(arr(1),TRANDEL + 7,TRANCHR)
+            
+                 CUSTREF = TRIM(CUSTREF)
+      
+              ELSE
+                  TRANSDESC = TRANSDESC & " " & TRIM(arr(1))
+                    WScript.Echo " TRANSDESC >line 646 : " & TRANSDESC
+              END IF
+           END IF
+        END IF
+     ELSE
+        PREVFTYPE = " "
+     END IF
+     END IF
+     END IF
+
+    
+loop
+
+     IF F16REC > 0 THEN
+        WScript.Echo " F16REC >line 660 : " & F16REC
+        IF TYPECODE = "475" OR TYPECODE = "452" OR TYPECODE = "409" OR TYPECODE = "466" OR TYPECODE = "487" OR TYPECODE = "514" OR TYPECODE = "495" OR TYPECODE = "469" THEN
+   '        objLogFile.WriteLine("insert TRANNUM =  " & TRANNUM)
+           DTLSW = "N"
+           TOTAMT = 0
+           TOTORIGAMT = 0
+           Set db = CreateObject("ADODB.Connection")
+           db.CommandTimeout = 0
+           db.Open sConnect 
+           sQuery="SELECT COUNT(*) AS DATA_COUNT FROM BSTRN_HEADER " & _
+                  "WHERE REFERENCE_DATA = '" & CUSTREF & "'" 
+           On Error Resume Next
+           Set rs=db.execute(sQuery)
+           rs.MoveFirst  
+           CNTR = formatnumber(rs.Fields("DATA_COUNT"),0,,,0) 
+           rs.Close
+           Set rs = Nothing
+           IF CNTR = 0 THEN
+           sQuery="SELECT A.SOURCE_CODE AS SRCCODE, A.REFERENCE_DATA AS REFDATA, B.COMPANY_CODE AS COCODE, F.ACCOUNT_NUMBER AS CASHACCT, " & _
+                      "CONVERT(CHAR(10),A.EFFECTIVE_DATE,101) AS BHTRANDATE, DEBIT_CREDIT_IND AS DCIND, CAL_ACCTG_PERIOD AS CALPER, B.CONVERTED_AMOUNT AS EASAMT, " & _
+                      "COALESCE(CU.ORIGINAL_AMOUNT,B.CONVERTED_AMOUNT) AS ORIGAMT, COALESCE(CU.OPER_CRNCY_CODE, D.DFLT_FUNCT_CRNCY) AS CURRCODE, " & _
+                      "COALESCE(CU.EXCHG_RATE,1) AS EXCHRATE, " & _
+                      "CONVERT(CHAR(11),A.EFFECTIVE_DATE,106) AS PRTEFFDATE, ACCTG_BASIS_CODE AS BASIS,  E.DFLT_CASH_ACCT AS PAYACCT, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'BILL'),'') AS BILL, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'ACCYR'),'') AS ACCYR, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'ASLOC'),'') AS ASLOC, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'AGENT'),'') AS AGENT, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'BCLAS'),'') AS BCLAS, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'CLASS'),'') AS BUCLASS, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'DEPT'),'') AS DEPT, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'EXPG'),'') AS EXPG, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'FXSRC'),'') AS FXSRC, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'GLCOV'),'') AS GLCOV, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'OTYPE'),'') AS OTYPE, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'POLYR'),'') AS POLYR, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'REINS'),'') AS REINS, " & _
+                      "COALESCE((SELECT RTRIM(LOCATION_CODE) FROM BSTRN_DTL_LOC WHERE TRAN_DETAIL_ID = B.TRAN_DETAIL_ID AND LOCATION_TYPE_CODE = 'POLNO'),'') AS POLNO, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'SEG'),'') AS SEG, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'BLOB'),'') AS BLOB, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'PSLOC'),'') AS PSLOC, " & _
+                      "COALESCE((SELECT RTRIM(BU_CODE) FROM BU_SET_DETAILS WHERE BU_SET_ID = B.BU_SET_ID AND BU_TYPE = 'LSLOC'),'') AS LSLOC, " & _
+                      "COALESCE((SELECT RTRIM(LOCATION_CODE) FROM BSTRN_DTL_LOC WHERE TRAN_DETAIL_ID = B.TRAN_DETAIL_ID AND LOCATION_TYPE_CODE = 'CLMNO'),'') AS CLMNO, " & _
+                      "COALESCE((SELECT RTRIM(LOCATION_CODE) FROM BSTRN_DTL_LOC WHERE TRAN_DETAIL_ID = B.TRAN_DETAIL_ID AND LOCATION_TYPE_CODE = 'CTRCT'),'') AS CTRCT, " & _
+                      "SUBSTRING(REPLACE(C.VENDOR_NAME1,',',''),1,35) AS VNAME " & _
+                 "FROM BSTRN_HEADER A " & _
+                      "INNER JOIN BSTRN_DETAIL B ON A.TRAN_ID = B.TRAN_ID " & _
+                      "INNER JOIN AP_BSTRN_HEADER C ON A.TRAN_ID = C.TRAN_ID " & _
+                      "INNER JOIN COMPANY D ON B.COMPANY_CODE = D.COMPANY_CODE " & _
+                      "INNER JOIN COMPANY_SOURCE E ON B.COMPANY_CODE = E.COMPANY_CODE AND " & _
+                                                     "A.SOURCE_CODE = E.SOURCE_CODE " & _
+                      "INNER JOIN ABC_ACCOUNT F ON B.COMPANY_CODE = F.ABC_COMPANY_CODE AND " & _ 
+                                 "F.ABC_ACCOUNT_NUMBER = 'B2' + RTRIM(E.DFLT_CASH_ACCT) + A.SOURCE_CODE " & _   
+                      "LEFT OUTER JOIN BSTRN_DTL_CRNCY CU ON B.TRAN_DETAIL_ID = CU.TRAN_DETAIL_ID " & _            
+                 "WHERE A.TRAN_ID = " & TRANNUM & _            
+                 "AND A.STATUS_CODE = 'A' " & _            
+                 "AND E.DFLT_CASH_ACCT <> B.ACCOUNT_NUMBER " & _  
+                 "ORDER BY B.ACCOUNT_NUMBER "
+           Set rs=db.execute(sQuery)
+           On Error Resume Next
+           rs.MoveFirst  
+           Do Until rs.EOF 
+              VNAME =  RTRIM(rs.Fields("VNAME"))
+              BILL =  RTRIM(rs.Fields("BILL"))
+              ACCYR =  RTRIM(rs.Fields("ACCYR"))
+              ASLOC =  RTRIM(rs.Fields("ASLOC"))
+              AGENT =  RTRIM(rs.Fields("AGENT"))
+              BCLAS =  RTRIM(rs.Fields("BCLAS"))
+              BUCLASS =  RTRIM(rs.Fields("BUCLASS"))
+              DEPT =  RTRIM(rs.Fields("DEPT"))
+              EXPG =  RTRIM(rs.Fields("EXPG"))
+              FXSRC =  RTRIM(rs.Fields("FXSRC"))
+              GLCOV =  RTRIM(rs.Fields("GLCOV"))
+              OTYPE =  RTRIM(rs.Fields("OTYPE"))
+              POLYR =  RTRIM(rs.Fields("POLYR"))
+              SEG =  RTRIM(rs.Fields("SEG"))
+              POLNO =  RTRIM(rs.Fields("POLNO"))
+              BLOB =  RTRIM(rs.Fields("BLOB"))
+              REINS =  RTRIM(rs.Fields("REINS"))
+              PSLOC =  RTRIM(rs.Fields("PSLOC"))
+              LSLOC =  RTRIM(rs.Fields("LSLOC"))
+              SRC =  RTRIM(rs.Fields("SRCCODE"))
+              REFDATA =  RTRIM(rs.Fields("REFDATA"))
+              BHTRANDATE =  RTRIM(rs.Fields("BHTRANDATE"))
+              PRTEFFDATE =  RTRIM(rs.Fields("PRTEFFDATE"))
+              CO =  RTRIM(rs.Fields("COCODE"))
+              CURRCODE =  RTRIM(rs.Fields("CURRCODE"))
+              CLMNO =  RTRIM(rs.Fields("CLMNO"))
+              CTRCT =  RTRIM(rs.Fields("CTRCT"))
+              PAYACCT =  RTRIM(rs.Fields("PAYACCT"))
+              CASHACCT =  RTRIM(rs.Fields("CASHACCT"))
+              EASAMT =  FORMATNUMBER(rs.Fields("EASAMT"),2,,,0)
+              TOTAMT = TOTAMT + EASAMT
+              ORIGAMT =  FORMATNUMBER(rs.Fields("ORIGAMT"),2,,,0)
+              TOTORIGAMT = TOTORIGAMT + ORIGAMT
+              EXCHRATE = FORMATNUMBER(rs.Fields("EXCHRATE"),9,,,0)
+              DB =  RTRIM(rs.Fields("DCIND"))
+              PER =  RTRIM(rs.Fields("CALPER"))
+              PERYR = MID(PER,1,4)
+              PERMO = MID(PER,6,2)
+              BAS =  RTRIM(rs.Fields("BASIS")) 
+              REFNUM = MID(CUSTREF,TRANDEL + 1,TRANLEN - TRANDEL) & "RECL01"
+                 DTLSW = "Y"
+              rs.MoveNext
+           Loop
+           rs.Close
+           Set rs = Nothing
+           db.Close
+           Set db = Nothing
+           DIFFAMT = FORMATNUMBER(AMT - TOTAMT,2,,,0)
+           IF DIFFAMT < 0 THEN
+              DC = "C"
+              DIFFAMT = FORMATNUMBER(DIFFAMT * -1,2,,,0)
+           ELSE
+              DC = "D"
+           END IF
+
+           ' Update the CLASS (variable is BUCLASS) and BCLAS values based upon the Source - added SA 9/21/2022
+           IF SRC = "AP" THEN
+              BUCLASS = "OPEX"
+              BCLAS = "OPEX"
+           END IF
+           IF SRC = "CLM-D" or SRC = "CLM-A" THEN
+              BUCLASS = "CLAIM"
+              BCLAS = "CLAIM"
+           END IF
+
+
+           IF DTLSW = "Y" THEN
+              RRNGAMT = FORMATNUMBER(TOTAMT,2,,,0)
+              RRNGORIGAMT = FORMATNUMBER(TOTORIGAMT,2,,,0)           
+             ' objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & PAYACCT & "," & "D" & "," & YYEAR & "," & monthno & "," & BAS & _
+             '                       "," & RRNGAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & "," & _
+             '                       "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & _
+             '                       "," & "," & "," & "," & "," & "," & "," & "," & RRNGORIGAMT & "," & CURRCODE & "," & EXCHRATE)
+             ' objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & CASHACCT & "," & "C" & "," & YYEAR & "," & monthno & "," & BAS & _
+             '                       "," & AMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & "," & _
+             '                       "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & _
+             '                       "," & "," & "," & "," & "," & "," & "," & "," & _
+             '                       "," & ",")
+
+              objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & PAYACCT & "," & "D" & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & RRNGAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & "," & CURRCODE & "," & EXCHRATE)
+
+              objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & CASHACCT & "," & "C" & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & AMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & "," & _
+                                    "," & "," & "," & "," & "," & "," & "," & "," & _
+                                    "," & ",")
+
+              IF DIFFAMT <> 0 THEN
+               '  objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & YYEAR & "," & monthno & "," & BAS & _
+               '                     "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
+               '                     "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
+               '                     "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
+               '                     "," & PSLOC & "," & LSLOC & "," & "," )
+
+                 objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
+                                    "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
+                                    "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
+                                    "," & PSLOC & "," & LSLOC & "," & "," )
+                 NUMTRANS = NUMTRANS + 1
+              END IF
+              NUMTRANS = NUMTRANS + 2
+              NUMHDR = NUMHDR + 1
+              BAMT = BLANKFill (AMT, 15)
+              POAMT = FORMATNUMBER(TOTORIGAMT,2,,,0)
+              BORIGAMT = BLANKFill (POAMT, 15)
+              BPOLNO = BLANKFill (POLNO, 15)
+              BCO = BLANKFill (CO, 5)
+              BCURRCODE = BLANKFill (CURRCODE,5)
+              BSRC = BLANKFill (SRC, 5)
+              BCLMNO = BLANKFill (CLMNO, 15)
+              BBKREF = BLANKFill (BKREF, 20)
+              BREFDATA = BLANKFill (REFDATA, 20)
+              BCUSTREF = BLANKFill (CUSTREF, 15)
+              IF MID(EFFDATE,1,2) = "01" THEN 
+                 EFFMON = "JAN" 
+              ELSE  
+              IF MID(EFFDATE,1,2) = "02" THEN 
+                 EFFMON = "FEB" 
+              ELSE  
+              IF MID(EFFDATE,1,2) = "03" THEN 
+                 EFFMON = "MAR"   
+              ELSE   
+              IF MID(EFFDATE,1,2) = "04" THEN 
+                 EFFMON = "APR"   
+              ELSE  
+              IF MID(EFFDATE,1,2) = "05" THEN 
+                 EFFMON = "MAY"
+              ELSE   
+              IF MID(EFFDATE,1,2) = "06" THEN 
+                 EFFMON = "JUN" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "07" THEN 
+                 EFFMON = "JUL" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "08" THEN 
+                 EFFMON = "AUG" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "09" THEN 
+                 EFFMON = "SEP" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "10" THEN 
+                 EFFMON = "OCT" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "11" THEN 
+                 EFFMON = "NOV" 
+              ELSE   
+              IF MID(EFFDATE,1,2) = "12" THEN 
+                 EFFMON = "DEC" 
+              ELSE  
+                 EFFMON = "   "
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+              END IF
+         '     BEFFDATE = MID(EFFDATE,1,2) & "/" & MID(EFFDATE,3,2) & "/" & MID(EFFDATE,5,4) 
+              BEFFDATE = MID(EFFDATE,3,2) & " " & EFFMON & " " & MID(EFFDATE,5,4) 
+         '     objDCFile.WriteLine(BCO & "    " & BSRC & "    " & BEFFDATE & " " & BCUSTREF & "   " & BREFDATA & "  " & PRTEFFDATE & "  " & BBKREF & "   " & BAMT & "   " & BORIGAMT & BCURRCODE & "    " & VNAME & "    " & BPOLNO & " " & BCLMNO) 
+              objDCFile.WriteLine(CO & "," & SRC & "," & BEFFDATE & "," & CUSTREF & "," & REFDATA & "," & PRTEFFDATE & "," & BKREF & "," & AMT & "," & POAMT & "," & CURRCODE & "," & VNAME & "," & POLNO & "," & CLMNO)     
+      '         Set db = CreateObject("ADODB.Connection")
+      '         db.CommandTimeout = 0
+      '         db.Open sConnect 
+      '         sQuery="INSERT INTO XPORT_AP_CONTROL (XPORT_AP_ID, EXPORT_PROCESS, EXPORT_DATETIME) " & _
+      '                "SELECT B.XPORT_AP_ID, 'BAI2',GETDATE() FROM AP_BSTRN_HEADER A, XPORT_AP_TRIGGER B " & _           
+      '                 "WHERE A.TRAN_ID = " & TRANNUM & _            
+      '                   " AND A.COMPANY_CODE = B.COMPANY_CODE " & _
+      '                   "AND A.BANK = B.BANK " & _
+      '                   "AND A.BANK_ACCOUNT = B.BANK_ACCOUNT " & _
+      '                   "AND ((B.CHECK_NUMBER = A.CHECK_NUMBER AND A.PAYMENT_MODE = 'C') " & _
+      '                   "OR (B.CHECK_NUMBER = A.EFT_ADVICE_NUM AND A.PAYMENT_MODE IN ('W','E'))) " 
+      '   '     objLOGFile.WriteLine("sQuery " & sQuery)
+      '         On Error Resume Next
+      '   	db.execute sQuery
+        '      Set rs=db.execute(sQuery)
+               If Err.number <> 0 Then
+                  objLOGFile.WriteLine("INSERT sQuery: " & sQuery)
+                  objLOGFile.WriteLine("ERROR ON UPDATE: " & Err.Description & " " & Err.Source & " " & CStr(Err.Number)) 
+               END IF  
+              On Error Resume Next
+         '     rs.Close
+         '     Set rs = Nothing
+           END IF
+           END IF
+         END IF
+         END IF
+
+
+      objLogFile.WriteLine("  ")
+      objLogFile.WriteLine("NUMBER OF TRANSACTIONS WRITTEN = " & NUMHDR)
+      objLogFile.WriteLine("NUMBER OF DETAILS WRITTEN      = " & NUMTRANS)
+      objLogFile.WriteLine("  ")
+
+BSRC = "  " 
+EFFDATE = " " 
+BREFDATA = "  " 
+BCOCODE = "  " 
+BCKNUM = "   " 
+CKDATE = " " 
+BAMT = 0 
+BORIGAMT = 0 
+BCURRCODE = "  " 
+'BCTRCT = "  " 
+BPOLNO = "  "
+BCLMNO = "  " 
+TRANID = 0 
+
+           Set db = CreateObject("ADODB.Connection")
+           db.CommandTimeout = 0
+           db.Open sConnect 
+
+           sQuery="SELECT COALESCE(Z.LOCATION_CODE,'               ' ) AS POLNO, COALESCE(Y.LOCATION_CODE,'               ' ) AS CLMNO, " & _
+                  "A.COMPANY_CODE AS COCODE, C.SOURCE_CODE AS SRC,A.CHECK_NUMBER AS CKNUM, CONVERT(CHAR(11),B.CHECK_DATE,106) AS CKDATE, " & _
+                  "COALESCE(CU.ORIGINAL_AMOUNT,D.CONVERTED_AMOUNT) AS ORIGAMT, COALESCE(CU.OPER_CRNCY_CODE, F.DFLT_FUNCT_CRNCY) AS CURRCODE, " & _
+                  "B.CHECK_AMT AS CKAMT, CONVERT(CHAR(11),C.EFFECTIVE_DATE,106) AS EFFDATE, C.REFERENCE_DATA AS REFDATA, D.TRAN_ID AS TRANID " & _
+                  "FROM XPORT_AP_TRIGGER A " & _
+                  "INNER JOIN AP_BSTRN_HEADER B ON A.BANK = B.BANK AND A.BANK_ACCOUNT = B.BANK_ACCOUNT AND A.COMPANY_CODE = B.COMPANY_CODE AND A.CHECK_RECON_STATUS = B.CHECK_RECON_STATUS " & _
+                  "INNER JOIN BSTRN_HEADER C ON C.TRAN_ID = B.TRAN_ID " & _
+                  "INNER JOIN BSTRN_DETAIL D ON D.TRAN_ID = B.TRAN_ID " & _
+                  "LEFT OUTER JOIN BSTRN_DTL_LOC Y ON D.TRAN_DETAIL_ID = Y.TRAN_DETAIL_ID AND Y.LOCATION_TYPE_CODE = 'CLMNO' " & _
+                  "LEFT OUTER JOIN BSTRN_DTL_LOC Z ON D.TRAN_DETAIL_ID = Z.TRAN_DETAIL_ID AND Z.LOCATION_TYPE_CODE = 'POLNO' " & _  
+                  "LEFT OUTER JOIN BSTRN_DTL_CRNCY CU ON D.TRAN_DETAIL_ID = CU.TRAN_DETAIL_ID " & _  
+                  "INNER JOIN COMPANY F ON F.COMPANY_CODE = A.COMPANY_CODE " & _  
+                  "INNER JOIN COMPANY_SOURCE E ON D.COMPANY_CODE = E.COMPANY_CODE AND " & _
+                                                 "C.SOURCE_CODE = E.SOURCE_CODE " & _                                                                                          
+                  "WHERE A.CHECK_RECON_STATUS NOT IN ('V','S','U') " & _
+                  "AND ((A.CHECK_NUMBER = B.CHECK_NUMBER AND B.PAYMENT_MODE = 'C' AND A.CHECK_RECON_STATUS = 'O') " & _
+                  "OR (A.CHECK_NUMBER = B.EFT_ADVICE_NUM AND B.PAYMENT_MODE IN ('W','E'))) " & _
+                  "AND E.DFLT_CASH_ACCT <> D.ACCOUNT_NUMBER " & _
+                  "AND NOT EXISTS " & _
+                  "( SELECT * FROM XPORT_AP_CONTROL D " & _
+                  "WHERE D.XPORT_AP_ID    = A.XPORT_AP_ID " & _
+                  "AND D.EXPORT_PROCESS = 'BAI2')  " & _
+                  "ORDER BY C.SOURCE_CODE, B.CHECK_DATE, B.CHECK_NUMBER, C.REFERENCE_DATA, D.TRAN_DETAIL_ID " 
+           CKREF = "XXXX"
+           TOTORIGAMT = 0
+           Set rs=db.execute(sQuery)
+           On Error Resume Next
+           rs.MoveFirst  
+           Do Until rs.EOF 
+              COCODE =  RTRIM(rs.Fields("COCODE"))
+              SRC =  RTRIM(rs.Fields("SRC"))
+              CKNUM =  RTRIM(rs.Fields("CKNUM"))
+              CKDATE =  RTRIM(rs.Fields("CKDATE"))
+              EFFDATE =  RTRIM(rs.Fields("EFFDATE"))
+              REFDATA =  RTRIM(rs.Fields("REFDATA"))
+              CLMNO =  RTRIM(rs.Fields("CLMNO"))
+              POLNO = RTRIM(rs.Fields("POLNO"))
+              'CTRCT =  RTRIM(rs.Fields("CTRCT"))
+              CURRCODE =  RTRIM(rs.Fields("CURRCODE"))
+              CKAMT =  FORMATNUMBER(rs.Fields("CKAMT"),2,,,0)
+              ORIGAMT =  FORMATNUMBER(rs.Fields("ORIGAMT"),2,,,0)
+              TRANID =  FORMATNUMBER(rs.Fields("TRANID"),0,,,0)
+              IF CKREF = "XXXX" THEN
+                 CKREF = CKNUM & REFDATA
+              END IF
+
+              IF CKREF <> CKNUM & REFDATA THEN
+                 BORIGAMT = BLANKFill (FORMATNUMBER(TOTORIGAMT,2,,,0), 15) 
+             '    objOUTFile.WriteLine("  " & BSRC & "  " & BEFFDATE & " " & BREFDATA & "  " & BCOCODE & "  " & BCKNUM & "   " & BCKDATE & " " & BAMT & " " & BORIGAMT & BCURRCODE & "  " & BCTRCT & "  " & BCLMNO & "  " & BTRANID) 
+                 objOUTFile.WriteLine("  " & BSRC & "," & BEFFDATE & ",""" & BREFDATA & """," & BCOCODE & "," & BCKNUM & "," & BCKDATE & "," & BAMT & "," & BORIGAMT & "," & BCURRCODE & ","  & BPOLNO & "," & BCLMNO & "," & BTRANID)  
+                 TOTORIGAMT = 0
+              END IF
+
+                 BCOCODE = BLANKFill (COCODE, 5)
+                 BSRC = BLANKFill (SRC, 5)
+                 BEFFDATE = EFFDATE
+                 BCKDATE = CKDATE
+                 BCKNUM = BLANKFill (CKNUM, 11)
+                 BCLMNO = BLANKFill (CLMNO, 15)
+                 'BCTRCT = BLANKFill (CTRCT, 15)
+                 BPOLNO = BLANKFill (POLNO, 15)
+                 BCURRCODE = BLANKFill (CURRCODE, 5)
+                 BREFDATA = BLANKFill (REFDATA, 20)
+                 BAMT = BLANKFill (CKAMT, 15)
+                 BTRANID = TRANID
+              TOTORIGAMT = TOTORIGAMT + ORIGAMT
+              CKREF = CKNUM & REFDATA
+              rs.MoveNext
+           Loop
+
+               '  BORIGAMT = BLANKFill (TOTORIGAMT, 15)
+                 BORIGAMT = BLANKFill (FORMATNUMBER(TOTORIGAMT,2,,,0), 15)
+             '    objOUTFile.WriteLine("  " & BSRC & "  " & BEFFDATE & " " & BREFDATA & "  " & BCOCODE & "  " & BCKNUM & "   " & BCKDATE & " " & BAMT & " " & BORIGAMT & BCURRCODE & "  " & BCTRCT & "  " & BCLMNO & "  " & BTRANID) 
+                 objOUTFile.WriteLine("  " & BSRC & "," & BEFFDATE & ",""" & BREFDATA & """," & BCOCODE & "," & BCKNUM & "," & BCKDATE & "," & BAMT & "," & BORIGAMT & "," & BCURRCODE & ","  & BPOLNO & "," & BCLMNO & "," & BTRANID)
+                 
+
+           rs.Close
+           Set rs = Nothing
+           db.Close
+           Set db = Nothing
+
+      objLogFile.WriteLine("  ")
+      objLogFile.WriteLine("BANK STATEMENT IMPORT PROCESS ENDED SUCCESSFULLY  " & DATE & "  " & TIME)
+      objLogFile.WriteLine("  ")
+
+objEASFile.Close
+objLOGFile.Close
+objDCFile.Close
+objOUTFile.Close
+objRRNGFile.Close
+
+WScript.Echo "Finished BKSTMT_IMPORT.vbs"
+
+
+WScript.quit(0)
+
+
+Function ReadReg(RegPath)
+     Dim objRegistry, Key
+     Set objRegistry = CreateObject("Wscript.shell")
+     Key = objRegistry.RegRead(RegPath)
+     ReadReg = Key
+End Function
+
+
+Function ZeroFill (ByVal String, ByVal length )
+     ZeroFill = Trim(String)
+     Do While Len(ZeroFill) < length
+         ZeroFill = "0" & ZeroFill
+     Loop
+End Function
+
+Function BLANKFill (ByVal String, ByVal length )
+     BLANKFill = Trim(String)
+     Do While Len(BLANKFill) < length
+         BLANKFill = " " & BLANKFill
+     Loop
+End Function
+
+
+
+
