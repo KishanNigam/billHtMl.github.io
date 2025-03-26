@@ -1,6 +1,6 @@
-We have debugged the issue regarding why the CKCLEAR.dat file was not deleted or moved after import.
+The **"Canceled Clear Job"** is **not passing the variable** to the **global job**, which caused the job to **not trigger** when **Kathy and the team** placed the file in the **source location**.  
 
-The analysis has been shared in a separate email with the subject line:
-"DEBUG the issue"
+We have shared a **detailed analysis** in a **separate email** with the subject line:  
+**"Debug Cancel Check"**  
 
-Please refer to that email for details.
+Additionally, **Aarohi** has asked us to **debug and resolve this issue in the lower environment**, for which **US 23243** has been created in **DevOps**.
