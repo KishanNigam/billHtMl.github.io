@@ -1,3 +1,16 @@
-This work was **assigned by Aarohi**, and I have shared a **detailed email** with the team.  
+Under **US-1232**, Aarohi has assigned the task to load the attached file into the **EAS Test environment**.  
 
-Kindly check the email for further details.
+I have worked on the following points:  
+
+1. **Understanding the US** – I analyzed the requirement and identified that the given file falls under the **Multicheck Upload SS job**.  
+2. **File Processing in Test Environment**  
+   - Renamed the file as per the source naming convention and placed it in the source location.  
+   - Ran the job, but **RRNG execution did not trigger** in the BAT file, and the data was not loaded.  
+   - Upon analysis, I found that the **Test job configuration has changed**, including some variables.  
+   - I attempted to **fix the job**, but some issues persist.  
+   - **Is anyone currently working on the Multicheck Upload SS job?**  
+3. **Attempt to Load File in UAT Environment**  
+   - Since the job did not work in the Test environment, I tried loading the file in **UAT**, but it **threw an error during the loading process**.  
+   - **@Mala, please check the file and try to load it.**  
+
+**Note:** The file **must** be loaded in the **Test environment** itself.
