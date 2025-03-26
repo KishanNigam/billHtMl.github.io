@@ -1,8 +1,6 @@
-We have created a new job to upload the VNDLY export file to the SFTP location.
+We have debugged the issue regarding why the CKCLEAR.dat file was not deleted or moved after import.
 
-Could you please check as per the details below and confirm whether the file has been successfully uploaded?
+The analysis has been shared in a separate email with the subject line:
+"DEBUG the issue"
 
-Looking forward to your confirmation.
-
-
-As Brian mentioned in the request, the password has now become public. Therefore, we need to ask the bank to update the password again and ensure that it is shared privately with Brian.
+Please refer to that email for details.
