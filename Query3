@@ -1,6 +1,3 @@
-The **"Canceled Clear Job"** is **not passing the variable** to the **global job**, which caused the job to **not trigger** when **Kathy and the team** placed the file in the **source location**.  
+The **Salesforce Cleared Check** file for **06/02/2025** was **not loaded correctly**.  
 
-We have shared a **detailed analysis** in a **separate email** with the subject line:  
-**"Debug Cancel Check"**  
-
-Additionally, **Aarohi** has asked us to **debug and resolve this issue in the lower environment**, for which **US 23243** has been created in **DevOps**.
+After **Aayushi's discussion with Sheery**, I reloaded the file using the **VC job** to resolve the issue.
