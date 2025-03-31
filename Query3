@@ -1,1 +1,24 @@
-We reached out to Brian, scheduled a call, and also sent an email, but we haven’t received any response from him yet.
+I had a discussion with Aarohi regarding the solution for splitting TCodes in BAI2. During the discussion, I performed a dry run of the code and demonstrated that even if the TCode is split, the implemented logic can still handle the issue. Aarohi agreed with the solution.  
+
+### **Conclusion from the Discussion:**  
+Currently, we have three issues that need to be addressed in phases:  
+
+#### **Issue 1: TCode Missing in BAI2 File** (Phase 1)  
+- Currently, when a TCode is missing in the BAI2 file for a transaction, the client reaches out and provides details about the missing TCode and the failed BAI2 load.  
+- To handle this, we manually create the BAI2 file.  
+- **Proposed Solution:** During BAI2 file loading, we will check whether all transactions have a TCode. If any TCode is missing, an error will be generated, logged, and a notification will be sent.  
+
+#### **Issue 2: TCode Split into Two Lines** (Phase 2)  
+- This issue has already been addressed through logic.  
+- However, Aarohi suggested conducting more in-depth testing to validate the fix.  
+
+#### **Issue 3: 'T' Missing in TCode** (Phase 3)  
+- Sometimes, only the letter "T" is missing in the TCode within the BAI2 file.  
+- Due to this, the BAI2 file loads successfully, but the posted payment file contains incorrect data.  
+- **Proposed Solution:** We will check the first letter of the TCode for every transaction. If "T" is missing, it will be added automatically.  
+
+All these issues and their resolution phases were decided by Aarohi. Our task is to implement these solutions and provide a walkthrough in a single consolidated file.  
+
+### **Next Steps:**  
+- I will start working on **Phase 1** from the next working day.  
+- Additional efforts will be required to address all phases, and I have provided an estimated time for completion below.
