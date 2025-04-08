@@ -1,1 +1,5 @@
-' Extract HSBCREF from /CREF/ if present in TRANSDEL, else use TCODE as fallback.
+I have worked on the code logic and implemented the changes based on the CIA requirements. I have also completed the unit testing for the same.
+
+The technical analysis and updated code have been uploaded to DevOps.
+
+After conducting a few more tests, I will attach the Unit Testing document by tomorrow.
