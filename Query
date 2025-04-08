@@ -1,10 +1,29 @@
-**Subject:** Assistance with Office Insurance Policies  
+Describe the Change Being Requested:
 
-Hi AJ,  
+Request here to modify the BKSTMT_IMPORT.VBS in order to incorporate new field named “HSBC Reference” in Posted Payment report
+1. Application Introduction: 
+As a central data repository for financial information, EAS Application is the source for accounting, reconciliation, budget information, allocations, and accounts payable.
 
-I need a favor. I had sent an email to the office insurance company (Contact: Dipa) and also followed up, but I haven’t received any response from them.  
+2. Current process: -
 
-Could you help me understand the insurance policies and usage rules?  
+We are currently receiving the CREF (HSBC reference) in the BAI2 file for payment type EFT only. However, for check and Wires payment there is no CREF number, which is subsequently loaded into the Transaction Description field of the Journal Entry. Below are the screenshots for the JE, BAI2 file, and the HSBC rearrange, where the HSBC reference is printed in the rearrange file.
 
-Thanks,  
-[Your Name]
+ 
+
+
+
+ 
+
+
+ 
+
+3. Proposed change:
+Request here to modify the BKSTMT_IMPORT.VBS in order to incorporate new field named “HSBC Reference” in Posted Payment report. 
+
+Code should work in such a way if any of Payment Type CREF is there in the transaction description then it will bring number after CREF in HSBC reference column otherwise we need to put TCode for that transaction.
+The requirements for HSBC reference are listed below
+      If CREF is present, the HSBC reference must be included otherwise Tcode
+Note: Number after CREF in BAI file will be HSBC reference number and it should be between the two separator “/”
+Financehelp L1: In case team is preparing the manual BAI file for any transaction we need to insure we will add 88 line item with correct CREF and number so that it will also reflect in the Posted payment report.
+4. Expected output:
+Request here to modify the BKSTMT_IMPORT.VBS in order to incorporate new field named “HSBC Reference” in Posted Payment report
