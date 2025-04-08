@@ -1,29 +1,37 @@
-Describe the Change Being Requested:
+Sure! Here's the **technical analysis in bullet points** for the CIA request regarding the `BKSTMT_IMPORT.VBS` script:
 
-Request here to modify the BKSTMT_IMPORT.VBS in order to incorporate new field named “HSBC Reference” in Posted Payment report
-1. Application Introduction: 
-As a central data repository for financial information, EAS Application is the source for accounting, reconciliation, budget information, allocations, and accounts payable.
+---
 
-2. Current process: -
+### 🔧 **Technical Analysis – HSBC Reference Implementation**
 
-We are currently receiving the CREF (HSBC reference) in the BAI2 file for payment type EFT only. However, for check and Wires payment there is no CREF number, which is subsequently loaded into the Transaction Description field of the Journal Entry. Below are the screenshots for the JE, BAI2 file, and the HSBC rearrange, where the HSBC reference is printed in the rearrange file.
+- The `BKSTMT_IMPORT.VBS` script needs to be enhanced to extract a new field: **“HSBC Reference”** in the Posted Payment report.
 
- 
+- The **source of the HSBC reference** is the `Transaction Description` (variable: `TRANSDEL`) in the BAI2 file, specifically found after the `/CREF/` keyword.
 
+- The logic will:
+  - Check if `/CREF/` exists in `TRANSDEL` using `InStr()`.
+  - If found, split the string and extract the value **immediately after `/CREF/`** up to the next `/`.
+  - Store this extracted value in a new variable: `HSBCREF`.
 
+- If `/CREF/` is **not found**, the fallback logic will assign the value of `TCODE` to `HSBCREF`.
 
- 
+- This ensures that all transaction records—regardless of payment type (EFT, CHECK, WIRE)—have a valid `HSBC Reference` value in the report.
 
+- Manual BAI files must include a properly formatted `/CREF/` line (`88` line) to ensure consistency and correct population of HSBC Reference.
 
- 
+- The logic is simple, efficient, and avoids errors due to missing or malformed `/CREF/` segments.
 
-3. Proposed change:
-Request here to modify the BKSTMT_IMPORT.VBS in order to incorporate new field named “HSBC Reference” in Posted Payment report. 
+- Example handled:  
+  For `TRANSDEL = "....../CREF/2214/BNF/..."`, the extracted HSBCREF would be `2214`.
 
-Code should work in such a way if any of Payment Type CREF is there in the transaction description then it will bring number after CREF in HSBC reference column otherwise we need to put TCode for that transaction.
-The requirements for HSBC reference are listed below
-      If CREF is present, the HSBC reference must be included otherwise Tcode
-Note: Number after CREF in BAI file will be HSBC reference number and it should be between the two separator “/”
-Financehelp L1: In case team is preparing the manual BAI file for any transaction we need to insure we will add 88 line item with correct CREF and number so that it will also reflect in the Posted payment report.
-4. Expected output:
-Request here to modify the BKSTMT_IMPORT.VBS in order to incorporate new field named “HSBC Reference” in Posted Payment report
+- The change maintains backward compatibility and ensures no impact to existing fields or processes in the script.
+
+- Enhances traceability and reporting quality, especially for financial audits and reconciliations.
+
+- The new field will appear in the **Posted Payment Report** as a dedicated column labeled **“HSBC Reference”**.
+
+- This change supports finance operations by automating reference extraction without manual data cleanup.
+
+---
+
+Let me know if you'd like to include a sample code snippet or want this formatted into a document!
