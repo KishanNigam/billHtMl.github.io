@@ -1,17 +1,5 @@
-1460799159270014 /CREF/2214 /BREF/146079915927 /SU
+During unit testing, I encountered an issue with the logic implemented for a few parameters. The issue has now been fixed.
 
-This value "TRANSDEL" variable ke andar hai jiska formet kabhi bhi change ho sakta hai. Like 
-Example 1 
-TRANSDEL= "1460799159270014 /CREF/2214 /BREF/146079915927 /SU"
-Example 2
-TRANSDEL= "1460799159270014 /BREF/146079915927CREF/2214 /SU"
+However, I would need one more day to ensure that the implemented logic does not impact any part of the process.
 
-I mean TRANSDEL main /CREF/2214/ ki value ki position pure value main kahi bhi ho sakte hai. 
-
-Sath main he mere pass ek or Varaible hai. 
-TCODE
-
-Now Give me a logic jha pe TRANSDEL variable ko check kare or puri line main /CREF/ ko search kar ke ushke just baad wali value  ko ek new variable main assign kar de means /CREF/2214/  yha value 2214 ko assign karna hai
-(New variable name: HSBCREF)
-
-Means puri line main /CREF/ ke baad agle '/' ane tak ki complete value ko pick kare or new variable main assign kar de. and agar TRANSDEL main /CREF/  nhi milta then new variable main TCODE ki value assign kar de
+I will keep you updated on the progress.
