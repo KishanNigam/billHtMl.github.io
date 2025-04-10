@@ -1,24 +1,17 @@
-Here's the formal English version of your paragraph, structured clearly for inclusion in an office document:
-
----
-
-**Job Process Flow:**
-
-1. The **Payment Transaction Feed** file is loaded into the EAS system through the **DC Import Job**, or occasionally created manually.  
-2. The transaction status is updated from **'W' (Waiting)** to **'D' (Processed)** through payment processing.  
-3. Once the payment is successfully processed, an **XML file** is generated for the respective transaction.  
-4. The **bank retrieves** the XML file.  
-5. The bank then places an **encrypted BAI2 file** on the **SFTP site** for validation purposes.  
-6. The job **"HSBC SFTP PROD - BAI2 File Download Control"** downloads the BAI2 file from the SFTP site, decrypts it, and places it in a specified **network location**.  
-7. The job **"HSBC BAI2 IMPORT – International"** picks the file from the network location and invokes a batch file.  
-8. The **batch file renames** the downloaded file from the format `BAI2*.BAI` to `HSBC_BAI2.txt` and moves it to the designated **import location**.  
-9. The batch file then calls a **VBScript**.  
-10. The **script reads** the BAI2 file line by line and generates three output files:  
-    a. **RRNG File** – Contains details of cleared payments, which are loaded into the EAS system.  
-    b. **POSTED_HSBC_PAYMENTS_YYMMDD.CSV** – Contains data of transactions that have been cleared.  
-    c. **Outstanding_HSBC_PAYMENT.CSV** – Contains data of all outstanding transactions.  
-11. The **RRNG file** is placed in the RRNG location, after which the batch file executes **RRNG.exe** to load the RRNG data into the EAS system.
-
----
-
-Feel free to send the next paragraph whenever you're ready!
+BAI2 File format:
+BAI2 file main major 5 filetype code hote hai.
+First file type: 01 (jishme basically data kab load hua hai ye details hote hai)
+Second file type: 02 (Jisme transaction kab clear hui hai ye details hote hai)
+Third file type: 03 (Ye cleared transaction ka entry point hota hai )
+Fourth file type: 16 (jisme transaction ki details hoti hai like example: TCODE and amount)
+Fifth file type: 88 (jisme transaction ka descriptions hota hai ye file type multiple lines main ho sakta hai)
+NOTE: Kisi bhi BAI2 file ke liye 01, 02 type code ushme diye gye sabhi transaction ke liye fix hota hai.
+VB script Process:
+1.	VB script BAI2 file ko line by line read karte hai. 
+2.	Script BAI2 ki phele & dusre line ko pick kar ke loop main enter ho kar diye gye filetype ke condition main check kar ke code ko execute karta hai.
+3.	Script filetype 16 ko pick kar loop main enter hota hai or (Filetype = 16) condition main enter ho kar diye gye ‘Typecode’ ko condition main jaa kar “CUSTREF” variable main BAI2 main diye gye TCODE ko assign karta hai sath main hee ‘TRANNUM’ variable main ‘T’ ko hata kar remain value ko assign karta hai or ant main FILETYEP ki 6th index main rakhi value ko TRANSDESC variable main assign karta hai.
+4.	Script next sabhi FILETYPE 88 ko read karna start karta hai or loop main akar FILETYPE = 88 condtion ke andar ek complete TRANsaction desicription create kar ke “TRANSDESC” variable main assign kart hai.
+5.	Sabhi details ko variable main assign karne ke baad TRANNUM ko use kar ke SQL query main variable pass kar details nikalta hai or unhe variables main assign kar ke POSTED_HSBC_PAYMENTS*.csv file main write karta hai.
+6.	Sath main hee script se aye details ko HSBC_RRNG.TXT RRNG file main bhi write karta jata hai for EAS main load karne ke liye.
+7.	Then script main SQL query ke dvara previous main ki gai sabhi outstanding payment ko bhi OUTSTANDING_HSBC_PAYMENTS*.csv main write karta hai.
+8.	Ant main XPORT_AP_TRIGGER se cleared payment ko XPORT_AP_Control table main insert karte hai jishe same transaction dobara process na ho. 
