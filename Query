@@ -1,12 +1,15 @@
-Script Objective:
-To validate the transactions loaded into the EAS main system, the bank sends a file commonly referred to as a BAI2 file. This file contains details of payments that have been cleared.
-
-Through this script, data from the received BAI2 file is extracted and verified in the database. Based on the TCODE provided in the BAI2 file, the script generates three files:
-
-RRNG file
-
-Posted file
-
-Outstanding file
-
-The RRNG file is then loaded into the EAS system. As a result, the transactions that have been cleared are moved from the "Outstanding" status to the "Cleared" status in the system.
+Job Process Flow:
+1.	Payment Transaction Feed file loaded into EAS through DC import job, or some time create manually.
+2.	 Status change W to D state through Payment processing. 
+3.	When Payment processed successfully then XML file created for particular transaction.
+4.	Bank pick the XML file.
+5.	Then bank placed encrypted BAI2 file in SFTP site for validation.
+6.	HSBC SFTP PROD - BAI2 File Download Control job download the BAI2 file and decrypted the file and placed in network location. 
+7.	HSBC BAI2 IMPORT – International job pick the file from Network location and call batch file.
+8.	Batch rename the file BAI2*.BAI to HSBC_BAI2.txt and placed in import location.
+9.	Batch call VB script.
+10.	Script Read BAI2 file line by line and create three output files. 
+a.	RRNG file – Jo cleared payment ki details ko le kar EAS main load hoti hai.
+b.	POSTED_HSBC_PAYMENTS_YYMMDD.CSV – Jo transaction cleared hue unka data.
+c.	Outstanding_HSBC_PAYMENT.CSV- Sabhi outstanding hue transaction ka data hota hai.
+11.	RRNG file placed in RRNG location and batch call the RRNG.exe and load the RRNG file data into EAS.
