@@ -1,9 +1,4 @@
-01,022000020,USHBUSGUS630202590,250401,0835,1,80,1,2/                           
-02,USHBUSGUS630202590,BBMEAEAD,1,250331,,,2/                                    
-03,011528635004,AUD,010,1891253242,,/  
-16,452,536657,V,250328,,9127254284990005,T125041,                               
-88,/CREF/125976                                                                 
-88,/BREF/9127254284990001                                                       
-88,/SUPP/AUTOPAY OUT          AUK                                               
-88,/BENM/CHARLES TAYLOR ADJUS                                                   
-88,/EREF/T125041    
+BKSTMT_IMPORT script Working flow & Analysis
+Script Objective:
+EAS main load ki gye transaction ko validat karne ke liye Bank hame ek file bhejta hai jishe ham BAI2 file khete hai. BAI2 file ke andar jo payment clear ho jate hai unke details hoti hai. 
+Ham ish script ki through bank se aai hui BAI2 file se data ko pick karte hai or DB main check kar bai2 main di gai TCODE ko check kar ke RRNG file, Posted file, and outstanding file ko create karate hai and RRNG file ko EAS main load karate hai. Jishe jo bhi transaction clear ho gai hai wo Outstanding mode se cleared mode main ajaye. 
