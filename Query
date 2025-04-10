@@ -1,34 +1,58 @@
-Here is a formal English version of your latest content, suitable for an office document:
-
----
-
-**BAI2 File Format:**  
-The BAI2 file primarily contains **five major file type codes**:
-
-1. **File Type 01** – Contains metadata such as the file load date.  
-2. **File Type 02** – Contains information about when the transactions were cleared.  
-3. **File Type 03** – Serves as the entry point for cleared transactions.  
-4. **File Type 16** – Contains transaction details such as `TCODE` and the transaction amount.  
-5. **File Type 88** – Contains transaction descriptions, which may span multiple lines.
-
-> **Note:** For any given BAI2 file, File Types **01** and **02** are standard and appear only once per file, regardless of the number of transactions.
-
----
-
-**VBScript Process:**
-
-1. The **VBScript reads the BAI2 file line by line**.  
-2. It first picks the first two lines of the file and enters a loop, where it evaluates each line based on the `FileType` and executes the corresponding logic.  
-3. When the script encounters **File Type 16**, it enters the relevant condition block and performs the following actions:  
-   - Assigns the `TCODE` from the BAI2 file to the variable `CUSTREF`.  
-   - Removes the letter **"T"** from the transaction number and assigns the remaining value to the variable `TRANNUM`.  
-   - Assigns the value from the **6th index of the File Type** line to the `TRANSDESC` variable.  
-4. The script then processes all subsequent **File Type 88** entries and, within the loop, compiles a complete transaction description, assigning it to the `TRANSDESC` variable.  
-5. After assigning all the necessary values to variables, the script uses the `TRANNUM` to execute an SQL query, fetch additional transaction details, and write the results into the **POSTED_HSBC_PAYMENTS*.csv** file.  
-6. Simultaneously, the script writes the same transaction details into the **HSBC_RRNG.TXT** file, which will later be loaded into the EAS system.  
-7. Additionally, the script writes all previously outstanding payments into the **OUTSTANDING_HSBC_PAYMENTS*.csv** file using another SQL query.  
-8. Finally, the script inserts the cleared transactions into the **XPORT_AP_Control** table via the `XPORT_AP_TRIGGER` to prevent reprocessing of the same transaction in the future.
-
----
-
-Ready for the next section whenever you are!
+        +------------------------+
+        |  Start VB Script       |
+        +------------------------+
+                   |
+                   v
+        +------------------------+
+        | Read BAI2 file line by |
+        | line                   |
+        +------------------------+
+                   |
+                   v
+        +------------------------+
+        | Pick first two lines   |
+        | and enter loop         |
+        +------------------------+
+                   |
+                   v
+        +------------------------+
+        | Check FileType         |
+        +------------------------+
+                   |
+   +---------------+---------------+
+   |                               |
+   v                               v
+[FileType 16]                [FileType 88]
+   |                               |
+   | Extract:                      | Append to:
+   | - TCODE -> CUSTREF           | - TRANSDESC
+   | - TRANNUM (remove "T")       |
+   | - TRANSDESC                  |
+   +---------------+---------------+
+                   |
+                   v
+        +------------------------------+
+        | Use TRANNUM in SQL query     |
+        | - Get transaction details    |
+        | - Write to:                  |
+        |   - POSTED_HSBC_PAYMENTS.csv |
+        |   - HSBC_RRNG.TXT            |
+        +------------------------------+
+                   |
+                   v
+        +------------------------------+
+        | SQL Query for outstanding    |
+        | payments                     |
+        | - Write to OUTSTANDING_*.csv |
+        +------------------------------+
+                   |
+                   v
+        +-------------------------------------+
+        | Insert cleared payments into        |
+        | XPORT_AP_Control using XPORT_TRIGGER|
+        +-------------------------------------+
+                   |
+                   v
+        +------------------------+
+        |        End            |
+        +------------------------+
