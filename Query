@@ -1,15 +1,24 @@
-Job Process Flow:
-1.	Payment Transaction Feed file loaded into EAS through DC import job, or some time create manually.
-2.	 Status change W to D state through Payment processing. 
-3.	When Payment processed successfully then XML file created for particular transaction.
-4.	Bank pick the XML file.
-5.	Then bank placed encrypted BAI2 file in SFTP site for validation.
-6.	HSBC SFTP PROD - BAI2 File Download Control job download the BAI2 file and decrypted the file and placed in network location. 
-7.	HSBC BAI2 IMPORT – International job pick the file from Network location and call batch file.
-8.	Batch rename the file BAI2*.BAI to HSBC_BAI2.txt and placed in import location.
-9.	Batch call VB script.
-10.	Script Read BAI2 file line by line and create three output files. 
-a.	RRNG file – Jo cleared payment ki details ko le kar EAS main load hoti hai.
-b.	POSTED_HSBC_PAYMENTS_YYMMDD.CSV – Jo transaction cleared hue unka data.
-c.	Outstanding_HSBC_PAYMENT.CSV- Sabhi outstanding hue transaction ka data hota hai.
-11.	RRNG file placed in RRNG location and batch call the RRNG.exe and load the RRNG file data into EAS.
+Here's the formal English version of your paragraph, structured clearly for inclusion in an office document:
+
+---
+
+**Job Process Flow:**
+
+1. The **Payment Transaction Feed** file is loaded into the EAS system through the **DC Import Job**, or occasionally created manually.  
+2. The transaction status is updated from **'W' (Waiting)** to **'D' (Processed)** through payment processing.  
+3. Once the payment is successfully processed, an **XML file** is generated for the respective transaction.  
+4. The **bank retrieves** the XML file.  
+5. The bank then places an **encrypted BAI2 file** on the **SFTP site** for validation purposes.  
+6. The job **"HSBC SFTP PROD - BAI2 File Download Control"** downloads the BAI2 file from the SFTP site, decrypts it, and places it in a specified **network location**.  
+7. The job **"HSBC BAI2 IMPORT – International"** picks the file from the network location and invokes a batch file.  
+8. The **batch file renames** the downloaded file from the format `BAI2*.BAI` to `HSBC_BAI2.txt` and moves it to the designated **import location**.  
+9. The batch file then calls a **VBScript**.  
+10. The **script reads** the BAI2 file line by line and generates three output files:  
+    a. **RRNG File** – Contains details of cleared payments, which are loaded into the EAS system.  
+    b. **POSTED_HSBC_PAYMENTS_YYMMDD.CSV** – Contains data of transactions that have been cleared.  
+    c. **Outstanding_HSBC_PAYMENT.CSV** – Contains data of all outstanding transactions.  
+11. The **RRNG file** is placed in the RRNG location, after which the batch file executes **RRNG.exe** to load the RRNG data into the EAS system.
+
+---
+
+Feel free to send the next paragraph whenever you're ready!
