@@ -1,17 +1,34 @@
-BAI2 File format:
-BAI2 file main major 5 filetype code hote hai.
-First file type: 01 (jishme basically data kab load hua hai ye details hote hai)
-Second file type: 02 (Jisme transaction kab clear hui hai ye details hote hai)
-Third file type: 03 (Ye cleared transaction ka entry point hota hai )
-Fourth file type: 16 (jisme transaction ki details hoti hai like example: TCODE and amount)
-Fifth file type: 88 (jisme transaction ka descriptions hota hai ye file type multiple lines main ho sakta hai)
-NOTE: Kisi bhi BAI2 file ke liye 01, 02 type code ushme diye gye sabhi transaction ke liye fix hota hai.
-VB script Process:
-1.	VB script BAI2 file ko line by line read karte hai. 
-2.	Script BAI2 ki phele & dusre line ko pick kar ke loop main enter ho kar diye gye filetype ke condition main check kar ke code ko execute karta hai.
-3.	Script filetype 16 ko pick kar loop main enter hota hai or (Filetype = 16) condition main enter ho kar diye gye ‘Typecode’ ko condition main jaa kar “CUSTREF” variable main BAI2 main diye gye TCODE ko assign karta hai sath main hee ‘TRANNUM’ variable main ‘T’ ko hata kar remain value ko assign karta hai or ant main FILETYEP ki 6th index main rakhi value ko TRANSDESC variable main assign karta hai.
-4.	Script next sabhi FILETYPE 88 ko read karna start karta hai or loop main akar FILETYPE = 88 condtion ke andar ek complete TRANsaction desicription create kar ke “TRANSDESC” variable main assign kart hai.
-5.	Sabhi details ko variable main assign karne ke baad TRANNUM ko use kar ke SQL query main variable pass kar details nikalta hai or unhe variables main assign kar ke POSTED_HSBC_PAYMENTS*.csv file main write karta hai.
-6.	Sath main hee script se aye details ko HSBC_RRNG.TXT RRNG file main bhi write karta jata hai for EAS main load karne ke liye.
-7.	Then script main SQL query ke dvara previous main ki gai sabhi outstanding payment ko bhi OUTSTANDING_HSBC_PAYMENTS*.csv main write karta hai.
-8.	Ant main XPORT_AP_TRIGGER se cleared payment ko XPORT_AP_Control table main insert karte hai jishe same transaction dobara process na ho. 
+Here is a formal English version of your latest content, suitable for an office document:
+
+---
+
+**BAI2 File Format:**  
+The BAI2 file primarily contains **five major file type codes**:
+
+1. **File Type 01** – Contains metadata such as the file load date.  
+2. **File Type 02** – Contains information about when the transactions were cleared.  
+3. **File Type 03** – Serves as the entry point for cleared transactions.  
+4. **File Type 16** – Contains transaction details such as `TCODE` and the transaction amount.  
+5. **File Type 88** – Contains transaction descriptions, which may span multiple lines.
+
+> **Note:** For any given BAI2 file, File Types **01** and **02** are standard and appear only once per file, regardless of the number of transactions.
+
+---
+
+**VBScript Process:**
+
+1. The **VBScript reads the BAI2 file line by line**.  
+2. It first picks the first two lines of the file and enters a loop, where it evaluates each line based on the `FileType` and executes the corresponding logic.  
+3. When the script encounters **File Type 16**, it enters the relevant condition block and performs the following actions:  
+   - Assigns the `TCODE` from the BAI2 file to the variable `CUSTREF`.  
+   - Removes the letter **"T"** from the transaction number and assigns the remaining value to the variable `TRANNUM`.  
+   - Assigns the value from the **6th index of the File Type** line to the `TRANSDESC` variable.  
+4. The script then processes all subsequent **File Type 88** entries and, within the loop, compiles a complete transaction description, assigning it to the `TRANSDESC` variable.  
+5. After assigning all the necessary values to variables, the script uses the `TRANNUM` to execute an SQL query, fetch additional transaction details, and write the results into the **POSTED_HSBC_PAYMENTS*.csv** file.  
+6. Simultaneously, the script writes the same transaction details into the **HSBC_RRNG.TXT** file, which will later be loaded into the EAS system.  
+7. Additionally, the script writes all previously outstanding payments into the **OUTSTANDING_HSBC_PAYMENTS*.csv** file using another SQL query.  
+8. Finally, the script inserts the cleared transactions into the **XPORT_AP_Control** table via the `XPORT_AP_TRIGGER` to prevent reprocessing of the same transaction in the future.
+
+---
+
+Ready for the next section whenever you are!
