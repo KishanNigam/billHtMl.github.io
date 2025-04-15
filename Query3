@@ -1,5 +1,6 @@
-During unit testing, I encountered an issue with the logic implemented for a few parameters. The issue has now been fixed.
+This is regarding User Story 2222, where we need to modify the BKSTMT_IMPORT VBScript so that specific BU fields (DEPT, BCLAS, and BILL) are hardcoded when an FX account (1232) line is created after loading the BAI file.
 
-However, I would need one more day to ensure that the implemented logic does not impact any part of the process.
+The question, raised by Desiree, is:
+Are these changes applicable only for Concur sources (AP & APCNC), or do we need to cater to any other sources as well?
 
-I will keep you updated on the progress.
+We need to confirm this before proceeding further.
