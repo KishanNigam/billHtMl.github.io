@@ -1,2 +1,5 @@
-As discussed with Divya, this was a priority task, so I completed it today.
-I had to validate all possible test cases during unit testing, which took up most of my time today.
+Pavan added a few tasks in the Visual Cron job, due to which the VC logs are now reading only the latest batch log.
+
+He had instructed me to perform unit testing for this change, but due to US 431693 and other miscellaneous work, I couldn’t complete the testing today.
+
+I'll plan to take it up at the earliest possible.
