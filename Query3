@@ -1,5 +1,4 @@
-Pavan added a few tasks in the Visual Cron job, due to which the VC logs are now reading only the latest batch log.
+Based on the CIA document and confirmation from Divya, I have updated the code as per the BUCODEs provided for AP and APCNC. The development work is now complete, and unit testing is currently in progress.
 
-He had instructed me to perform unit testing for this change, but due to US 431693 and other miscellaneous work, I couldn’t complete the testing today.
-
-I'll plan to take it up at the earliest possible.
+During testing, I’m facing issues while using the transactions and BAI2 files related to AP and APCNC, which fall under Account No. 42002000.
+I would require assistance from the BA team to proceed further with the testing.
