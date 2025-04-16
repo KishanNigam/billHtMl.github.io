@@ -1,6 +1,45 @@
-This is regarding User Story 2222, where we need to modify the BKSTMT_IMPORT VBScript so that specific BU fields (DEPT, BCLAS, and BILL) are hardcoded when an FX account (1232) line is created after loading the BAI file.
+Certainly! Here are the four cases explained in bullet points:
 
-The question, raised by Desiree, is:
-Are these changes applicable only for Concur sources (AP & APCNC), or do we need to cater to any other sources as well?
+---
 
-We need to confirm this before proceeding further.
+### ✅ **Case 1: Valid CREF Value Present**
+
+- **TRANSDESC**: `"1443211386250121/CREF/2214/BNF/SERNETZ"`
+
+- **Condition**: `/CREF/` is present, and the value following it is valid (`2214`).
+
+- **Result**: `HSBCREF` is assigned the value `2214`.
+
+---
+
+### ✅ **Case 2: CREF Not Present**
+
+- **TRANSDESC**: `"1443211386250121/BNF/SERNETZ"`
+
+- **Condition**: `/CREF/` is not present in the string.
+
+- **Result**: `HSBCREF` is assigned the value of `CUSTREF`.
+
+---
+
+### ✅ **Case 3: CREF Present but Value is Blank**
+
+- **TRANSDESC**: `"1443211386250121/CREF/ /BNF/SERNETZ"`
+
+- **Condition**: `/CREF/` is present, but the value following it is a space (i.e., blank).
+
+- **Result**: `HSBCREF` is assigned the value of `CUSTREF`.
+
+---
+
+### ✅ **Case 4: CREF Present but Value is Missing**
+
+- **TRANSDESC**: `"1443211386250121/CREF//BNF/SERNETZ"`
+
+- **Condition**: `/CREF/` is present, but there is no value between the slashes (i.e., empty).
+
+- **Result**: `HSBCREF` is assigned the value of `CUSTREF`.
+
+---
+
+These cases ensure that the script accurately assigns `HSBCREF` based on the presence and validity of the CREF value in `TRANSDESC`. 
