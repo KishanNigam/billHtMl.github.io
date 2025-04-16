@@ -1,14 +1,6 @@
-IF DIFFAMT <> 0 THEN
-               '  objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & YYEAR & "," & monthno & "," & BAS & _
-               '                     "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
-               '                     "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
-               '                     "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
-               '                     "," & PSLOC & "," & LSLOC & "," & "," )
+This bug was not related to development but was instead a CIA requirement bug, which has now been handled in the code.
 
-                 objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
-                                    "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
-                                    "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
-                                    "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
-                                    "," & PSLOC & "," & LSLOC & "," & "," )
-                 NUMTRANS = NUMTRANS + 1
-              END IF
+As discussed, the updated logic now caters to all the cases mentioned below.
+I’ve attached the updated script for your reference.
+
+@Pavan, kindly review and proceed with the deployment.
