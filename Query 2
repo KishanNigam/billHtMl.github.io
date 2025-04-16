@@ -1,12 +1,20 @@
-  If InStr(TRANSDESC, "/CREF/") > 0 Then
-          Dim parts, i
-          parts = Split(TRANSDESC, " ")
-          For i = 0 To UBound(parts)
-              If InStr(parts(i), "/CREF/") > 0 Then
-                  HSBCREF = Replace(parts(i), "/CREF/", "")
-                  Exit For
-              End If
-          Next
-      Else
-          HSBCREF = CUSTREF
-      End If
+If InStr(TRANSDESC, "/CREF/") > 0 Then
+    Dim parts, i, crefValue
+    parts = Split(TRANSDESC, " ")
+    HSBCREF = CUSTREF ' Default fallback
+
+    For i = 0 To UBound(parts)
+        If InStr(parts(i), "/CREF/") > 0 Then
+            crefValue = Replace(parts(i), "/CREF/", "")
+            
+            ' Check if value after /CREF/ is non-empty and doesn't start with '/'
+            If Trim(crefValue) <> "" And Left(crefValue, 1) <> "/" Then
+                HSBCREF = crefValue
+            End If
+
+            Exit For
+        End If
+    Next
+Else
+    HSBCREF = CUSTREF
+End If
