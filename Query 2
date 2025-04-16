@@ -1,9 +1,1 @@
-I connected with Aarohi and explained my script analysis to her. However, she still has some questions, including:  
-
-1. How is the **Posted Payment File** generated, and how does its code work within the script?  
-2. How are we loading the **BAI2 file**?  
-3. When **TYPE CODE 88** is read, she wants a line-by-line explanation of the logic written inside it.  
-
-Overall, she wants to understand the complete job flow along with the script.  
-
-I will work on this tomorrow and will need some time to complete it.
+The process cannot access the file because it is being used by another process. in visual cron
