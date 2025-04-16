@@ -1,1 +1,12 @@
-The process cannot access the file because it is being used by another process. in visual cron
+  If InStr(TRANSDESC, "/CREF/") > 0 Then
+          Dim parts, i
+          parts = Split(TRANSDESC, " ")
+          For i = 0 To UBound(parts)
+              If InStr(parts(i), "/CREF/") > 0 Then
+                  HSBCREF = Replace(parts(i), "/CREF/", "")
+                  Exit For
+              End If
+          Next
+      Else
+          HSBCREF = CUSTREF
+      End If
