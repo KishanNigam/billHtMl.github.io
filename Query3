@@ -1,45 +1,14 @@
-Certainly! Here are the four cases explained in bullet points:
+IF DIFFAMT <> 0 THEN
+               '  objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & YYEAR & "," & monthno & "," & BAS & _
+               '                     "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
+               '                     "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
+               '                     "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
+               '                     "," & PSLOC & "," & LSLOC & "," & "," )
 
----
-
-### ✅ **Case 1: Valid CREF Value Present**
-
-- **TRANSDESC**: `"1443211386250121/CREF/2214/BNF/SERNETZ"`
-
-- **Condition**: `/CREF/` is present, and the value following it is valid (`2214`).
-
-- **Result**: `HSBCREF` is assigned the value `2214`.
-
----
-
-### ✅ **Case 2: CREF Not Present**
-
-- **TRANSDESC**: `"1443211386250121/BNF/SERNETZ"`
-
-- **Condition**: `/CREF/` is not present in the string.
-
-- **Result**: `HSBCREF` is assigned the value of `CUSTREF`.
-
----
-
-### ✅ **Case 3: CREF Present but Value is Blank**
-
-- **TRANSDESC**: `"1443211386250121/CREF/ /BNF/SERNETZ"`
-
-- **Condition**: `/CREF/` is present, but the value following it is a space (i.e., blank).
-
-- **Result**: `HSBCREF` is assigned the value of `CUSTREF`.
-
----
-
-### ✅ **Case 4: CREF Present but Value is Missing**
-
-- **TRANSDESC**: `"1443211386250121/CREF//BNF/SERNETZ"`
-
-- **Condition**: `/CREF/` is present, but there is no value between the slashes (i.e., empty).
-
-- **Result**: `HSBCREF` is assigned the value of `CUSTREF`.
-
----
-
-These cases ensure that the script accurately assigns `HSBCREF` based on the presence and validity of the CREF value in `TRANSDESC`. 
+                 objRRNGFile.WriteLine(CO & "," & SRC & "," & EFFDATE & "," & "44002000" & "," & DC & "," & MID(EFFDATE,5,4) & "," & MID(EFFDATE,1,2) & "," & BAS & _
+                                    "," & DIFFAMT & "," & BKREF & "," & CUSTREF & "," & TRIM(TRANSDESC) & "," & BILL & "," & ACCYR & "," & ASLOC & _
+                                    "," & AGENT & "," & BCLAS & "," & BUCLASS & "," & DEPT & "," &  EXPG & "," & FXSRC & "," & GLCOV & _
+                                    "," & OTYPE & "," & POLYR & "," & SEG & "," & BLOB & "," & REINS & "," & POLNO & "," & CLMNO & "," & CTRCT & _
+                                    "," & PSLOC & "," & LSLOC & "," & "," )
+                 NUMTRANS = NUMTRANS + 1
+              END IF
